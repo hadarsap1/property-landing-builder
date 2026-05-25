@@ -241,7 +241,7 @@ export default function BuilderPage() {
                     טען ממודעה קיימת
                   </div>
                   <div className="text-sm text-gray-500 mt-0.5">
-                    העתק מיד2, מדלן, או כל מודעה — הוויזרד ימולא אוטומטית
+                    העתק מיד2, מדלן, או כל מודעה. הוויזרד ימולא אוטומטית
                   </div>
                 </div>
               </button>
@@ -302,7 +302,7 @@ export default function BuilderPage() {
           <div className="px-4 py-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-semibold text-gray-700">
-                שלב {step} מתוך {TOTAL_STEPS} — {STEP_NAMES[step]}
+                שלב {step} מתוך {TOTAL_STEPS}: {STEP_NAMES[step]}
               </span>
               <span className="text-sm text-gray-400">{Math.round(progress)}%</span>
             </div>

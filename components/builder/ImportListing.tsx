@@ -112,7 +112,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
       }
       setResult(data.listing ?? null);
     } catch {
-      setError('שגיאת רשת — בדוק חיבור אינטרנט');
+      setError('שגיאת רשת. בדוק חיבור אינטרנט');
     } finally {
       setLoading(false);
     }
@@ -128,7 +128,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-1">📋 טען ממודעה קיימת</h2>
         <p className="text-sm text-gray-500">
-          העתק את טקסט המודעה מיד2, מדלן, או כל אתר אחר — והדבק כאן.
+          העתק את טקסט המודעה מיד2, מדלן, או כל אתר אחר, והדבק כאן.
         </p>
       </div>
 
@@ -154,7 +154,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
           className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400 leading-relaxed"
         />
         <p className="text-xs text-gray-400">
-          ככל שתדביק יותר טקסט — כך יזוהו יותר שדות אוטומטית
+          ככל שתדביק יותר טקסט, כך יזוהו יותר שדות אוטומטית
         </p>
       </div>
 

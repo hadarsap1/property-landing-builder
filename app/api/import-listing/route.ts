@@ -43,7 +43,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1024,
     system: `אתה מחלץ מידע מובנה ממודעות נדל"ן בישראל. החזר JSON בלבד, ללא markdown, ללא הסברים.
-אם ערך לא קיים במודעה — אל תכלול אותו ב-JSON (עדיף שדה חסר על פני ניחוש שגוי).`,
+אם ערך לא קיים במודעה, אל תכלול אותו ב-JSON (עדיף שדה חסר על פני ניחוש שגוי).`,
     messages: [
       {
         role: 'user',

@@ -125,7 +125,7 @@ export default function Step4({ project, onChange }: StepProps) {
         <div className="text-4xl mb-2">🖼️</div>
         <p className="text-gray-600 font-medium">גרור תמונות לכאן או לחץ לבחירה</p>
         <p className="text-sm text-gray-400 mt-1">
-          JPG, PNG, WebP — עד 10 תמונות
+          JPG, PNG, WebP | עד 10 תמונות
           {project.images.length > 0 && ` (${project.images.length}/10 נבחרו)`}
         </p>
         <input

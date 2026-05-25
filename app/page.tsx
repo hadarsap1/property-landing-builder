@@ -4,7 +4,7 @@ const FEATURES = [
   {
     icon: '📋',
     title: 'ייבוא ממודעה',
-    desc: 'הדבק טקסט מיד2, מדלן או כל אתר — הוויזרד ימולא אוטומטית.',
+    desc: 'הדבק טקסט מיד2, מדלן או כל אתר. הוויזרד ימולא אוטומטית.',
   },
   {
     icon: '✨',
@@ -14,7 +14,7 @@ const FEATURES = [
   {
     icon: '🎨',
     title: '5 תבניות עיצוב',
-    desc: 'Modern Blue, Dark Luxury, Warm Homey ועוד — תבחר את שמתאים לנכס.',
+    desc: 'Modern Blue, Dark Luxury, Warm Homey ועוד. בחר את שמתאים לנכס.',
   },
   {
     icon: '🔗',
@@ -52,7 +52,7 @@ export default function HomePage() {
           <span className="text-blue-600">לנכס שלך תוך דקות</span>
         </h1>
         <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          ויזרד פשוט בן 9 שלבים. תמלא פרטים, תבחר עיצוב, ה-AI יכתוב את הסיפור —
+          ויזרד פשוט בן 9 שלבים. תמלא פרטים, תבחר עיצוב, ה-AI יכתוב את הסיפור.
           תקבל דף שיווקי שתוכל לשלוח לכל קונה פוטנציאלי.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -60,7 +60,7 @@ export default function HomePage() {
             href="/builder"
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-4 rounded-xl text-lg transition-colors shadow-lg shadow-blue-200"
           >
-            צור דף עכשיו — חינם ←
+            צור דף עכשיו חינם ←
           </Link>
           <Link
             href="/preview/local"
@@ -99,8 +99,13 @@ export default function HomePage() {
         </Link>
       </section>
 
-      <footer className="text-center text-sm text-gray-400 py-6">
-        Property Landing Builder · {new Date().getFullYear()}
+      <footer className="text-center text-sm text-gray-400 py-6 space-y-1">
+        <p>Property Landing Builder · {new Date().getFullYear()}</p>
+        <p>
+          <Link href="/terms" className="hover:text-gray-600 underline underline-offset-2 transition-colors">
+            תנאי שימוש
+          </Link>
+        </p>
       </footer>
     </div>
   );

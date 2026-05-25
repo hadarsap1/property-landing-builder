@@ -78,7 +78,7 @@ export default function Step9({ project }: StepProps) {
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">1</span>
             <div>
               <p className="font-medium text-gray-800 text-sm">שמור וקבל קישור</p>
-              <p className="text-xs text-gray-500">לחץ על "שמור וקבל קישור" למטה — תקבל קוד 6 ספרות וקישור ישיר</p>
+              <p className="text-xs text-gray-500">לחץ על "שמור וקבל קישור" למטה, ותקבל קוד 6 ספרות וקישור ישיר</p>
             </div>
           </li>
           <li className="flex items-start gap-3">
@@ -92,7 +92,7 @@ export default function Step9({ project }: StepProps) {
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">3</span>
             <div>
               <p className="font-medium text-gray-800 text-sm">רוצה לשנות משהו?</p>
-              <p className="text-xs text-gray-500">חזור לכל שלב דרך הניווט למעלה — השינויים יישמרו אוטומטית בטיוטה</p>
+              <p className="text-xs text-gray-500">חזור לכל שלב דרך הניווט למעלה. השינויים יישמרו אוטומטית בטיוטה</p>
             </div>
           </li>
         </ol>

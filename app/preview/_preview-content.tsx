@@ -243,7 +243,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
       {/* ── Edit bar (dev / local only) ─────────────────────────── */}
       {editHref && (
         <div className="fixed top-0 right-0 left-0 z-50 bg-blue-600 text-white text-sm text-center py-2 flex items-center justify-center gap-3">
-          <span>👁️ תצוגה מקדימה — לא מדף שיתוף</span>
+          <span>👁️ תצוגה מקדימה | לא מדף שיתוף</span>
           <a
             href={editHref}
             className="bg-white text-blue-600 px-3 py-1 rounded-full font-semibold text-xs hover:bg-blue-50 transition-colors"
@@ -534,6 +534,10 @@ export default function PreviewContent({ project, editHref, shareCode }: {
         נבנה בעזרת{' '}
         <a href="/" className="hover:underline" style={{ color: accent }}>
           Property Landing Builder
+        </a>
+        {' · '}
+        <a href="/terms" className="hover:underline" style={{ color: theme.mutedText }}>
+          תנאי שימוש
         </a>
       </footer>
 
