@@ -3,6 +3,38 @@
 import { useState } from 'react';
 import type { PropertyProject } from '@/types/project';
 
+// ── Icon picker data ──────────────────────────────────────────────────────────
+
+const SPEC_ICON_OPTIONS: Record<string, string[]> = {
+  rooms:         ['🏠', '🛏️', '🏡', '🚪', '🏘️', '🛋️'],
+  builtArea:     ['📐', '📏', '🏗️', '🏢', '⬜', '📊'],
+  gardenArea:    ['🌿', '🌳', '🌱', '🪴', '🌻', '🍃'],
+  floor:         ['🏢', '🏗️', '⬆️', '🔼', '📶', '🪜'],
+  bathrooms:     ['🛁', '🚿', '🪥', '🧼', '💧', '🚽'],
+  parking:       ['🚗', '🅿️', '🏎️', '🚙', '🔑', '🚘'],
+  storage:       ['📦', '🗄️', '📫', '🏠', '📋', '🧰'],
+  saferoom:      ['🛡️', '🔒', '🔐', '⚠️', '🏠', '🪖'],
+  elevator:      ['🛗', '⬆️', '🔼', '⬇️', '🏢', '♿'],
+  buildYear:     ['📅', '🗓️', '📆', '🏗️', '🔢', '📌'],
+  renovationYear:['🔨', '🛠️', '✨', '🔧', '🏗️', '🪛'],
+  airDirections: ['🧭', '🌬️', '⬆️', '🌅', '🗺️', '🌀'],
+};
+
+const SPEC_KEY_LABEL: { key: string; label: string }[] = [
+  { key: 'rooms',          label: 'חדרים' },
+  { key: 'builtArea',      label: 'שטח' },
+  { key: 'gardenArea',     label: 'גינה/מרפסת' },
+  { key: 'floor',          label: 'קומה' },
+  { key: 'bathrooms',      label: 'שירותים' },
+  { key: 'parking',        label: 'חניה' },
+  { key: 'storage',        label: 'מחסן' },
+  { key: 'saferoom',       label: 'ממ״ד' },
+  { key: 'elevator',       label: 'מעלית' },
+  { key: 'buildYear',      label: 'שנת בנייה' },
+  { key: 'renovationYear', label: 'שיפוץ' },
+  { key: 'airDirections',  label: 'כיוונים' },
+];
+
 interface StepProps {
   project: PropertyProject;
   onChange: (partial: Partial<PropertyProject>) => void;
@@ -33,6 +65,12 @@ const SECTION_LABELS: Record<string, string> = {
 
 export default function Step7({ project, onChange }: StepProps) {
   const [draggedSection, setDraggedSection] = useState<string | null>(null);
+  const [openIconKey, setOpenIconKey] = useState<string | null>(null);
+
+  function handleIconSelect(key: string, emoji: string) {
+    onChange({ specIcons: { ...project.specIcons, [key]: emoji } });
+    setOpenIconKey(null);
+  }
 
   function handleSectionDragStart(id: string) {
     setDraggedSection(id);
@@ -124,6 +162,54 @@ export default function Step7({ project, onChange }: StepProps) {
                 </p>
                 <p className="text-xs text-gray-500">{opt.label}</p>
               </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Icon picker for spec items */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          אייקונים של פרטי הנכס
+        </label>
+        <p className="text-xs text-gray-400 mb-3">לחץ על אייקון כדי להחליף אותו</p>
+        <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          {SPEC_KEY_LABEL.map(({ key, label }) => {
+            const current = project.specIcons?.[key] ?? SPEC_ICON_OPTIONS[key]?.[0] ?? '•';
+            const isOpen = openIconKey === key;
+            return (
+              <div key={key} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setOpenIconKey(isOpen ? null : key)}
+                  className={`w-full flex flex-col items-center gap-1 border rounded-xl p-2 transition-all focus:outline-none ${
+                    isOpen
+                      ? 'border-blue-400 bg-blue-50 shadow-sm'
+                      : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <span className="text-2xl leading-none">{current}</span>
+                  <span className="text-xs text-gray-500 truncate w-full text-center">{label}</span>
+                </button>
+
+                {/* Emoji options popover */}
+                {isOpen && (
+                  <div className="absolute bottom-full mb-1 right-0 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex gap-1.5 flex-wrap w-44">
+                    {(SPEC_ICON_OPTIONS[key] ?? []).map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleIconSelect(key, emoji)}
+                        className={`text-xl w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:scale-110 focus:outline-none ${
+                          emoji === current ? 'bg-blue-100 ring-2 ring-blue-400' : 'hover:bg-gray-100'
+                        }`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>

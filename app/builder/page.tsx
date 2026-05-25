@@ -78,6 +78,21 @@ const DEFAULT_PROJECT: PropertyProject = {
     contact: true,
   },
 
+  specIcons: {
+    rooms: '🏠',
+    builtArea: '📐',
+    gardenArea: '🌿',
+    floor: '🏢',
+    bathrooms: '🛁',
+    parking: '🚗',
+    storage: '📦',
+    saferoom: '🛡️',
+    elevator: '🛗',
+    buildYear: '📅',
+    renovationYear: '🔨',
+    airDirections: '🧭',
+  },
+
   sellerName: '',
   phone: '',
   whatsapp: '',
@@ -297,22 +312,37 @@ export default function BuilderPage() {
                 style={{ width: `${progress}%` }}
               />
             </div>
-            {/* Step dots */}
-            <div className="flex gap-1 mt-2 justify-center">
+            {/* Step pills — clickable, labeled, scrollable */}
+            <div
+              className="flex gap-1 mt-2 overflow-x-auto pb-0.5"
+              style={{ scrollbarWidth: 'none' }}
+            >
               {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => goToStep(s)}
-                  title={STEP_NAMES[s]}
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  className={`flex-shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all whitespace-nowrap focus:outline-none ${
                     s === step
-                      ? 'bg-blue-600'
+                      ? 'bg-blue-600 text-white shadow-sm'
                       : s < step
-                      ? 'bg-blue-300'
-                      : 'bg-gray-300'
+                      ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
                   }`}
-                />
+                >
+                  <span
+                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none font-bold flex-shrink-0 ${
+                      s === step
+                        ? 'bg-white text-blue-600'
+                        : s < step
+                        ? 'bg-blue-400 text-white'
+                        : 'bg-gray-300 text-gray-500'
+                    }`}
+                  >
+                    {s}
+                  </span>
+                  {STEP_NAMES[s]}
+                </button>
               ))}
             </div>
           </div>

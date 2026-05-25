@@ -52,5 +52,5 @@ export default async function PreviewPage({
   const { code } = await params;
   const project = await loadProject(code);
   if (!project) notFound();
-  return <PreviewContent project={project} />;
+  return <PreviewContent project={project} shareCode={code} />;
 }

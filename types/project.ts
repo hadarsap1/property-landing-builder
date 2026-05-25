@@ -49,6 +49,9 @@ export interface PropertyProject {
   sectionOrder: string[];
   sectionVisibility: Record<string, boolean>;
 
+  // Step 7 – icon overrides (keys: rooms, builtArea, gardenArea, floor, bathrooms, parking, storage, saferoom, elevator, buildYear, renovationYear, airDirections)
+  specIcons: Record<string, string>;
+
   // Step 8
   sellerName: string;
   phone: string;
