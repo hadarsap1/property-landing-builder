@@ -1,0 +1,59 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "property-landing-builder",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/property-landing-builder && npm run dev -- --port 3001"],
+      "port": 3001
+    },
+    {
+      "name": "otef-parents",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/otef-parents && npm run dev -- --port 3002"],
+      "port": 3002
+    },
+    {
+      "name": "homebound",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/homebound && npm run dev -- --port 3003"],
+      "port": 3003
+    },
+    {
+      "name": "pm-portfolio-builder",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/pm-portfolio-builder && npm run dev -- --port 3004"],
+      "port": 3004
+    },
+    {
+      "name": "family-photo-archive",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/family-photo-archive && npm run dev -- --port 3005"],
+      "port": 3005
+    },
+    {
+      "name": "ellaeng-v2",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/ellaeng-v2 && npm run dev -- --port 5173"],
+      "port": 5173
+    },
+    {
+      "name": "recipes-app",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/recipes-app && npm run dev -- --port 5174"],
+      "port": 5174
+    },
+    {
+      "name": "riseup",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/riseup && npm run dev"],
+      "port": 5173
+    },
+    {
+      "name": "wine-tracker",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd /Users/hadarsapir/Desktop/my-projects/wine-tracker && expo start --web --port 8081"],
+      "port": 8081
+    }
+  ]
+}
