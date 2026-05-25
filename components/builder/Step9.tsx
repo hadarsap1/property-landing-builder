@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
@@ -11,9 +12,9 @@ export default function Step9({ project }: StepProps) {
   const [code, setCode] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    // Track project_completed on mount
     const sessionId = sessionStorage.getItem('sessionId') ?? '';
     void fetch('/api/track', {
       method: 'POST',
@@ -44,48 +45,108 @@ export default function Step9({ project }: StepProps) {
     }
   }
 
-  const mailtoLink = code
-    ? `mailto:?subject=${encodeURIComponent('קוד הגישה לנכס')}&body=${encodeURIComponent(`הקוד שלך: ${code}`)}`
-    : '#';
+  async function copyCode(c: string) {
+    await navigator.clipboard.writeText(c);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  const previewUrl = code ? `/preview/${code}` : null;
 
   return (
     <div className="space-y-8">
       <h2 className="text-2xl font-bold text-gray-800">סיום 🎉</h2>
 
-      {/* Access Code */}
+      {/* ── Local preview (always available) ───────────────────── */}
+      <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <h3 className="font-semibold text-gray-800">תצוגה מקדימה</h3>
+            <p className="text-sm text-gray-500 mt-0.5">
+              ראה איך הדף שלך נראה — מבוסס על הטיוטה המקומית
+            </p>
+          </div>
+          <Link
+            href="/preview/local"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors text-sm"
+          >
+            👁️ פתח תצוגה מקדימה
+          </Link>
+        </div>
+      </div>
+
+      {/* ── Save & share ────────────────────────────────────────── */}
       <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">קוד גישה לנכס</h3>
+        <h3 className="text-lg font-semibold text-gray-700 mb-1">שמור ושתף</h3>
+        <p className="text-sm text-gray-500 mb-5">
+          שמירה תיצור קישור שתוכל לשלוח לכל אחד. תוקף: 90 יום.
+        </p>
 
         {code ? (
-          <div className="text-center">
-            <div className="text-5xl font-bold tracking-widest text-blue-700 bg-white rounded-xl py-4 px-6 border border-blue-200 inline-block mb-3">
-              {code}
-            </div>
-            <p className="text-sm text-gray-600 font-medium">שמור את הקוד הזה לעצמך!</p>
-            <p className="text-xs text-gray-400 mt-1">תוקף: 90 יום</p>
-
-            <div className="mt-4">
-              <a
-                href={mailtoLink}
-                className="inline-flex items-center gap-2 bg-white border border-blue-300 hover:bg-blue-50 text-blue-700 px-5 py-2.5 rounded-lg font-medium transition-colors text-sm"
+          <div className="space-y-4">
+            {/* Code display */}
+            <div className="bg-white rounded-xl border border-blue-200 p-4 flex items-center gap-3">
+              <div className="flex-1">
+                <div className="text-xs text-gray-500 mb-1">קוד גישה</div>
+                <div className="text-3xl font-bold tracking-widest text-blue-700">{code}</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => void copyCode(code)}
+                className="text-sm bg-blue-50 hover:bg-blue-100 text-blue-700 px-3 py-2 rounded-lg font-medium transition-colors"
               >
-                📧 שלח לעצמי במייל
-              </a>
+                {copied ? '✓ הועתק' : 'העתק'}
+              </button>
             </div>
+
+            {/* Preview link */}
+            <Link
+              href={`/preview/${code}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors"
+            >
+              🚀 פתח את דף הנחיתה שלך
+            </Link>
+
+            {/* Share actions */}
+            <div className="flex gap-2">
+              <a
+                href={`mailto:?subject=${encodeURIComponent('דף הנחיתה לנכס')}&body=${encodeURIComponent(`הקוד שלך: ${code}\nקישור: ${typeof window !== 'undefined' ? `${window.location.origin}/preview/${code}` : ''}`)}`}
+                className="flex-1 flex items-center justify-center gap-1.5 border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm py-2 rounded-lg transition-colors"
+              >
+                📧 שלח במייל
+              </a>
+              {typeof window !== 'undefined' && (
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(`דף הנחיתה לנכס: ${window.location.origin}/preview/${code}`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-green-50 border border-green-200 text-green-700 hover:bg-green-100 text-sm py-2 rounded-lg transition-colors"
+                >
+                  💬 שלח ב-WhatsApp
+                </a>
+              )}
+            </div>
+
+            <p className="text-xs text-gray-400 text-center">
+              {previewUrl && typeof window !== 'undefined'
+                ? `${window.location.origin}${previewUrl}`
+                : ''}
+            </p>
           </div>
         ) : (
           <div className="text-center">
-            <p className="text-sm text-gray-500 mb-4">
-              לחץ על הכפתור כדי לשמור את הנכס ולקבל קוד גישה
-            </p>
             {error && (
-              <p className="text-sm text-red-600 mb-3">{error}</p>
+              <p className="text-sm text-red-600 mb-3 bg-red-50 rounded-lg p-3">{error}</p>
             )}
             <button
               type="button"
               onClick={() => void saveProject()}
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center gap-2 mx-auto"
+              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-6 py-3 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
             >
               {saving ? (
                 <>
@@ -96,46 +157,21 @@ export default function Step9({ project }: StepProps) {
                   שומר...
                 </>
               ) : (
-                'צור קוד גישה'
+                '💾 שמור וקבל קישור לשיתוף'
               )}
             </button>
           </div>
         )}
       </div>
 
-      {/* Export options */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-700 mb-4">אפשרויות פרסום</h3>
-        <div className="space-y-3">
-          {[
-            { label: '📥 הורד HTML', note: 'בקרוב' },
-            { label: '▲ Deploy to Vercel', note: 'בקרוב' },
-            { label: '🐙 GitHub Pages', note: 'בקרוב' },
-          ].map(({ label, note }) => (
-            <div key={label} className="flex items-center gap-3">
-              <button
-                type="button"
-                disabled
-                className="flex-1 border border-gray-200 text-gray-400 bg-gray-50 cursor-not-allowed rounded-lg px-4 py-3 text-right font-medium flex items-center justify-between"
-              >
-                <span>{label}</span>
-                <span className="text-xs bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">
-                  {note}
-                </span>
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Summary */}
+      {/* ── Summary ─────────────────────────────────────────────── */}
       <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
         <h4 className="text-sm font-semibold text-gray-600 mb-3">סיכום הנכס</h4>
         <dl className="grid grid-cols-2 gap-2 text-sm">
           {project.title && (
             <>
               <dt className="text-gray-500">כותרת</dt>
-              <dd className="text-gray-800 font-medium">{project.title}</dd>
+              <dd className="text-gray-800 font-medium">{project.aiTitle || project.title}</dd>
             </>
           )}
           {project.city && (
@@ -153,7 +189,7 @@ export default function Step9({ project }: StepProps) {
           {project.builtArea && (
             <>
               <dt className="text-gray-500">שטח</dt>
-              <dd className="text-gray-800">{project.builtArea} מ"ר</dd>
+              <dd className="text-gray-800">{project.builtArea} מ״ר</dd>
             </>
           )}
           {project.images.length > 0 && (
@@ -162,6 +198,8 @@ export default function Step9({ project }: StepProps) {
               <dd className="text-gray-800">{project.images.length}</dd>
             </>
           )}
+          <dt className="text-gray-500">תבנית</dt>
+          <dd className="text-gray-800">{project.template}</dd>
         </dl>
       </div>
     </div>

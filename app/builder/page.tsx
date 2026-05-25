@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { PropertyProject } from '@/types/project';
 import Step1 from '@/components/builder/Step1';
 import Step2 from '@/components/builder/Step2';
@@ -99,6 +99,7 @@ export default function BuilderPage() {
   const [step, setStep] = useState(0);
   const [project, setProject] = useState<PropertyProject>(DEFAULT_PROJECT);
   const [hydrated, setHydrated] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // Init sessionId
   useEffect(() => {
@@ -117,11 +118,9 @@ export default function BuilderPage() {
       try {
         const parsed = JSON.parse(saved) as PropertyProject;
         setProject(parsed);
-        // If there's a saved draft with content, skip welcome screen
         if (parsed.title || parsed.street || parsed.city) {
           setStep(1);
         }
-        // Sync mapQuery from address if not set
         if (!parsed.mapQuery && (parsed.street || parsed.city)) {
           setProject((p) => ({
             ...p,
@@ -142,10 +141,32 @@ export default function BuilderPage() {
     localStorage.setItem('property-builder-draft', JSON.stringify(project));
   }, [project, hydrated]);
 
+  // Push project to preview iframe via postMessage (real-time sync)
+  const postToIframe = useCallback((p: PropertyProject) => {
+    const iframe = iframeRef.current;
+    if (!iframe?.contentWindow) return;
+    try {
+      iframe.contentWindow.postMessage(
+        { type: 'plb-update', project: p },
+        window.location.origin
+      );
+    } catch {
+      // ignore — same origin, shouldn't fail
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    postToIframe(project);
+  }, [project, hydrated, postToIframe]);
+
+  function handleIframeLoad() {
+    postToIframe(project);
+  }
+
   function onChange(partial: Partial<PropertyProject>) {
     setProject((prev) => {
       const next = { ...prev, ...partial };
-      // Keep mapQuery in sync with address unless manually changed
       if (
         ('street' in partial || 'city' in partial) &&
         !('mapQuery' in partial)
@@ -179,12 +200,11 @@ export default function BuilderPage() {
     );
   }
 
-  // ── Welcome / Import screens (no progress bar, no footer) ──────────────
+  // ── Welcome / Import screens ────────────────────────────────────────────
   if (isWelcomeScreen) {
     return (
       <div dir="rtl" lang="he" className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-50 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-lg">
-          {/* Logo/header */}
           <div className="text-center mb-8">
             <div className="text-4xl mb-3">🏠</div>
             <h1 className="text-2xl font-bold text-gray-900">Property Landing Builder</h1>
@@ -195,7 +215,6 @@ export default function BuilderPage() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
               <h2 className="text-lg font-semibold text-gray-800 text-center">איך תרצה להתחיל?</h2>
 
-              {/* Import option */}
               <button
                 type="button"
                 onClick={() => setStep(-1)}
@@ -212,7 +231,6 @@ export default function BuilderPage() {
                 </div>
               </button>
 
-              {/* Start from scratch */}
               <button
                 type="button"
                 onClick={() => goToStep(1)}
@@ -245,96 +263,154 @@ export default function BuilderPage() {
     );
   }
 
-  // ── Wizard (steps 1–9) ─────────────────────────────────────────────────
+  // ── Wizard (steps 1–9) — split layout on lg+ ───────────────────────────
+  //
+  // Desktop: two-column grid (wizard left | preview right)
+  // Mobile: single column with fixed header + footer
+  //
+  // RTL note: CSS grid respects writing-mode, so in dir="rtl" the first
+  // grid column is physically on the RIGHT and second is on the LEFT.
+  // That's intentional — wizard on right feels natural in Hebrew UIs.
+
   return (
-    <div dir="rtl" lang="he" className="min-h-screen bg-gray-50">
-      {/* Progress bar */}
-      <div className="fixed top-0 right-0 left-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-gray-700">
-              שלב {step} מתוך {TOTAL_STEPS} — {STEP_NAMES[step]}
-            </span>
-            <span className="text-sm text-gray-400">{Math.round(progress)}%</span>
-          </div>
-          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          {/* Step dots */}
-          <div className="flex gap-1 mt-2 justify-center">
-            {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => goToStep(s)}
-                title={STEP_NAMES[s]}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  s === step
-                    ? 'bg-blue-600'
-                    : s < step
-                    ? 'bg-blue-300'
-                    : 'bg-gray-300'
-                }`}
+    <div dir="rtl" lang="he" className="bg-gray-50 lg:h-screen lg:overflow-hidden lg:grid lg:grid-cols-[500px_1fr]">
+
+      {/* ── LEFT PANEL: wizard ─────────────────────────────────── */}
+      {/* On mobile: stacks normally with fixed header/footer.
+          On desktop: flex column filling the grid row, no fixed elements. */}
+      <div className="lg:flex lg:flex-col lg:h-screen lg:overflow-hidden lg:border-l lg:border-gray-200">
+
+        {/* Progress bar
+            Mobile: fixed to top of viewport (full-width)
+            Desktop: static, at top of left column */}
+        <div className="fixed top-0 right-0 left-0 z-50 lg:static lg:z-auto bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+          <div className="px-4 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-semibold text-gray-700">
+                שלב {step} מתוך {TOTAL_STEPS} — {STEP_NAMES[step]}
+              </span>
+              <span className="text-sm text-gray-400">{Math.round(progress)}%</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
+                style={{ width: `${progress}%` }}
               />
-            ))}
+            </div>
+            {/* Step dots */}
+            <div className="flex gap-1 mt-2 justify-center">
+              {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => goToStep(s)}
+                  title={STEP_NAMES[s]}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    s === step
+                      ? 'bg-blue-600'
+                      : s < step
+                      ? 'bg-blue-300'
+                      : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Main content */}
-      <div className="max-w-2xl mx-auto px-4 pt-28 pb-32">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
-          {step === 1 && <Step1 project={project} onChange={onChange} />}
-          {step === 2 && <Step2 project={project} onChange={onChange} />}
-          {step === 3 && <Step3 project={project} onChange={onChange} />}
-          {step === 4 && <Step4 project={project} onChange={onChange} />}
-          {step === 5 && <Step5 project={project} onChange={onChange} />}
-          {step === 6 && <Step6 project={project} onChange={onChange} />}
-          {step === 7 && <Step7 project={project} onChange={onChange} />}
-          {step === 8 && <Step8 project={project} onChange={onChange} />}
-          {step === 9 && <Step9 project={project} />}
+        {/* Step content
+            Mobile: padded for fixed header/footer, min-h-screen
+            Desktop: flex-1, overflow-y-auto (scrollable within column) */}
+        <div className="min-h-screen lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+          <div className="px-4 pt-28 pb-32 lg:pt-5 lg:pb-5">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-7">
+              {step === 1 && <Step1 project={project} onChange={onChange} />}
+              {step === 2 && <Step2 project={project} onChange={onChange} />}
+              {step === 3 && <Step3 project={project} onChange={onChange} />}
+              {step === 4 && <Step4 project={project} onChange={onChange} />}
+              {step === 5 && <Step5 project={project} onChange={onChange} />}
+              {step === 6 && <Step6 project={project} onChange={onChange} />}
+              {step === 7 && <Step7 project={project} onChange={onChange} />}
+              {step === 8 && <Step8 project={project} onChange={onChange} />}
+              {step === 9 && <Step9 project={project} />}
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Navigation footer */}
-      <div className="fixed bottom-0 right-0 left-0 bg-white border-t border-gray-200 shadow-lg">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
-          {/* Back button — right side in RTL */}
-          <button
-            type="button"
-            onClick={() => step === 1 ? setStep(0) : goToStep(step - 1)}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-            הקודם
-          </button>
-
-          <span className="text-xs text-gray-400">
-            {step} / {TOTAL_STEPS}
-          </span>
-
-          {/* Next button — left side in RTL */}
-          {step < TOTAL_STEPS ? (
+        {/* Nav footer
+            Mobile: fixed to bottom of viewport (full-width)
+            Desktop: static, at bottom of left column */}
+        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 bg-white border-t border-gray-200 shadow-lg flex-shrink-0">
+          <div className="px-4 py-4 flex items-center justify-between">
             <button
               type="button"
-              onClick={() => goToStep(step + 1)}
-              disabled={isNextDisabled()}
-              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium px-5 py-2 rounded-lg transition-colors disabled:cursor-not-allowed"
+              onClick={() => step === 1 ? setStep(0) : goToStep(step - 1)}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
             >
-              הבא
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
+              הקודם
             </button>
-          ) : (
-            <div className="w-24" />
-          )}
+
+            <span className="text-xs text-gray-400">
+              {step} / {TOTAL_STEPS}
+            </span>
+
+            {step < TOTAL_STEPS ? (
+              <button
+                type="button"
+                onClick={() => goToStep(step + 1)}
+                disabled={isNextDisabled()}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium px-5 py-2 rounded-lg transition-colors disabled:cursor-not-allowed"
+              >
+                הבא
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            ) : (
+              <div className="w-24" />
+            )}
+          </div>
         </div>
+      </div>
+
+      {/* ── RIGHT PANEL: live preview iframe ──────────────────────── */}
+      {/* Only visible on lg+ screens */}
+      <div className="hidden lg:flex lg:flex-col lg:h-screen" dir="ltr">
+        {/* Panel header */}
+        <div
+          dir="rtl"
+          className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 border-b border-gray-200 flex-shrink-0"
+        >
+          <span className="text-sm">👁️</span>
+          <span className="text-sm font-medium text-gray-700">תצוגה מקדימה חיה</span>
+          {/* Pulse indicator */}
+          <span className="me-auto flex items-center gap-1.5 text-xs text-gray-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse" />
+            מתעדכן בזמן אמת
+          </span>
+          {/* Open in new tab */}
+          <a
+            href="/preview/local"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            פתח בטאב חדש ↗
+          </a>
+        </div>
+
+        {/* iframe fills the rest of the right column */}
+        <iframe
+          ref={iframeRef}
+          src="/preview/local?embed=1"
+          title="תצוגה מקדימה"
+          className="flex-1 w-full"
+          style={{ border: 'none' }}
+          onLoad={handleIframeLoad}
+        />
       </div>
     </div>
   );
