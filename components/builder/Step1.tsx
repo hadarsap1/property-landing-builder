@@ -19,7 +19,7 @@ export default function Step1({ project, onChange }: StepProps) {
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          שם/כותרת הנכס
+          שם/כותרת הנכס <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -28,6 +28,9 @@ export default function Step1({ project, onChange }: StepProps) {
           placeholder="לדוגמה: דירת 4 חדרים עם נוף לים"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        {!project.title.trim() && (
+          <p className="text-xs text-amber-600 mt-1">יש להזין כותרת לנכס כדי להמשיך</p>
+        )}
       </div>
 
       {/* Street */}

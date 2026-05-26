@@ -132,6 +132,10 @@ export default function BuilderPage() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as PropertyProject;
+        // Blob URLs are session-scoped and don't survive page refresh
+        if (parsed.videoUrl?.startsWith('blob:')) {
+          parsed.videoUrl = '';
+        }
         setProject(parsed);
         if (parsed.title || parsed.street || parsed.city) {
           setStep(1);
@@ -200,7 +204,9 @@ export default function BuilderPage() {
   }
 
   function isNextDisabled(): boolean {
+    if (step === 1 && !project.title.trim()) return true;
     if (step === 3 && !project.rawStory.trim()) return true;
+    if (step === 8 && !project.phone.trim()) return true;
     return false;
   }
 
