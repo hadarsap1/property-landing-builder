@@ -227,7 +227,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
   const story = project.aiStory || '';
   const address = [project.street, project.neighborhood, project.city].filter(Boolean).join(', ');
   const price = project.priceOnRequest
-    ? 'מחיר לפי פניה'
+    ? ''
     : project.price
     ? `₪${project.price.toLocaleString('he-IL')}`
     : '';
@@ -487,7 +487,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
             >
               <div className="max-w-xl mx-auto text-center">
                 <h2 className="text-3xl font-bold mb-2" style={{ color: theme.heroText }}>
-                  מתעניין/ת בנכס?
+                  מתעניינים בנכס?
                 </h2>
                 <p className="text-lg mb-8 opacity-75" style={{ color: theme.heroText }}>
                   צרו קשר ונחזור אליכם בהקדם

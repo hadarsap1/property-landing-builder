@@ -223,12 +223,12 @@ export default function BuilderPage() {
           <div className="text-center mb-8">
             <div className="text-4xl mb-3">🏠</div>
             <h1 className="text-2xl font-bold text-gray-900">Property Landing Builder</h1>
-            <p className="text-gray-500 mt-1 text-sm">צור דף נחיתה מקצועי לדירה שלך תוך דקות</p>
+            <p className="text-gray-500 mt-1 text-sm">צרו דף נחיתה מקצועי לנכס שלכם תוך דקות</p>
           </div>
 
           {step === 0 && (
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-gray-800 text-center">איך תרצה להתחיל?</h2>
+              <h2 className="text-lg font-semibold text-gray-800 text-center">איך תרצו להתחיל?</h2>
 
               <button
                 type="button"
@@ -241,7 +241,7 @@ export default function BuilderPage() {
                     טען ממודעה קיימת
                   </div>
                   <div className="text-sm text-gray-500 mt-0.5">
-                    העתק מיד2, מדלן, או כל מודעה. הוויזרד ימולא אוטומטית
+                    העתיקו מיד2, מדלן, או כל מודעה — כל השדות יימולאו אוטומטית
                   </div>
                 </div>
               </button>
@@ -255,7 +255,7 @@ export default function BuilderPage() {
                 <div>
                   <div className="font-semibold text-gray-900">התחל מאפס</div>
                   <div className="text-sm text-gray-500 mt-0.5">
-                    מלא את הפרטים שלב אחרי שלב
+                    הזינו את הפרטים שלב אחרי שלב
                   </div>
                 </div>
               </button>

@@ -15,9 +15,34 @@ interface AIResult {
   highlights: string[];
 }
 
+interface WordCategory {
+  label: string;
+  words: string[];
+}
+
+const WORD_BANK: WordCategory[] = [
+  {
+    label: 'מיקום',
+    words: ['מרכזי', 'שקט', 'ירוק', 'פנורמי', 'ליד הים', 'ליד פארק', 'ליד מוסדות חינוך', 'קהילה חמה', 'שכונה משפחתית'],
+  },
+  {
+    label: 'מצב הנכס',
+    words: ['משופץ לחלוטין', 'חדש מהקבלן', 'שמור מצוין', 'מעוצב', 'בנייה חדשה', 'לופט', 'פנטהאוז', 'צמוד קרקע'],
+  },
+  {
+    label: 'תכונות',
+    words: ['אור טבעי', 'נוף פתוח', 'גינה פרטית', 'מרפסת שמש', 'חנייה מקורה', 'מחסן', 'ממ"ד', 'מעלית', 'מטבח מאובזר'],
+  },
+  {
+    label: 'אווירה',
+    words: ['מרווח', 'אינטימי', 'יוקרתי', 'מושלם למשפחה', 'ייחודי', 'חם ומזמין', 'מלא אור'],
+  },
+];
+
 export default function Step3({ project, onChange }: StepProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   async function generateAI() {
     setLoading(true);
@@ -36,7 +61,6 @@ export default function Step3({ project, onChange }: StepProps) {
 
       const data = (await res.json()) as AIResult;
 
-      // Track AI generate event
       void fetch('/api/track', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -59,6 +83,12 @@ export default function Step3({ project, onChange }: StepProps) {
     }
   }
 
+  function appendWord(word: string) {
+    const current = project.rawStory.trim();
+    const separator = current.length > 0 && !current.endsWith(',') && !current.endsWith('.') ? ', ' : ' ';
+    onChange({ rawStory: current + separator + word });
+  }
+
   const hasAIContent = project.aiStory || project.aiTitle;
 
   return (
@@ -68,18 +98,58 @@ export default function Step3({ project, onChange }: StepProps) {
       {/* Raw story textarea */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          ספר לנו על הדירה במילים שלך
+          ספרו לנו על הנכס במילים שלכם
         </label>
         <textarea
           value={project.rawStory}
           onChange={(e) => onChange({ rawStory: e.target.value })}
-          rows={6}
-          placeholder="כתוב כאן בחופשיות..."
+          rows={5}
+          placeholder="כתבו כאן בחופשיות — מה הדבר הכי מיוחד? מה יש בשכונה? מה אהבתם בדירה?"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
         />
-        <p className="text-sm text-gray-400 mt-1">
-          מה הדבר הכי מיוחד? מה אהבת לעשות בה? מה יש בשכונה?
+      </div>
+
+      {/* Word bank */}
+      <div>
+        <p className="text-sm font-medium text-gray-700 mb-2">
+          השראה — לחצו על מילה להוסיף לטקסט
         </p>
+        <div className="space-y-2">
+          {WORD_BANK.map((cat) => {
+            const isOpen = openCategory === cat.label;
+            return (
+              <div key={cat.label} className="border border-gray-200 rounded-xl overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => setOpenCategory(isOpen ? null : cat.label)}
+                  className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
+                >
+                  <span>{cat.label}</span>
+                  <svg
+                    className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isOpen && (
+                  <div className="px-3 py-2 flex flex-wrap gap-2 bg-white">
+                    {cat.words.map((w) => (
+                      <button
+                        key={w}
+                        type="button"
+                        onClick={() => appendWord(w)}
+                        className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full transition-colors"
+                      >
+                        + {w}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* AI Generate button */}

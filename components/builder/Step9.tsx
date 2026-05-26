@@ -147,15 +147,27 @@ export default function Step9({ project }: StepProps) {
             </div>
 
             {/* Access code */}
-            <div className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3">
-              <div>
-                <div className="text-xs text-gray-400 mb-0.5">קוד גישה (שמור אצלך)</div>
-                <div className="text-2xl font-bold tracking-widest text-blue-700">{code}</div>
+            <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div className="text-xs text-gray-400">קוד גישה</div>
+                  <div className="group relative">
+                    <button
+                      type="button"
+                      className="w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 text-[10px] font-bold flex items-center justify-center transition-colors"
+                      aria-label="מה זה קוד גישה?"
+                    >
+                      ?
+                    </button>
+                    <div className="absolute bottom-full right-0 mb-1.5 w-56 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                      אם תאבדו את הקישור — הזינו קוד זה בדף הבית כדי לחזור לדף הנכס שלכם
+                      <div className="absolute top-full right-3 border-4 border-transparent border-t-gray-900" />
+                    </div>
+                  </div>
+                </div>
+                <div className="text-xs text-gray-400">תוקף: 90 יום</div>
               </div>
-              <div className="text-xs text-gray-400 text-left">
-                <p>תוקף: 90 יום</p>
-                <p>כתובת: <span className="font-mono">/preview/{code}</span></p>
-              </div>
+              <div className="text-2xl font-bold tracking-widest text-blue-700">{code}</div>
             </div>
 
             {/* Share buttons */}

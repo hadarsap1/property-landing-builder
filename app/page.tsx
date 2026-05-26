@@ -4,22 +4,22 @@ const FEATURES = [
   {
     icon: '📋',
     title: 'ייבוא ממודעה',
-    desc: 'הדבק טקסט מיד2, מדלן או כל אתר. הוויזרד ימולא אוטומטית.',
+    desc: 'הדביקו טקסט מיד2, מדלן או כל מודעה אחרת — הפרטים יימולאו אוטומטית.',
   },
   {
     icon: '✨',
     title: 'סיפור בעזרת AI',
-    desc: 'ספר בקצרה, ה-AI יכתוב עבורך טקסט שיווקי חם ומשכנע.',
+    desc: 'כתבו כמה מילים על הנכס, ה-AI ינסח טקסט שיווקי חם ומשכנע.',
   },
   {
     icon: '🎨',
     title: '5 תבניות עיצוב',
-    desc: 'Modern Blue, Dark Luxury, Warm Homey ועוד. בחר את שמתאים לנכס.',
+    desc: 'Modern Blue, Dark Luxury, Warm Homey ועוד — בחרו את העיצוב שמתאים לנכס.',
   },
   {
     icon: '🔗',
     title: 'קישור לשיתוף',
-    desc: 'תקבל קוד גישה בן 6 ספרות. תשלח ללקוחות, לברוקרים, לכל מי שצריך.',
+    desc: 'קוד גישה בן 6 ספרות — שלחו לקונים פוטנציאליים, לסוכנים, לכל מי שצריך.',
   },
 ];
 
@@ -52,21 +52,21 @@ export default function HomePage() {
           <span className="text-blue-600">לנכס שלך תוך דקות</span>
         </h1>
         <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          ויזרד פשוט בן 9 שלבים. תמלא פרטים, תבחר עיצוב, ה-AI יכתוב את הסיפור.
-          תקבל דף שיווקי שתוכל לשלוח לכל קונה פוטנציאלי.
+          ממלאים פרטים, בוחרים עיצוב, ה-AI כותב את הסיפור.
+          תוצאה: דף נחיתה מקצועי שתשלחו לכל קונה פוטנציאלי — תוך פחות מ-5 דקות.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
             href="/builder"
             className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-4 rounded-xl text-lg transition-colors shadow-lg shadow-blue-200"
           >
-            צור דף עכשיו חינם ←
+            צרו דף עכשיו — חינם ←
           </Link>
           <Link
             href="/preview/local"
             className="border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-8 py-4 rounded-xl text-lg transition-colors"
           >
-            👁️ ראה דוגמה
+            👁️ ראו דוגמה
           </Link>
         </div>
       </section>
@@ -89,13 +89,13 @@ export default function HomePage() {
 
       {/* ── CTA bottom ────────────────────────────────────────── */}
       <section className="bg-blue-600 py-16 px-6 text-center text-white">
-        <h2 className="text-3xl font-bold mb-3">מוכן להתחיל?</h2>
-        <p className="text-blue-100 mb-8 text-lg">לוקח פחות מ-5 דקות.</p>
+        <h2 className="text-3xl font-bold mb-3">מוכנים להתחיל?</h2>
+        <p className="text-blue-100 mb-8 text-lg">לוקח פחות מ-5 דקות. חינם לחלוטין.</p>
         <Link
           href="/builder"
           className="bg-white text-blue-600 font-bold px-10 py-4 rounded-xl text-lg hover:bg-blue-50 transition-colors shadow-lg"
         >
-          צור דף הנחיתה שלך ←
+          צרו דף נחיתה עכשיו ←
         </Link>
       </section>
 

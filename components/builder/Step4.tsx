@@ -36,11 +36,11 @@ async function resizeImage(file: File): Promise<string> {
 }
 
 const GALLERY_OPTIONS: { value: PropertyProject['galleryType']; label: string }[] = [
-  { value: 'grid', label: 'גלריה (grid)' },
-  { value: 'manual-carousel', label: 'קרוסל ידני' },
-  { value: 'auto-3s', label: 'קרוסל אוטומטי (3 שניות)' },
-  { value: 'auto-5s', label: 'קרוסל אוטומטי (5 שניות)' },
-  { value: 'auto-7s', label: 'קרוסל אוטומטי (7 שניות)' },
+  { value: 'grid', label: 'גלריה' },
+  { value: 'manual-carousel', label: 'קרוסלה ידנית' },
+  { value: 'auto-3s', label: 'קרוסלה אוטומטית (3 שניות)' },
+  { value: 'auto-5s', label: 'קרוסלה אוטומטית (5 שניות)' },
+  { value: 'auto-7s', label: 'קרוסלה אוטומטית (7 שניות)' },
 ];
 
 export default function Step4({ project, onChange }: StepProps) {

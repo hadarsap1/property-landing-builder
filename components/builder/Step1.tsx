@@ -78,7 +78,7 @@ export default function Step1({ project, onChange }: StepProps) {
             className="w-4 h-4 text-blue-600 rounded"
           />
           <label htmlFor="priceOnRequest" className="text-sm text-gray-700">
-            מחיר לפי פניה
+            לא להציג מחיר בדף
           </label>
         </div>
         {!project.priceOnRequest && (

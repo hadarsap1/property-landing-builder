@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
@@ -8,19 +9,32 @@ interface StepProps {
 }
 
 function formatIsraeliPhone(raw: string): string {
-  // Strip non-digits
   const digits = raw.replace(/\D/g, '');
   if (digits.length === 0) return '';
-  // Format as 05X-XXX-XXXX
   if (digits.length <= 3) return digits;
   if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
   return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6, 10)}`;
 }
 
 export default function Step8({ project, onChange }: StepProps) {
+  // "separate WA" is active when a different whatsapp number is already saved
+  const phoneDigits = project.phone.replace(/\D/g, '');
+  const waDigits = project.whatsapp.replace(/\D/g, '');
+  const [separateWA, setSeparateWA] = useState(
+    waDigits.length > 0 && waDigits !== phoneDigits
+  );
+
   function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const formatted = formatIsraeliPhone(e.target.value);
     onChange({ phone: formatted });
+  }
+
+  function toggleSeparateWA(checked: boolean) {
+    setSeparateWA(checked);
+    if (!checked) {
+      // clear the separate WA number — preview will fall back to phone
+      onChange({ whatsapp: '' });
+    }
   }
 
   return (
@@ -50,25 +64,41 @@ export default function Step8({ project, onChange }: StepProps) {
           dir="ltr"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        <p className="text-xs text-gray-400 mt-1">
+          כפתור ה-WhatsApp בדף ישתמש באותו מספר
+        </p>
       </div>
 
-      {/* WhatsApp */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          מספר WhatsApp{' '}
-          <span className="text-gray-400 font-normal">(ללא קידומת מדינה)</span>
+      {/* Optional separate WhatsApp */}
+      <div className="space-y-3">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={separateWA}
+            onChange={(e) => toggleSeparateWA(e.target.checked)}
+            className="w-4 h-4 text-blue-600 rounded"
+          />
+          <span className="text-sm text-gray-700">הוסף מספר WhatsApp שונה</span>
         </label>
-        <input
-          type="text"
-          value={project.whatsapp}
-          onChange={(e) => onChange({ whatsapp: e.target.value.replace(/\D/g, '') })}
-          placeholder="0501234567"
-          dir="ltr"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <p className="text-xs text-gray-400 mt-1">
-          לדוגמה: 0501234567 (ישלח כ‑wa.me/972501234567)
-        </p>
+
+        {separateWA && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              מספר WhatsApp
+            </label>
+            <input
+              type="text"
+              value={project.whatsapp}
+              onChange={(e) => onChange({ whatsapp: e.target.value.replace(/\D/g, '') })}
+              placeholder="0501234567"
+              dir="ltr"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="text-xs text-gray-400 mt-1">
+              ללא קידומת מדינה, לדוגמה: 0501234567
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

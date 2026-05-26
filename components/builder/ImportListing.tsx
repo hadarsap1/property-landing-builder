@@ -217,7 +217,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
           )}
 
           <p className="text-xs text-gray-400">
-            כל השדות ניתנים לעריכה בשלבי הוויזרד
+            כל השדות ניתנים לעריכה בשלבים הבאים
           </p>
 
           <div className="flex gap-3">
@@ -226,7 +226,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
               onClick={handleConfirm}
               className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors"
             >
-              אשר ועבור לוויזרד ←
+              אשר והמשך ←
             </button>
             <button
               type="button"
