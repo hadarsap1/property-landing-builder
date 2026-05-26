@@ -115,6 +115,8 @@ export default function BuilderPage() {
   const [project, setProject] = useState<PropertyProject>(DEFAULT_PROJECT);
   const [hydrated, setHydrated] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const pillsRef = useRef<HTMLDivElement>(null);
+  const activePillRef = useRef<HTMLButtonElement>(null);
 
   // Init sessionId
   useEffect(() => {
@@ -159,6 +161,11 @@ export default function BuilderPage() {
     if (!hydrated) return;
     localStorage.setItem('property-builder-draft', JSON.stringify(project));
   }, [project, hydrated]);
+
+  // Scroll active step pill into view when step changes
+  useEffect(() => {
+    activePillRef.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }, [step]);
 
   // Push project to preview iframe via postMessage (real-time sync)
   const postToIframe = useCallback((p: PropertyProject) => {
@@ -320,12 +327,14 @@ export default function BuilderPage() {
             </div>
             {/* Step pills — clickable, labeled, scrollable */}
             <div
+              ref={pillsRef}
               className="flex gap-1 mt-2 overflow-x-auto pb-0.5"
               style={{ scrollbarWidth: 'none' }}
             >
               {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
                 <button
                   key={s}
+                  ref={s === step ? activePillRef : null}
                   type="button"
                   onClick={() => goToStep(s)}
                   className={`flex-shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all whitespace-nowrap focus:outline-none ${

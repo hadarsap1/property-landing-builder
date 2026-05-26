@@ -202,7 +202,7 @@ export default function Step7({ project, onChange }: StepProps) {
 
                 {/* Emoji options popover */}
                 {isOpen && (
-                  <div className="absolute bottom-full mb-1 right-0 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex gap-1.5 flex-wrap w-44">
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex gap-1.5 flex-wrap w-44">
                     {(SPEC_ICON_OPTIONS[key] ?? []).map((emoji) => (
                       <button
                         key={emoji}

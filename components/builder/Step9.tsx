@@ -153,7 +153,7 @@ export default function Step9({ project }: StepProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <div className="text-xs text-gray-400">קוד גישה</div>
-                  <div className="relative inline-block">
+                  <div className="group relative inline-block">
                     <button
                       type="button"
                       className="w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 text-[10px] font-bold flex items-center justify-center transition-colors"
@@ -163,15 +163,15 @@ export default function Step9({ project }: StepProps) {
                     >
                       ?
                     </button>
+                    {/* Backdrop — closes on outside click (mobile/touch) */}
                     {codeTooltipOpen && (
-                      <>
-                        <div className="fixed inset-0 z-10" onClick={() => setCodeTooltipOpen(false)} />
-                        <div className="absolute bottom-full right-0 mb-1.5 w-56 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 leading-relaxed z-20">
-                          אם תאבדו את הקישור — הזינו קוד זה בדף הבית כדי לחזור לדף הנכס שלכם
-                          <div className="absolute top-full right-3 border-4 border-transparent border-t-gray-900" />
-                        </div>
-                      </>
+                      <div className="fixed inset-0 z-10" onClick={() => setCodeTooltipOpen(false)} />
                     )}
+                    {/* Tooltip: hover on desktop, click-toggle on all devices */}
+                    <div className={`absolute bottom-full right-0 mb-1.5 w-56 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 leading-relaxed z-20 transition-opacity pointer-events-none ${codeTooltipOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                      אם תאבדו את הקישור — הזינו קוד זה בדף הבית כדי לחזור לדף הנכס שלכם
+                      <div className="absolute top-full right-3 border-4 border-transparent border-t-gray-900" />
+                    </div>
                   </div>
                 </div>
                 <div className="text-xs text-gray-400">תוקף: 90 יום</div>
