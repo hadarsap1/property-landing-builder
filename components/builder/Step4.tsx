@@ -67,6 +67,18 @@ export default function Step4({ project, onChange }: StepProps) {
     onChange({ images: [...project.images, ...newImages] });
   }
 
+  function moveImage(fromIdx: number, toIdx: number) {
+    if (toIdx < 0 || toIdx >= project.images.length) return;
+    const updated = [...project.images];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, moved);
+    let heroIdx = project.heroImageIndex;
+    if (heroIdx === fromIdx) heroIdx = toIdx;
+    else if (fromIdx < heroIdx && toIdx >= heroIdx) heroIdx--;
+    else if (fromIdx > heroIdx && toIdx <= heroIdx) heroIdx++;
+    onChange({ images: updated, heroImageIndex: heroIdx });
+  }
+
   function removeImage(id: string) {
     const updated = project.images.filter((img) => img.id !== id);
     let heroIdx = project.heroImageIndex;
@@ -160,14 +172,14 @@ export default function Step4({ project, onChange }: StepProps) {
                 alt={img.name}
                 className="w-full h-28 object-cover"
               />
-              {/* Hero star */}
+              {/* Hero star — always visible */}
               {project.heroImageIndex === idx && (
-                <div className="absolute top-1 right-1 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                <div className="absolute top-1 right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-xs pointer-events-none">
                   ⭐
                 </div>
               )}
-              {/* Controls overlay */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              {/* Desktop: hover overlay (drag-and-drop available) */}
+              <div className="absolute inset-0 bg-black/40 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => onChange({ heroImageIndex: idx })}
@@ -183,6 +195,41 @@ export default function Step4({ project, onChange }: StepProps) {
                 >
                   ✕
                 </button>
+              </div>
+              {/* Mobile: always-visible bottom controls */}
+              <div className="absolute bottom-0 inset-x-0 flex md:hidden items-center justify-between px-1 py-1 bg-gradient-to-t from-black/60 to-transparent">
+                <div className="flex gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => moveImage(idx, idx - 1)}
+                    disabled={idx === 0}
+                    className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
+                    aria-label="הזז שמאלה"
+                  >‹</button>
+                  <button
+                    type="button"
+                    onClick={() => moveImage(idx, idx + 1)}
+                    disabled={idx === project.images.length - 1}
+                    className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
+                    aria-label="הזז ימינה"
+                  >›</button>
+                </div>
+                <div className="flex gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => onChange({ heroImageIndex: idx })}
+                    className={`w-6 h-6 rounded flex items-center justify-center text-xs leading-none ${
+                      project.heroImageIndex === idx ? 'bg-yellow-400' : 'bg-white/80 text-gray-800'
+                    }`}
+                    aria-label="הגדר כראשי"
+                  >⭐</button>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(img.id)}
+                    className="w-6 h-6 rounded bg-red-500/90 text-white flex items-center justify-center text-xs leading-none"
+                    aria-label="מחק תמונה"
+                  >✕</button>
+                </div>
               </div>
             </div>
           ))}

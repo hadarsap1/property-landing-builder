@@ -13,6 +13,8 @@ export default function Step9({ project }: StepProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [codeTooltipOpen, setCodeTooltipOpen] = useState(false);
+  const [confirmNew, setConfirmNew] = useState(false);
 
   useEffect(() => {
     const sessionId = sessionStorage.getItem('sessionId') ?? '';
@@ -151,15 +153,22 @@ export default function Step9({ project }: StepProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
                   <div className="text-xs text-gray-400">קוד גישה</div>
-                  <div className="group relative">
+                  <div className="group relative inline-block">
                     <button
                       type="button"
                       className="w-4 h-4 rounded-full bg-gray-200 hover:bg-gray-300 text-gray-500 text-[10px] font-bold flex items-center justify-center transition-colors"
                       aria-label="מה זה קוד גישה?"
+                      aria-expanded={codeTooltipOpen}
+                      onClick={() => setCodeTooltipOpen((p) => !p)}
                     >
                       ?
                     </button>
-                    <div className="absolute bottom-full right-0 mb-1.5 w-56 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 leading-relaxed opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    {/* Backdrop — closes on outside click (mobile/touch) */}
+                    {codeTooltipOpen && (
+                      <div className="fixed inset-0 z-10" onClick={() => setCodeTooltipOpen(false)} />
+                    )}
+                    {/* Tooltip: hover on desktop, click-toggle on all devices */}
+                    <div className={`absolute bottom-full right-0 mb-1.5 w-56 bg-gray-900 text-white text-xs rounded-lg px-3 py-2 leading-relaxed z-20 transition-opacity pointer-events-none ${codeTooltipOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
                       אם תאבדו את הקישור — הזינו קוד זה בדף הבית כדי לחזור לדף הנכס שלכם
                       <div className="absolute top-full right-3 border-4 border-transparent border-t-gray-900" />
                     </div>
@@ -267,18 +276,38 @@ export default function Step9({ project }: StepProps) {
 
       {/* ── Start new ────────────────────────────────────────────── */}
       <div className="text-center pt-2 pb-1">
-        <button
-          type="button"
-          onClick={() => {
-            if (confirm('להתחיל נכס חדש? הטיוטה הנוכחית תימחק.')) {
-              localStorage.removeItem('property-builder-draft');
-              window.location.reload();
-            }
-          }}
-          className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors"
-        >
-          + התחל נכס חדש
-        </button>
+        {!confirmNew ? (
+          <button
+            type="button"
+            onClick={() => setConfirmNew(true)}
+            className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors"
+          >
+            + התחל נכס חדש
+          </button>
+        ) : (
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm space-y-3">
+            <p className="font-medium text-amber-800">הטיוטה הנוכחית תימחק. להמשיך?</p>
+            <div className="flex gap-2 justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('property-builder-draft');
+                  window.location.reload();
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors"
+              >
+                כן, מחק והתחל מחדש
+              </button>
+              <button
+                type="button"
+                onClick={() => setConfirmNew(false)}
+                className="bg-white border border-gray-200 text-gray-600 text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors hover:bg-gray-50"
+              >
+                ביטול
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
     </div>

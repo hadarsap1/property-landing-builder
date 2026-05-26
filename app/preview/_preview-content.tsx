@@ -157,7 +157,7 @@ function Gallery({ images, galleryType, accent }: {
         </>
       )}
       {/* Counter badge */}
-      <div className="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+      <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
         {current + 1} / {images.length}
       </div>
     </div>
@@ -270,7 +270,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
               <div className="absolute inset-0 bg-black/55" />
             </>
           )}
-          <div className="relative z-10 text-center px-6 py-24 max-w-4xl mx-auto w-full">
+          <div className="relative z-10 text-center px-6 py-16 md:py-24 max-w-4xl mx-auto w-full">
             {address && (
               <p
                 className="text-sm font-medium tracking-widest uppercase mb-4 opacity-75"
@@ -545,10 +545,10 @@ export default function PreviewContent({ project, editHref, shareCode }: {
       {shareCode && shareUrl && (
         <div
           dir="rtl"
-          className="fixed bottom-0 right-0 left-0 z-50 flex items-center justify-center gap-2 px-4 py-3 shadow-2xl border-t"
+          className="fixed bottom-0 right-0 left-0 z-50 flex flex-wrap items-center justify-center gap-2 px-4 py-3 shadow-2xl border-t"
           style={{ backgroundColor: theme.cardBg, borderColor: theme.cardBorder }}
         >
-          <span className="text-sm font-medium ml-2" style={{ color: theme.mutedText }}>
+          <span className="hidden sm:inline text-sm font-medium me-2" style={{ color: theme.mutedText }}>
             שתף דף זה:
           </span>
           {/* WhatsApp */}

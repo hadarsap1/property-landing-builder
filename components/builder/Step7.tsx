@@ -88,6 +88,14 @@ export default function Step7({ project, onChange }: StepProps) {
     setDraggedSection(null);
   }
 
+  function moveSection(fromIdx: number, toIdx: number) {
+    if (toIdx < 0 || toIdx >= project.sectionOrder.length) return;
+    const updated = [...project.sectionOrder];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, moved);
+    onChange({ sectionOrder: updated });
+  }
+
   function toggleSection(id: string) {
     onChange({
       sectionVisibility: {
@@ -194,7 +202,7 @@ export default function Step7({ project, onChange }: StepProps) {
 
                 {/* Emoji options popover */}
                 {isOpen && (
-                  <div className="absolute bottom-full mb-1 right-0 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex gap-1.5 flex-wrap w-44">
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex gap-1.5 flex-wrap w-44">
                     {(SPEC_ICON_OPTIONS[key] ?? []).map((emoji) => (
                       <button
                         key={emoji}
@@ -222,23 +230,41 @@ export default function Step7({ project, onChange }: StepProps) {
           <span className="text-gray-400 font-normal mr-2 text-xs">גרור לסידור מחדש</span>
         </label>
         <div className="space-y-2">
-          {project.sectionOrder.map((sectionId) => (
+          {project.sectionOrder.map((sectionId, idx) => (
             <div
               key={sectionId}
               draggable
               onDragStart={() => handleSectionDragStart(sectionId)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleSectionDrop(sectionId)}
-              className={`flex items-center gap-3 bg-white border rounded-lg px-4 py-3 cursor-grab active:cursor-grabbing transition-colors ${
+              className={`flex items-center gap-3 bg-white border rounded-lg px-4 py-3 md:cursor-grab active:cursor-grabbing transition-colors ${
                 draggedSection === sectionId
                   ? 'border-blue-400 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <span className="text-gray-300 select-none">⣿</span>
+              {/* Drag handle — desktop only */}
+              <span className="text-gray-300 select-none hidden md:block">⣿</span>
               <span className="flex-1 text-gray-700 text-sm font-medium">
                 {SECTION_LABELS[sectionId] ?? sectionId}
               </span>
+              {/* Mobile: ↑↓ reorder buttons */}
+              <div className="flex md:hidden gap-1">
+                <button
+                  type="button"
+                  onClick={() => moveSection(idx, idx - 1)}
+                  disabled={idx === 0}
+                  className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 disabled:opacity-30 hover:bg-gray-100 transition-colors text-sm"
+                  aria-label="הזז למעלה"
+                >↑</button>
+                <button
+                  type="button"
+                  onClick={() => moveSection(idx, idx + 1)}
+                  disabled={idx === project.sectionOrder.length - 1}
+                  className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 disabled:opacity-30 hover:bg-gray-100 transition-colors text-sm"
+                  aria-label="הזז למטה"
+                >↓</button>
+              </div>
               {/* Visibility toggle */}
               <button
                 type="button"

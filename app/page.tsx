@@ -62,17 +62,17 @@ export default function HomePage() {
           >
             צרו דף עכשיו — חינם ←
           </Link>
-          <Link
-            href="/preview/local"
+          <a
+            href="#features"
             className="border-2 border-gray-200 hover:border-gray-300 text-gray-600 font-semibold px-8 py-4 rounded-xl text-lg transition-colors"
           >
-            👁️ ראו דוגמה
-          </Link>
+            גלו עוד ↓
+          </a>
         </div>
       </section>
 
       {/* ── Features ──────────────────────────────────────────── */}
-      <section className="max-w-5xl mx-auto px-6 pb-24">
+      <section id="features" className="max-w-5xl mx-auto px-6 pb-24">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {FEATURES.map((f) => (
             <div
