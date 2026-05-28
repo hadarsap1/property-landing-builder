@@ -214,12 +214,12 @@ export default function Step4({ project, onChange }: StepProps) {
           />
         </div>
 
-        {/* Camera capture — mobile opens camera, desktop opens file picker */}
+        {/* Camera capture — mobile only (capture attr is only useful on phones) */}
         {project.images.length < 10 && (
           <button
             type="button"
             onClick={() => cameraInputRef.current?.click()}
-            className="flex flex-col items-center justify-center gap-1 w-28 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+            className="md:hidden flex flex-col items-center justify-center gap-1 w-28 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
           >
             <span className="text-3xl">📷</span>
             <span className="text-xs text-gray-600 font-medium">צלם עכשיו</span>
