@@ -6,9 +6,10 @@ import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
   project: PropertyProject;
+  onChange: (partial: Partial<PropertyProject>) => void;
 }
 
-export default function Step9({ project }: StepProps) {
+export default function Step9({ project, onChange }: StepProps) {
   const [code, setCode] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,6 +115,28 @@ export default function Step9({ project }: StepProps) {
         >
           👁️ תצוגה מקדימה
         </Link>
+      </div>
+
+      {/* ── Marketplace publish toggle ───────────────────────────── */}
+      <div className="flex items-center justify-between gap-4 bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
+        <div>
+          <p className="font-medium text-sm text-gray-800">פרסם בשוק הנכסים</p>
+          <p className="text-xs text-gray-500 mt-0.5">הצג את הנכס לקונים שמחפשים — ניתן לשנות בכל עת</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange({ isPublished: !project.isPublished })}
+          className={`flex-shrink-0 w-12 h-6 rounded-full transition-colors relative ${
+            project.isPublished ? 'bg-green-500' : 'bg-gray-300'
+          }`}
+          aria-label={project.isPublished ? 'בטל פרסום' : 'פרסם'}
+        >
+          <span
+            className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all ${
+              project.isPublished ? 'right-0.5' : 'left-0.5'
+            }`}
+          />
+        </button>
       </div>
 
       {/* ── Save & share ─────────────────────────────────────────── */}

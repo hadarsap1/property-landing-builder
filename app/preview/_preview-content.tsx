@@ -501,6 +501,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
                   {project.phone && (
                     <a
                       href={`tel:${project.phone.replace(/\s/g, '')}`}
+                      onClick={() => window.dispatchEvent(new CustomEvent('plb-contact-click'))}
                       className="flex items-center justify-center gap-2 font-semibold px-8 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-md"
                       style={{ backgroundColor: accent }}
                     >
@@ -512,6 +513,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => window.dispatchEvent(new CustomEvent('plb-whatsapp-click'))}
                       className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
                     >
                       💬 WhatsApp
@@ -556,6 +558,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
             href={`https://wa.me/?text=${encodeURIComponent(`🏠 ${project.aiTitle || project.title || 'נכס למכירה'}\n${shareUrl}`)}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => window.dispatchEvent(new CustomEvent('plb-whatsapp-click'))}
             className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors shadow-sm"
           >
             <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current flex-shrink-0" aria-hidden="true">

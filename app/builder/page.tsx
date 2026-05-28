@@ -379,7 +379,7 @@ export default function BuilderPage() {
               {step === 6 && <Step6 project={project} onChange={onChange} />}
               {step === 7 && <Step7 project={project} onChange={onChange} />}
               {step === 8 && <Step8 project={project} onChange={onChange} />}
-              {step === 9 && <Step9 project={project} />}
+              {step === 9 && <Step9 project={project} onChange={onChange} />}
             </div>
           </div>
         </div>
