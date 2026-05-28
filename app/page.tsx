@@ -28,21 +28,23 @@ export default function HomePage() {
     <div dir="rtl" lang="he" className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
 
       {/* ── Nav ───────────────────────────────────────────────── */}
-      <nav className="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl">🏠</span>
-          <span className="font-bold text-gray-900 text-lg">Property Landing Builder</span>
+      <nav className="max-w-5xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-2xl flex-shrink-0">🏠</span>
+          <span className="font-bold text-gray-900 text-base sm:text-lg truncate hidden xs:block sm:block">
+            Property Landing Builder
+          </span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <Link
             href="/examples"
-            className="text-gray-500 hover:text-gray-800 text-sm font-medium transition-colors"
+            className="text-gray-500 hover:text-gray-800 text-sm font-medium transition-colors hidden sm:block"
           >
             דוגמאות
           </Link>
           <Link
             href="/builder"
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl transition-colors whitespace-nowrap"
           >
             התחל עכשיו
           </Link>
@@ -52,7 +54,7 @@ export default function HomePage() {
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section className="max-w-3xl mx-auto px-6 pt-16 pb-20 text-center">
         <div className="inline-block bg-blue-100 text-blue-700 text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
-          חינמי לשימוש · ללא קידוד · בעברית מלאה
+          חינמי לשימוש · AI מובנה · בעברית מלאה
         </div>
         <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
           דף נחיתה מקצועי

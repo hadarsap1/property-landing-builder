@@ -116,6 +116,7 @@ export default function BuilderPage() {
   const [step, setStep] = useState(0);
   const [project, setProject] = useState<PropertyProject>(DEFAULT_PROJECT);
   const [hydrated, setHydrated] = useState(false);
+  const [nextHint, setNextHint] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
   const activePillRef = useRef<HTMLButtonElement>(null);
@@ -394,7 +395,8 @@ export default function BuilderPage() {
         {/* Nav footer
             Mobile: fixed to bottom of viewport (full-width)
             Desktop: static, at bottom of left column */}
-        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 bg-white border-t border-gray-200 shadow-lg flex-shrink-0">
+        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 bg-white border-t border-gray-200 shadow-lg flex-shrink-0"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
           <div className="px-4 py-4 flex items-center justify-between">
             <button
               type="button"
@@ -412,17 +414,35 @@ export default function BuilderPage() {
             </span>
 
             {step < TOTAL_STEPS ? (
-              <button
-                type="button"
-                onClick={() => goToStep(step + 1)}
-                disabled={isNextDisabled()}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium px-5 py-2 rounded-lg transition-colors disabled:cursor-not-allowed"
-              >
-                הבא
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isNextDisabled()) {
+                      setNextHint(true);
+                      setTimeout(() => setNextHint(false), 2200);
+                      return;
+                    }
+                    goToStep(step + 1);
+                  }}
+                  className={`flex items-center gap-2 text-white font-medium px-5 py-2 rounded-lg transition-colors ${
+                    isNextDisabled() ? 'bg-gray-300' : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                >
+                  הבא
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                {nextHint && (
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 whitespace-nowrap bg-gray-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">
+                    {step === 1 && 'הזן כותרת לנכס כדי להמשיך'}
+                    {step === 3 && 'כתוב משהו על הנכס כדי להמשיך'}
+                    {step === 8 && 'הזן מספר טלפון כדי להמשיך'}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="w-24" />
             )}

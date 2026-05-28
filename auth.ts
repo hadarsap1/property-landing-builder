@@ -21,14 +21,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth(() => {
     ? NeonAdapter(new Pool({ connectionString: process.env.DATABASE_URL }))
     : undefined;
 
+  const providers = [];
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    providers.push(
+      Google({
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      })
+    );
+  }
+
   return {
     adapter,
-    providers: [
-      Google({
-        clientId: process.env.GOOGLE_CLIENT_ID!,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      }),
-    ],
+    providers,
     session: {
       // JWT strategy works without an adapter and is edge-compatible.
       strategy: 'jwt',
