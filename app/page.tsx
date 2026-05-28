@@ -33,12 +33,20 @@ export default function HomePage() {
           <span className="text-2xl">🏠</span>
           <span className="font-bold text-gray-900 text-lg">Property Landing Builder</span>
         </div>
-        <Link
-          href="/builder"
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
-        >
-          התחל עכשיו
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/examples"
+            className="text-gray-500 hover:text-gray-800 text-sm font-medium transition-colors"
+          >
+            דוגמאות
+          </Link>
+          <Link
+            href="/builder"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+          >
+            התחל עכשיו
+          </Link>
+        </div>
       </nav>
 
       {/* ── Hero ──────────────────────────────────────────────── */}

@@ -154,6 +154,13 @@ export default function BuilderPage() {
         // ignore malformed localStorage
       }
     }
+    // Apply ?template= preset from examples page
+    const urlTemplate = new URLSearchParams(window.location.search).get('template') as PropertyProject['template'] | null;
+    const validTemplates: PropertyProject['template'][] = ['dark-luxury', 'warm-homey', 'modern-blue', 'nature-space', 'urban-bold'];
+    if (urlTemplate && validTemplates.includes(urlTemplate)) {
+      setProject((p) => ({ ...p, template: urlTemplate }));
+    }
+
     setHydrated(true);
     track('wizard_started');
   }, []);
