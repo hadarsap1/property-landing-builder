@@ -101,7 +101,7 @@ function Gallery({ images, galleryType, accent }: {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={img.id}
-            src={img.dataUrl}
+            src={img.enhancedBlobUrl ?? img.blobUrl ?? img.dataUrl}
             alt={img.name}
             className="w-full aspect-video object-cover rounded-xl"
           />
@@ -116,7 +116,7 @@ function Gallery({ images, galleryType, accent }: {
         // eslint-disable-next-line @next/next/no-img-element
         <img
           key={img.id}
-          src={img.dataUrl}
+          src={img.enhancedBlobUrl ?? img.blobUrl ?? img.dataUrl}
           alt={img.name}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
             idx === current ? 'opacity-100' : 'opacity-0'
@@ -263,7 +263,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
             <>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={heroImage.dataUrl}
+                src={heroImage.enhancedBlobUrl ?? heroImage.blobUrl ?? heroImage.dataUrl}
                 alt={title}
                 className="absolute inset-0 w-full h-full object-cover"
               />

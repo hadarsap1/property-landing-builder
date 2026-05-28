@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import type { PropertyProject } from '@/types/project';
 import PreviewContent from '../_preview-content';
+import ViewTracker from '@/components/preview/ViewTracker';
 
 export const dynamic = 'force-dynamic';
 
@@ -52,5 +53,10 @@ export default async function PreviewPage({
   const { code } = await params;
   const project = await loadProject(code);
   if (!project) notFound();
-  return <PreviewContent project={project} shareCode={code} />;
+  return (
+    <>
+      <ViewTracker projectCode={code} />
+      <PreviewContent project={project} shareCode={code} />
+    </>
+  );
 }

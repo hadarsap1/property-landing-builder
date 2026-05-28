@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { sql, hasDb } from '@/lib/db';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const code = req.nextUrl.searchParams.get('code');
@@ -6,10 +7,41 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Missing or invalid code' }, { status: 400 });
   }
 
-  const isDev = !process.env.KV_URL;
-  if (isDev) {
-    console.info('[load-project] Dev mode: KV not available');
-    return NextResponse.json({ error: 'KV not configured in development' }, { status: 404 });
+  // ── Try PostgreSQL first ───────────────────────────────────────────────────
+  if (hasDb()) {
+    try {
+      const rows = await sql!`
+        SELECT data, expires_at
+        FROM projects
+        WHERE code = ${code}
+        LIMIT 1
+      `;
+
+      if (rows.length === 0) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+      }
+
+      const row = rows[0] as { data: unknown; expires_at: string | null };
+
+      // Check expiry for anonymous projects
+      if (row.expires_at && new Date(row.expires_at) < new Date()) {
+        return NextResponse.json({ error: 'Project has expired' }, { status: 404 });
+      }
+
+      return NextResponse.json({ project: row.data });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[load-project] DB error:', { message });
+      // Fall through to KV fallback
+    }
+  }
+
+  // ── KV fallback (dev or DB unavailable) ───────────────────────────────────
+  if (!process.env.KV_URL) {
+    return NextResponse.json(
+      { error: 'No storage configured in development' },
+      { status: 404 }
+    );
   }
 
   try {

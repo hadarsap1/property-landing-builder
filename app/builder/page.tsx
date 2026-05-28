@@ -96,6 +96,8 @@ const DEFAULT_PROJECT: PropertyProject = {
   sellerName: '',
   phone: '',
   whatsapp: '',
+
+  isPublished: false,
 };
 
 function track(event: string, step?: number) {
