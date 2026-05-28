@@ -1,12 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Next.js 16 uses Turbopack by default.
-  // `root` tells Turbopack this project is self-contained, silencing the
-  // "multiple lockfiles" warning caused by ~/package.json existing at home dir.
   turbopack: {
     root: __dirname,
   },
+  // Allow mobile devices on the local network to access the dev server
+  allowedDevOrigins: ['10.100.102.12'],
 };
 
 export default nextConfig;

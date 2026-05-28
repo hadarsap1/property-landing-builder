@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useSession, signIn } from 'next-auth/react';
 import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
@@ -10,14 +9,23 @@ interface StepProps {
   onChange: (partial: Partial<PropertyProject>) => void;
 }
 
+interface SessionUser { name?: string | null; email?: string | null; image?: string | null; }
+
 export default function Step9({ project, onChange }: StepProps) {
-  const { data: session, status } = useSession();
+  const [sessionUser, setSessionUser] = useState<SessionUser | null | undefined>(undefined);
   const [code, setCode] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [codeTooltipOpen, setCodeTooltipOpen] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/auth/session')
+      .then((r) => r.json())
+      .then((data: { user?: SessionUser } | null) => setSessionUser(data?.user ?? null))
+      .catch(() => setSessionUser(null));
+  }, []);
 
   useEffect(() => {
     const sessionId = sessionStorage.getItem('sessionId') ?? '';
@@ -120,16 +128,16 @@ export default function Step9({ project, onChange }: StepProps) {
       </div>
 
       {/* ── Google sign-in prompt ────────────────────────────────── */}
-      {status !== 'loading' && (
-        session ? (
+      {sessionUser !== undefined && (
+        sessionUser ? (
           <div className="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
-            {session.user?.image && (
+            {sessionUser.image && (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={session.user.image} alt="" className="w-8 h-8 rounded-full flex-shrink-0" />
+              <img src={sessionUser.image} alt="" className="w-8 h-8 rounded-full flex-shrink-0" />
             )}
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-green-800">
-                מחובר בתור {session.user?.name ?? session.user?.email}
+                מחובר בתור {sessionUser.name ?? sessionUser.email}
               </p>
               <p className="text-xs text-green-600">הפרויקט ישמר לצמיתות בחשבון שלך</p>
             </div>
@@ -145,9 +153,8 @@ export default function Step9({ project, onChange }: StepProps) {
                 ללא התחברות הפרויקט נשמר ל-90 יום בלבד. עם חשבון — לנצח, עם דשבורד מלא
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => void signIn('google', { callbackUrl: '/dashboard' })}
+            <a
+              href="/api/auth/signin/google?callbackUrl=/dashboard"
               className="w-full flex items-center justify-center gap-2.5 bg-white border border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 font-semibold text-sm py-2.5 rounded-xl transition-colors shadow-sm"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0" aria-hidden="true">
@@ -157,7 +164,7 @@ export default function Step9({ project, onChange }: StepProps) {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
               המשך עם Google
-            </button>
+            </a>
             <p className="text-center text-xs text-gray-400">
               אפשר גם{' '}
               <button
