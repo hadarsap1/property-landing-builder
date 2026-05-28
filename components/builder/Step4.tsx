@@ -43,10 +43,21 @@ const GALLERY_OPTIONS: { value: PropertyProject['galleryType']; label: string }[
   { value: 'auto-7s', label: 'קרוסלה אוטומטית (7 שניות)' },
 ];
 
+const PHOTO_TIPS = [
+  { icon: '🏠', text: 'צלם את כל החדר — עמוד בפינה כדי לקבל זווית רחבה' },
+  { icon: '💡', text: 'פתח תריסים והדלק כל האורות — תאורה טובה = תמונה טובה' },
+  { icon: '📐', text: 'צלם מגובה החזה — לא מלמטה ולא מלמעלה' },
+  { icon: '🪟', text: 'הימנע מצילום ישירות לכיוון חלון — האור יסנוור' },
+  { icon: '🧹', text: 'סדר ונקה לפני — כרית עקומה נראית בתמונה' },
+];
+
 export default function Step4({ project, onChange }: StepProps) {
   const [dragOver, setDragOver] = useState(false);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [tipsOpen, setTipsOpen] = useState(false);
+  const [enhancing, setEnhancing] = useState<Record<string, boolean>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
   async function processFiles(files: FileList | File[]) {
@@ -65,6 +76,35 @@ export default function Step4({ project, onChange }: StepProps) {
     );
 
     onChange({ images: [...project.images, ...newImages] });
+  }
+
+  async function enhanceImage(img: StoredImage) {
+    setEnhancing((prev) => ({ ...prev, [img.id]: true }));
+    try {
+      const res = await fetch('/api/enhance-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ imageDataUrl: img.enhancedDataUrl ?? img.dataUrl }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const { enhancedDataUrl } = (await res.json()) as { enhancedDataUrl: string };
+      const updated = project.images.map((i) =>
+        i.id === img.id ? { ...i, enhancedDataUrl } : i
+      );
+      onChange({ images: updated });
+    } catch (err) {
+      console.error('[enhance]', err);
+      alert('שיפור התמונה נכשל. נסה שוב.');
+    } finally {
+      setEnhancing((prev) => ({ ...prev, [img.id]: false }));
+    }
+  }
+
+  function revertEnhancement(imgId: string) {
+    const updated = project.images.map((i) =>
+      i.id === imgId ? { ...i, enhancedDataUrl: undefined } : i
+    );
+    onChange({ images: updated });
   }
 
   function moveImage(fromIdx: number, toIdx: number) {
@@ -122,117 +162,217 @@ export default function Step4({ project, onChange }: StepProps) {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">תמונות ומדיה</h2>
 
-      {/* Drop zone */}
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-          dragOver
-            ? 'border-blue-500 bg-blue-50'
-            : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
-        }`}
-      >
-        <div className="text-4xl mb-2">🖼️</div>
-        <p className="text-gray-600 font-medium">גרור תמונות לכאן או לחץ לבחירה</p>
-        <p className="text-sm text-gray-400 mt-1">
-          JPG, PNG, WebP | עד 10 תמונות
-          {project.images.length > 0 && ` (${project.images.length}/10 נבחרו)`}
-        </p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={(e) => { if (e.target.files) void processFiles(e.target.files); }}
-        />
+      {/* Photo tips */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setTipsOpen((o) => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-amber-800 hover:bg-amber-100 transition-colors"
+        >
+          <span>💡 טיפים לצילום נכס מקצועי</span>
+          <span className="text-lg leading-none">{tipsOpen ? '▲' : '▼'}</span>
+        </button>
+        {tipsOpen && (
+          <ul className="px-4 pb-4 space-y-2">
+            {PHOTO_TIPS.map((tip) => (
+              <li key={tip.text} className="flex items-start gap-2 text-sm text-amber-900">
+                <span className="text-base leading-snug">{tip.icon}</span>
+                <span>{tip.text}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      {/* Upload + Camera buttons */}
+      <div className="flex gap-3">
+        {/* Drop zone / file upload */}
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
+            dragOver
+              ? 'border-blue-500 bg-blue-50'
+              : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
+          }`}
+        >
+          <div className="text-3xl mb-1">🖼️</div>
+          <p className="text-gray-600 font-medium text-sm">גרור או לחץ לבחירה</p>
+          <p className="text-xs text-gray-400 mt-1">
+            JPG, PNG, WebP | עד 10 תמונות
+            {project.images.length > 0 && ` (${project.images.length}/10)`}
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            className="hidden"
+            onChange={(e) => { if (e.target.files) void processFiles(e.target.files); }}
+          />
+        </div>
+
+        {/* Camera capture — mobile opens camera, desktop opens file picker */}
+        {project.images.length < 10 && (
+          <button
+            type="button"
+            onClick={() => cameraInputRef.current?.click()}
+            className="flex flex-col items-center justify-center gap-1 w-28 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+          >
+            <span className="text-3xl">📷</span>
+            <span className="text-xs text-gray-600 font-medium">צלם עכשיו</span>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => { if (e.target.files) void processFiles(e.target.files); }}
+            />
+          </button>
+        )}
       </div>
 
       {/* Image grid */}
       {project.images.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
-          {project.images.map((img, idx) => (
-            <div
-              key={img.id}
-              draggable
-              onDragStart={() => handleItemDragStart(idx)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleItemDrop(idx)}
-              className={`relative group rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing ${
-                project.heroImageIndex === idx
-                  ? 'border-yellow-400'
-                  : 'border-transparent'
-              }`}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={img.dataUrl}
-                alt={img.name}
-                className="w-full h-28 object-cover"
-              />
-              {/* Hero star — always visible */}
-              {project.heroImageIndex === idx && (
-                <div className="absolute top-1 right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-xs pointer-events-none">
-                  ⭐
-                </div>
-              )}
-              {/* Desktop: hover overlay (drag-and-drop available) */}
-              <div className="absolute inset-0 bg-black/40 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => onChange({ heroImageIndex: idx })}
-                  title="הגדר כתמונה ראשית"
-                  className="bg-yellow-400 text-xs text-white px-2 py-1 rounded"
-                >
-                  ⭐ ראשי
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeImage(img.id)}
-                  className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm leading-none"
-                >
-                  ✕
-                </button>
+          {project.images.map((img, idx) => {
+            const displaySrc = img.enhancedDataUrl ?? img.dataUrl;
+            const isEnhancing = enhancing[img.id] ?? false;
+            const isEnhanced = !!img.enhancedDataUrl;
+
+            return (
+              <div
+                key={img.id}
+                draggable
+                onDragStart={() => handleItemDragStart(idx)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={() => handleItemDrop(idx)}
+                className={`relative group rounded-lg overflow-hidden border-2 cursor-grab active:cursor-grabbing ${
+                  project.heroImageIndex === idx
+                    ? 'border-yellow-400'
+                    : 'border-transparent'
+                }`}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={displaySrc}
+                  alt={img.name}
+                  className="w-full h-28 object-cover"
+                />
+
+                {/* Enhanced badge */}
+                {isEnhanced && (
+                  <div className="absolute top-1 left-1 bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full leading-none pointer-events-none">
+                    AI ✨
+                  </div>
+                )}
+
+                {/* Hero star */}
+                {project.heroImageIndex === idx && (
+                  <div className="absolute top-1 right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-xs pointer-events-none">
+                    ⭐
+                  </div>
+                )}
+
+                {/* Loading overlay while enhancing */}
+                {isEnhancing && (
+                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span className="text-white text-[10px]">משפר…</span>
+                  </div>
+                )}
+
+                {/* Desktop: hover overlay */}
+                {!isEnhancing && (
+                  <div className="absolute inset-0 bg-black/40 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity flex-col items-center justify-center gap-1 p-1">
+                    <div className="flex gap-1">
+                      <button
+                        type="button"
+                        onClick={() => onChange({ heroImageIndex: idx })}
+                        title="הגדר כתמונה ראשית"
+                        className="bg-yellow-400 text-[10px] text-white px-2 py-1 rounded"
+                      >
+                        ⭐ ראשי
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(img.id)}
+                        className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm leading-none"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {isEnhanced ? (
+                      <button
+                        type="button"
+                        onClick={() => revertEnhancement(img.id)}
+                        className="bg-gray-600 text-[10px] text-white px-2 py-1 rounded w-full"
+                      >
+                        ↩ בטל שיפור
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => void enhanceImage(img)}
+                        className="bg-purple-600 text-[10px] text-white px-2 py-1 rounded w-full"
+                      >
+                        ✨ שפר עם AI
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Mobile: always-visible bottom controls */}
+                {!isEnhancing && (
+                  <div className="absolute bottom-0 inset-x-0 flex md:hidden items-center justify-between px-1 py-1 bg-gradient-to-t from-black/60 to-transparent">
+                    <div className="flex gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => moveImage(idx, idx - 1)}
+                        disabled={idx === 0}
+                        className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
+                        aria-label="הזז שמאלה"
+                      >‹</button>
+                      <button
+                        type="button"
+                        onClick={() => moveImage(idx, idx + 1)}
+                        disabled={idx === project.images.length - 1}
+                        className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
+                        aria-label="הזז ימינה"
+                      >›</button>
+                    </div>
+                    <div className="flex gap-0.5">
+                      <button
+                        type="button"
+                        onClick={() => onChange({ heroImageIndex: idx })}
+                        className={`w-6 h-6 rounded flex items-center justify-center text-xs leading-none ${
+                          project.heroImageIndex === idx ? 'bg-yellow-400' : 'bg-white/80 text-gray-800'
+                        }`}
+                        aria-label="הגדר כראשי"
+                      >⭐</button>
+                      <button
+                        type="button"
+                        onClick={() => isEnhanced ? revertEnhancement(img.id) : void enhanceImage(img)}
+                        className={`w-6 h-6 rounded flex items-center justify-center text-xs leading-none ${
+                          isEnhanced ? 'bg-gray-500 text-white' : 'bg-purple-600 text-white'
+                        }`}
+                        aria-label={isEnhanced ? 'בטל שיפור' : 'שפר עם AI'}
+                      >{isEnhanced ? '↩' : '✨'}</button>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(img.id)}
+                        className="w-6 h-6 rounded bg-red-500/90 text-white flex items-center justify-center text-xs leading-none"
+                        aria-label="מחק תמונה"
+                      >✕</button>
+                    </div>
+                  </div>
+                )}
               </div>
-              {/* Mobile: always-visible bottom controls */}
-              <div className="absolute bottom-0 inset-x-0 flex md:hidden items-center justify-between px-1 py-1 bg-gradient-to-t from-black/60 to-transparent">
-                <div className="flex gap-0.5">
-                  <button
-                    type="button"
-                    onClick={() => moveImage(idx, idx - 1)}
-                    disabled={idx === 0}
-                    className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
-                    aria-label="הזז שמאלה"
-                  >‹</button>
-                  <button
-                    type="button"
-                    onClick={() => moveImage(idx, idx + 1)}
-                    disabled={idx === project.images.length - 1}
-                    className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
-                    aria-label="הזז ימינה"
-                  >›</button>
-                </div>
-                <div className="flex gap-0.5">
-                  <button
-                    type="button"
-                    onClick={() => onChange({ heroImageIndex: idx })}
-                    className={`w-6 h-6 rounded flex items-center justify-center text-xs leading-none ${
-                      project.heroImageIndex === idx ? 'bg-yellow-400' : 'bg-white/80 text-gray-800'
-                    }`}
-                    aria-label="הגדר כראשי"
-                  >⭐</button>
-                  <button
-                    type="button"
-                    onClick={() => removeImage(img.id)}
-                    className="w-6 h-6 rounded bg-red-500/90 text-white flex items-center justify-center text-xs leading-none"
-                    aria-label="מחק תמונה"
-                  >✕</button>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 

@@ -64,6 +64,7 @@ export interface PropertyProject {
 export interface StoredImage {
   id: string;
   dataUrl: string; // resized base64 (local/builder use; not stored in DB)
+  enhancedDataUrl?: string; // AI-enhanced base64 — pre-save builder version
   blobUrl?: string; // Vercel Blob URL — used when project is saved server-side
   enhancedBlobUrl?: string; // AI-enhanced version (keeps original in blobUrl for undo)
   name: string;

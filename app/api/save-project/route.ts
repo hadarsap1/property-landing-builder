@@ -26,24 +26,32 @@ async function uploadProjectImages(
 ): Promise<StoredImage[]> {
   return Promise.all(
     images.map(async (img) => {
-      // Skip if already uploaded
-      if (img.blobUrl) return img;
-      // Skip if no dataUrl to upload
-      if (!img.dataUrl || !img.dataUrl.startsWith('data:')) return img;
-      try {
-        const blobUrl = await uploadImageToBlob(
-          img.dataUrl,
-          `${img.id}.jpg`
-        );
-        return {
-          ...img,
-          blobUrl,
-          dataUrl: '', // don't store base64 in DB — saves space
-        };
-      } catch (err) {
-        console.error('[save-project] image upload failed:', img.id, err);
-        return img; // keep original on failure
+      const result: StoredImage = { ...img };
+
+      // Upload original if not already in Blob
+      if (!img.blobUrl && img.dataUrl?.startsWith('data:')) {
+        try {
+          result.blobUrl = await uploadImageToBlob(img.dataUrl, `${img.id}.jpg`);
+          result.dataUrl = ''; // don't store base64 in DB
+        } catch (err) {
+          console.error('[save-project] original upload failed:', img.id, err);
+        }
       }
+
+      // Upload enhanced version if present and not already in Blob
+      if (!img.enhancedBlobUrl && img.enhancedDataUrl?.startsWith('data:')) {
+        try {
+          result.enhancedBlobUrl = await uploadImageToBlob(
+            img.enhancedDataUrl,
+            `${img.id}-enhanced.jpg`
+          );
+          result.enhancedDataUrl = ''; // clear base64 after upload
+        } catch (err) {
+          console.error('[save-project] enhanced upload failed:', img.id, err);
+        }
+      }
+
+      return result;
     })
   );
 }
