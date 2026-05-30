@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
       `img-src 'self' data: blob: https: http:`,
       `media-src 'self' blob:`,
       `font-src 'self' data:`,
-      `frame-src 'self' https://maps.google.com`,
+      `frame-src 'self' https://maps.google.com https://www.google.com`,
       `connect-src 'self' https://va.vercel-scripts.com https://vitals.vercel-insights.com https://accounts.google.com`,
       `form-action 'self' https://accounts.google.com`,
       `base-uri 'self'`,

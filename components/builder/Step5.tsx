@@ -8,9 +8,10 @@ interface StepProps {
 }
 
 export default function Step5({ project, onChange }: StepProps) {
-  const mapsKey = process.env.NEXT_PUBLIC_MAPS_KEY;
-  const mapSrc = mapsKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${encodeURIComponent(project.mapQuery)}`
+  // Keyless embed — same source the published page uses, so the preview always
+  // works (no API key needed) and matches exactly what buyers will see.
+  const mapSrc = project.mapQuery
+    ? `https://maps.google.com/maps?q=${encodeURIComponent(project.mapQuery)}&t=m&z=15&output=embed`
     : null;
 
   return (

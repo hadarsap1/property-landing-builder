@@ -175,7 +175,7 @@ export default function HomePage() {
               boxShadow: '0 4px 16px rgba(37,99,235,0.35)',
             }}
           >
-            התחלו עכשיו
+            התחילו עכשיו
           </Link>
         </div>
       </nav>
