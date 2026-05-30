@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
@@ -39,10 +39,16 @@ const WORD_BANK: WordCategory[] = [
   },
 ];
 
+const inputCls = 'w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500';
+const inputStyle = { background: 'var(--pb-surface)', border: '1px solid var(--pb-border)', color: 'var(--pb-text)' };
+const labelStyle = { color: 'var(--pb-text2)', fontSize: '0.875rem', fontWeight: 500 };
+
 export default function Step3({ project, onChange }: StepProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [aiHint, setAiHint] = useState(false);
+  const aiResultRef = useRef<HTMLDivElement>(null);
 
   async function generateAI() {
     setLoading(true);
@@ -76,6 +82,7 @@ export default function Step3({ project, onChange }: StepProps) {
         aiStory: data.story ?? '',
         aiHighlights: Array.isArray(data.highlights) ? data.highlights : [],
       });
+      setTimeout(() => aiResultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'שגיאה לא צפויה');
     } finally {
@@ -85,7 +92,7 @@ export default function Step3({ project, onChange }: StepProps) {
 
   function appendWord(word: string) {
     const current = project.rawStory.trim();
-    const separator = current.length > 0 && !current.endsWith(',') && !current.endsWith('.') ? ', ' : ' ';
+    const separator = current.length === 0 ? '' : /[,.?!:\s]$/.test(current) ? ' ' : ', ';
     onChange({ rawStory: current + separator + word });
   }
 
@@ -93,11 +100,11 @@ export default function Step3({ project, onChange }: StepProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">הסיפור של הנכס</h2>
+      <h2 className="text-2xl font-bold" style={{ color: 'var(--pb-text)' }}>הסיפור של הנכס</h2>
 
       {/* Raw story textarea */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block mb-1" style={labelStyle}>
           ספרו לנו על הנכס במילים שלכם
         </label>
         <textarea
@@ -105,41 +112,45 @@ export default function Step3({ project, onChange }: StepProps) {
           onChange={(e) => onChange({ rawStory: e.target.value })}
           rows={5}
           placeholder="כתבו כאן בחופשיות — מה הדבר הכי מיוחד? מה יש בשכונה? מה אהבתם בדירה?"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+          className={`${inputCls} resize-y`}
+          style={inputStyle}
         />
       </div>
 
       {/* Word bank */}
       <div>
-        <p className="text-sm font-medium text-gray-700 mb-2">
+        <p className="mb-2" style={labelStyle}>
           השראה — לחצו על מילה להוסיף לטקסט
         </p>
         <div className="space-y-2">
           {WORD_BANK.map((cat) => {
             const isOpen = openCategory === cat.label;
             return (
-              <div key={cat.label} className="border border-gray-200 rounded-xl overflow-hidden">
+              <div key={cat.label} className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--pb-border)' }}>
                 <button
                   type="button"
                   onClick={() => setOpenCategory(isOpen ? null : cat.label)}
-                  className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 hover:bg-gray-100 transition-colors text-sm font-medium text-gray-700"
+                  className="w-full flex items-center justify-between px-3 py-2 transition-colors text-sm font-medium"
+                  style={{ background: 'var(--pb-surface2)', color: 'var(--pb-text)' }}
                 >
                   <span>{cat.label}</span>
                   <svg
-                    className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+                    style={{ color: 'var(--pb-text2)' }}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
                 {isOpen && (
-                  <div className="px-3 py-2 flex flex-wrap gap-2 bg-white">
+                  <div className="px-3 py-2 flex flex-wrap gap-2" style={{ background: 'var(--pb-surface)' }}>
                     {cat.words.map((w) => (
                       <button
                         key={w}
                         type="button"
                         onClick={() => appendWord(w)}
-                        className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-full transition-colors"
+                        className="text-xs px-2.5 py-1 rounded-full transition-colors"
+                        style={{ background: 'color-mix(in srgb, var(--pb-accent) 12%, transparent)', color: 'var(--pb-accent)', border: '1px solid color-mix(in srgb, var(--pb-accent) 30%, transparent)' }}
                       >
                         + {w}
                       </button>
@@ -153,12 +164,21 @@ export default function Step3({ project, onChange }: StepProps) {
       </div>
 
       {/* AI Generate button */}
-      <div className="flex items-center gap-3">
+      <div className="relative flex items-center gap-3">
         <button
           type="button"
-          onClick={() => void generateAI()}
-          disabled={loading || !project.rawStory.trim()}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white px-5 py-2.5 rounded-lg font-medium transition-colors"
+          onClick={() => {
+            if (loading) return;
+            if (!project.rawStory.trim()) {
+              setAiHint(true);
+              setTimeout(() => setAiHint(false), 2200);
+              return;
+            }
+            void generateAI();
+          }}
+          className={`flex items-center gap-2 text-white px-5 py-2.5 rounded-lg font-medium transition-colors ${
+            loading || !project.rawStory.trim() ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
+          }`}
         >
           {loading ? (
             <>
@@ -172,58 +192,64 @@ export default function Step3({ project, onChange }: StepProps) {
             <>{hasAIContent ? '🔄 ייצר מחדש' : '✨ נסח בעזרת AI'}</>
           )}
         </button>
-        {!project.rawStory.trim() && (
-          <span className="text-sm text-gray-400">יש לכתוב משהו קודם</span>
+        {aiHint && (
+          <div className="absolute bottom-full right-0 mb-2 whitespace-nowrap bg-gray-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-lg pointer-events-none">
+            כתוב משהו על הנכס כדי להמשיך
+            <div className="absolute top-full right-4 border-4 border-transparent border-t-gray-800" />
+          </div>
         )}
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+        <div className="rounded-lg p-3 text-sm" style={{ background: 'color-mix(in srgb, #ef4444 10%, transparent)', border: '1px solid color-mix(in srgb, #ef4444 30%, transparent)', color: '#ef4444' }}>
           {error}
         </div>
       )}
 
       {/* AI Result section */}
       {hasAIContent && (
-        <div className="space-y-4 border-t border-gray-200 pt-6">
-          <h3 className="text-lg font-semibold text-gray-700">תוצאת ה-AI</h3>
+        <div ref={aiResultRef} className="space-y-4 pt-6" style={{ borderTop: '1px solid var(--pb-border)' }}>
+          <h3 className="text-lg font-semibold" style={{ color: 'var(--pb-text)' }}>תוצאת ה-AI</h3>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">כותרת</label>
+            <label className="block mb-1" style={labelStyle}>כותרת</label>
             <input
               type="text"
               value={project.aiTitle}
               onChange={(e) => onChange({ aiTitle: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputCls}
+              style={inputStyle}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">תגית</label>
+            <label className="block mb-1" style={labelStyle}>תגית</label>
             <input
               type="text"
               value={project.aiTagline}
               onChange={(e) => onChange({ aiTagline: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={inputCls}
+              style={inputStyle}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">סיפור הנכס</label>
+            <label className="block mb-1" style={labelStyle}>סיפור הנכס</label>
             <textarea
               value={project.aiStory}
               onChange={(e) => onChange({ aiStory: e.target.value })}
               rows={6}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y"
+              className={`${inputCls} resize-y`}
+              style={inputStyle}
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">נקודות מרכזיות</label>
+            <label className="block mb-2" style={labelStyle}>נקודות מרכזיות</label>
             <div className="space-y-2">
               {project.aiHighlights.map((h, i) => (
                 <div key={i} className="flex items-center gap-2">
-                  <span className="text-blue-500">•</span>
+                  <span style={{ color: 'var(--pb-accent)' }}>•</span>
                   <input
                     type="text"
                     value={h}
@@ -232,7 +258,8 @@ export default function Step3({ project, onChange }: StepProps) {
                       updated[i] = e.target.value;
                       onChange({ aiHighlights: updated });
                     }}
-                    className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="flex-1 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    style={inputStyle}
                   />
                   <button
                     type="button"
@@ -240,7 +267,8 @@ export default function Step3({ project, onChange }: StepProps) {
                       const updated = project.aiHighlights.filter((_, idx) => idx !== i);
                       onChange({ aiHighlights: updated });
                     }}
-                    className="text-gray-400 hover:text-red-500 transition-colors"
+                    className="transition-colors"
+                    style={{ color: 'var(--pb-text2)' }}
                   >
                     ✕
                   </button>
@@ -249,7 +277,8 @@ export default function Step3({ project, onChange }: StepProps) {
               <button
                 type="button"
                 onClick={() => onChange({ aiHighlights: [...project.aiHighlights, ''] })}
-                className="text-sm text-blue-600 hover:underline mt-1"
+                className="text-sm hover:underline mt-1"
+                style={{ color: 'var(--pb-accent)' }}
               >
                 + הוסף נקודה
               </button>

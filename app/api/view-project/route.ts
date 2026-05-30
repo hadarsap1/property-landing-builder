@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql, hasDb } from '@/lib/db';
+import { rateLimit } from '@/lib/rate-limit';
 
 interface ViewBody {
   projectCode: string;
@@ -12,6 +13,9 @@ interface ViewBody {
 
 // POST — create or update a view record
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const limited = await rateLimit(req, { name: 'view-project', limit: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
   let body: ViewBody;
   try {
     body = (await req.json()) as ViewBody;

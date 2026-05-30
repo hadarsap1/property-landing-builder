@@ -34,6 +34,7 @@ export default async function DashboardPage() {
       p.price::float           AS price,
       p.price_on_request,
       p.is_published,
+      p.status,
       p.created_at,
       p.expires_at,
       COALESCE(

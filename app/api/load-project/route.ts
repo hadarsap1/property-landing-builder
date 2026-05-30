@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql, hasDb } from '@/lib/db';
+import { isDevStore, devStoreGet } from '@/lib/dev-store';
 
 export async function GET(req: NextRequest): Promise<NextResponse> {
   const code = req.nextUrl.searchParams.get('code');
@@ -36,8 +37,13 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
     }
   }
 
-  // ── KV fallback (dev or DB unavailable) ───────────────────────────────────
+  // ── KV / filesystem fallback (dev or DB unavailable) ──────────────────────
   if (!process.env.KV_URL) {
+    if (isDevStore()) {
+      const project = await devStoreGet(code);
+      if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+      return NextResponse.json({ project });
+    }
     return NextResponse.json(
       { error: 'No storage configured in development' },
       { status: 404 }

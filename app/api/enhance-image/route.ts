@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { rateLimit } from '@/lib/rate-limit';
+
+const MAX_BODY_BYTES = 12_000_000; // ~12 MB — a single base64 photo
 
 const ENHANCE_PROMPT =
   'Enhance this real estate photo: improve brightness, contrast, and sharpness slightly. ' +
@@ -8,6 +11,13 @@ const ENHANCE_PROMPT =
   'Keep every item in the room exactly as photographed. Return a clean, professional result.';
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const limited = await rateLimit(req, { name: 'enhance-image', limit: 15, windowMs: 60_000 });
+  if (limited) return limited;
+
+  if (Number(req.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'התמונה גדולה מדי' }, { status: 413 });
+  }
+
   if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ error: 'OPENAI_API_KEY not configured' }, { status: 503 });
   }
@@ -35,7 +45,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       model: 'gpt-image-1',
       image: file,
       prompt: ENHANCE_PROMPT,
-      size: '1024x1024',
+      // 'auto' lets the model preserve the photo's aspect ratio instead of
+      // squashing landscape listing photos into a 1:1 square.
+      size: 'auto',
     });
 
     const b64 = response.data?.[0]?.b64_json;

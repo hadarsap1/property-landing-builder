@@ -12,6 +12,11 @@ import Step7 from '@/components/builder/Step7';
 import Step8 from '@/components/builder/Step8';
 import Step9 from '@/components/builder/Step9';
 import ImportListing from '@/components/builder/ImportListing';
+import TutorialModal from '@/components/builder/TutorialModal';
+import FeedbackWidget from '@/components/FeedbackWidget';
+import ThemeToggle from '@/components/ThemeToggle';
+
+const TUTORIAL_SEEN_KEY = 'plb-tutorial-seen';
 
 const STEP_NAMES: Record<number, string> = {
   1: 'פרטי הנכס',
@@ -28,12 +33,14 @@ const STEP_NAMES: Record<number, string> = {
 const TOTAL_STEPS = 9;
 
 const DEFAULT_PROJECT: PropertyProject = {
+  listingType: 'sale',
   title: '',
   street: '',
   city: '',
   neighborhood: '',
   price: null,
   priceOnRequest: false,
+  furniture: '',
   builtArea: null,
   gardenArea: null,
   rooms: null,
@@ -98,6 +105,7 @@ const DEFAULT_PROJECT: PropertyProject = {
   whatsapp: '',
 
   isPublished: false,
+  status: 'available',
 };
 
 function track(event: string, step?: number) {
@@ -114,9 +122,18 @@ function track(event: string, step?: number) {
 // step 1–9 → wizard steps
 export default function BuilderPage() {
   const [step, setStep] = useState(0);
-  const [project, setProject] = useState<PropertyProject>(DEFAULT_PROJECT);
+  const [project, setProject] = useState<PropertyProject>(() => {
+    if (typeof window !== 'undefined') {
+      const t = new URLSearchParams(window.location.search).get('type');
+      if (t === 'rent' || t === 'sale') return { ...DEFAULT_PROJECT, listingType: t };
+    }
+    return DEFAULT_PROJECT;
+  });
   const [hydrated, setHydrated] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [nextHint, setNextHint] = useState(false);
+  const [savedFlash, setSavedFlash] = useState(false);
+  const savedFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const pillsRef = useRef<HTMLDivElement>(null);
   const activePillRef = useRef<HTMLButtonElement>(null);
@@ -134,22 +151,29 @@ export default function BuilderPage() {
   // Load from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('property-builder-draft');
+    const urlType = new URLSearchParams(window.location.search).get('type');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved) as PropertyProject;
-        // Blob URLs are session-scoped and don't survive page refresh
-        if (parsed.videoUrl?.startsWith('blob:')) {
-          parsed.videoUrl = '';
-        }
+        // Merge over defaults so drafts saved before new fields existed
+        // (e.g. `status`) stay well-formed.
+        const parsed = { ...DEFAULT_PROJECT, ...(JSON.parse(saved) as PropertyProject) };
+        if (parsed.videoUrl?.startsWith('blob:')) parsed.videoUrl = '';
+        // A draft is always still being edited — never carry a terminal status.
+        parsed.status = 'available';
+        // URL param always wins over saved draft
+        if (urlType === 'rent' || urlType === 'sale') parsed.listingType = urlType;
         setProject(parsed);
-        if (parsed.title || parsed.street || parsed.city) {
+
+        // Restore the last active step so returning from preview lands back here
+        const savedStep = parseInt(localStorage.getItem('property-builder-step') ?? '0', 10);
+        if (savedStep >= 1 && savedStep <= TOTAL_STEPS) {
+          setStep(savedStep);
+        } else if (parsed.title || parsed.street || parsed.city) {
           setStep(1);
         }
+
         if (!parsed.mapQuery && (parsed.street || parsed.city)) {
-          setProject((p) => ({
-            ...p,
-            mapQuery: `${parsed.street}, ${parsed.city}, ישראל`,
-          }));
+          setProject((p) => ({ ...p, mapQuery: `${parsed.street}, ${parsed.city}, ישראל` }));
         }
       } catch {
         // ignore malformed localStorage
@@ -162,15 +186,43 @@ export default function BuilderPage() {
       setProject((p) => ({ ...p, template: urlTemplate }));
     }
 
+    // Show the intro walkthrough on first ever visit
+    if (!localStorage.getItem(TUTORIAL_SEEN_KEY)) {
+      setShowTutorial(true);
+      track('tutorial_shown');
+    }
+
     setHydrated(true);
     track('wizard_started');
   }, []);
 
-  // Save to localStorage on every change
+  function closeTutorial() {
+    setShowTutorial(false);
+    try {
+      localStorage.setItem(TUTORIAL_SEEN_KEY, '1');
+    } catch {
+      // ignore storage failures
+    }
+  }
+
+  // Save project to localStorage on every change + briefly show "נשמר"
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem('property-builder-draft', JSON.stringify(project));
+    try {
+      localStorage.setItem('property-builder-draft', JSON.stringify(project));
+      setSavedFlash(true);
+      if (savedFlashTimer.current) clearTimeout(savedFlashTimer.current);
+      savedFlashTimer.current = setTimeout(() => setSavedFlash(false), 1500);
+    } catch {
+      // Quota exceeded (image-heavy drafts) — autosave skipped, not fatal.
+    }
   }, [project, hydrated]);
+
+  // Save current step so returning from preview restores it
+  useEffect(() => {
+    if (!hydrated || step < 1) return;
+    localStorage.setItem('property-builder-step', String(step));
+  }, [step, hydrated]);
 
   // Scroll active step pill into view when step changes
   useEffect(() => {
@@ -232,8 +284,8 @@ export default function BuilderPage() {
 
   if (!hydrated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-400">טוען...</div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--pb-bg)' }}>
+        <div style={{ color: 'var(--pb-text2)' }}>טוען...</div>
       </div>
     );
   }
@@ -241,29 +293,39 @@ export default function BuilderPage() {
   // ── Welcome / Import screens ────────────────────────────────────────────
   if (isWelcomeScreen) {
     return (
-      <div dir="rtl" lang="he" className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-50 flex items-center justify-center px-4 py-12">
+      <div dir="rtl" lang="he" className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: 'var(--pb-bg)' }}>
+        <TutorialModal open={showTutorial} onClose={closeTutorial} />
         <div className="w-full max-w-lg">
           <div className="text-center mb-8">
             <div className="text-4xl mb-3">🏠</div>
-            <h1 className="text-2xl font-bold text-gray-900">Property Landing Builder</h1>
-            <p className="text-gray-500 mt-1 text-sm">צרו דף נחיתה מקצועי לנכס שלכם תוך דקות</p>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--pb-text)' }}>Property Landing Builder</h1>
+            <p className="mt-1 text-sm" style={{ color: 'var(--pb-text2)' }}>צרו דף נחיתה מקצועי לנכס שלכם תוך דקות</p>
+            <button
+              type="button"
+              onClick={() => setShowTutorial(true)}
+              className="mt-2 text-xs underline underline-offset-2"
+              style={{ color: 'var(--pb-accent)' }}
+            >
+              איך זה עובד? צפו במדריך
+            </button>
           </div>
 
           {step === 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-gray-800 text-center">איך תרצו להתחיל?</h2>
+            <div className="rounded-2xl shadow-sm p-6 space-y-4" style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)' }}>
+              <h2 className="text-lg font-semibold text-center" style={{ color: 'var(--pb-text)' }}>איך תרצו להתחיל?</h2>
 
               <button
                 type="button"
                 onClick={() => setStep(-1)}
-                className="w-full text-right flex items-start gap-4 p-4 border-2 border-blue-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all group"
+                className="w-full text-start flex items-start gap-4 p-4 border-2 rounded-xl transition-all group"
+                style={{ borderColor: 'var(--pb-accent)', background: 'color-mix(in srgb, var(--pb-accent) 8%, transparent)' }}
               >
                 <span className="text-2xl mt-0.5">📋</span>
                 <div>
-                  <div className="font-semibold text-gray-900 group-hover:text-blue-700">
+                  <div className="font-semibold" style={{ color: 'var(--pb-text)' }}>
                     טען ממודעה קיימת
                   </div>
-                  <div className="text-sm text-gray-500 mt-0.5">
+                  <div className="text-sm mt-0.5" style={{ color: 'var(--pb-text2)' }}>
                     העתיקו מיד2, מדלן, או כל מודעה — כל השדות יימולאו אוטומטית
                   </div>
                 </div>
@@ -272,12 +334,13 @@ export default function BuilderPage() {
               <button
                 type="button"
                 onClick={() => goToStep(1)}
-                className="w-full text-right flex items-start gap-4 p-4 border-2 border-gray-200 hover:border-gray-400 bg-white hover:bg-gray-50 rounded-xl transition-all group"
+                className="w-full text-start flex items-start gap-4 p-4 border-2 rounded-xl transition-all group"
+                style={{ borderColor: 'var(--pb-border)', background: 'var(--pb-surface2)' }}
               >
                 <span className="text-2xl mt-0.5">✏️</span>
                 <div>
-                  <div className="font-semibold text-gray-900">התחל מאפס</div>
-                  <div className="text-sm text-gray-500 mt-0.5">
+                  <div className="font-semibold" style={{ color: 'var(--pb-text)' }}>התחל מאפס</div>
+                  <div className="text-sm mt-0.5" style={{ color: 'var(--pb-text2)' }}>
                     הזינו את הפרטים שלב אחרי שלב
                   </div>
                 </div>
@@ -286,7 +349,7 @@ export default function BuilderPage() {
           )}
 
           {step === -1 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="rounded-2xl shadow-sm p-6" style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)' }}>
               <ImportListing
                 onImport={(partial) => {
                   onChange(partial);
@@ -311,25 +374,30 @@ export default function BuilderPage() {
   // That's intentional — wizard on right feels natural in Hebrew UIs.
 
   return (
-    <div dir="rtl" lang="he" className="bg-gray-50 lg:h-screen lg:overflow-hidden lg:grid lg:grid-cols-[500px_1fr]">
+    <div dir="rtl" lang="he" className="lg:h-screen lg:overflow-hidden lg:grid lg:grid-cols-[500px_1fr]" style={{ background: 'var(--pb-bg)' }}>
 
       {/* ── LEFT PANEL: wizard ─────────────────────────────────── */}
-      {/* On mobile: stacks normally with fixed header/footer.
-          On desktop: flex column filling the grid row, no fixed elements. */}
-      <div className="lg:flex lg:flex-col lg:h-screen lg:overflow-hidden lg:border-l lg:border-gray-200">
+      <div className="lg:flex lg:flex-col lg:h-screen lg:overflow-hidden" style={{ borderLeft: '1px solid var(--pb-border)' }}>
 
-        {/* Progress bar
-            Mobile: fixed to top of viewport (full-width)
-            Desktop: static, at top of left column */}
-        <div className="fixed top-0 right-0 left-0 z-50 lg:static lg:z-auto bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+        {/* Progress bar */}
+        <div className="fixed top-0 right-0 left-0 z-50 lg:static lg:z-auto shadow-sm flex-shrink-0" style={{ background: 'var(--pb-surface)', borderBottom: '1px solid var(--pb-border)' }}>
           <div className="px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-700">
+              <span className="text-sm font-semibold" style={{ color: 'var(--pb-text)' }}>
                 שלב {step} מתוך {TOTAL_STEPS}: {STEP_NAMES[step]}
               </span>
-              <span className="text-sm text-gray-400">{Math.round(progress)}%</span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-xs transition-opacity duration-300 ${savedFlash ? 'text-green-500 opacity-100' : 'opacity-0'}`}
+                  aria-live="polite"
+                >
+                  ✓ נשמר
+                </span>
+                <span className="text-sm" style={{ color: 'var(--pb-text2)' }}>{Math.round(progress)}%</span>
+                <ThemeToggle />
+              </div>
             </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 rounded-full overflow-hidden" style={{ background: 'var(--pb-surface2)' }}>
               <div
                 className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
                 style={{ width: `${progress}%` }}
@@ -347,22 +415,24 @@ export default function BuilderPage() {
                   ref={s === step ? activePillRef : null}
                   type="button"
                   onClick={() => goToStep(s)}
-                  className={`flex-shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all whitespace-nowrap focus:outline-none ${
+                  className="flex-shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all whitespace-nowrap focus:outline-none"
+                  style={
                     s === step
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? { background: 'var(--pb-accent)', color: '#fff' }
                       : s < step
-                      ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
-                  }`}
+                      ? { background: 'color-mix(in srgb, var(--pb-accent) 15%, transparent)', color: 'var(--pb-accent)' }
+                      : { background: 'var(--pb-surface2)', color: 'var(--pb-text2)' }
+                  }
                 >
                   <span
-                    className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none font-bold flex-shrink-0 ${
+                    className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none font-bold flex-shrink-0"
+                    style={
                       s === step
-                        ? 'bg-white text-blue-600'
+                        ? { background: '#fff', color: 'var(--pb-accent)' }
                         : s < step
-                        ? 'bg-blue-400 text-white'
-                        : 'bg-gray-300 text-gray-500'
-                    }`}
+                        ? { background: 'var(--pb-accent)', color: '#fff', opacity: 0.7 }
+                        : { background: 'var(--pb-border)', color: 'var(--pb-text2)' }
+                    }
                   >
                     {s}
                   </span>
@@ -378,7 +448,7 @@ export default function BuilderPage() {
             Desktop: flex-1, overflow-y-auto (scrollable within column) */}
         <div className="min-h-screen lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           <div className="px-4 pt-28 pb-32 lg:pt-5 lg:pb-5">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-7">
+            <div className="rounded-2xl shadow-sm p-5 sm:p-7" style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)' }}>
               {step === 1 && <Step1 project={project} onChange={onChange} />}
               {step === 2 && <Step2 project={project} onChange={onChange} />}
               {step === 3 && <Step3 project={project} onChange={onChange} />}
@@ -395,13 +465,16 @@ export default function BuilderPage() {
         {/* Nav footer
             Mobile: fixed to bottom of viewport (full-width)
             Desktop: static, at bottom of left column */}
-        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 bg-white border-t border-gray-200 shadow-lg flex-shrink-0"
-          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 flex-shrink-0"
+          style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)', background: 'var(--pb-surface)', borderTop: '1px solid var(--pb-border)', boxShadow: '0 -4px 16px rgba(0,0,0,0.06)' }}>
           <div className="px-4 py-4 flex items-center justify-between">
             <button
               type="button"
               onClick={() => step === 1 ? setStep(0) : goToStep(step - 1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-2 font-medium px-4 py-2 rounded-lg transition-colors"
+              style={{ color: 'var(--pb-text2)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--pb-surface2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--pb-text)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--pb-text2)'; }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -409,9 +482,10 @@ export default function BuilderPage() {
               הקודם
             </button>
 
-            <span className="text-xs text-gray-400">
-              {step} / {TOTAL_STEPS}
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs" dir="ltr" style={{ color: 'var(--pb-text2)' }}>{step} / {TOTAL_STEPS}</span>
+              <FeedbackWidget />
+            </div>
 
             {step < TOTAL_STEPS ? (
               <div className="relative">
@@ -426,7 +500,7 @@ export default function BuilderPage() {
                     goToStep(step + 1);
                   }}
                   className={`flex items-center gap-2 text-white font-medium px-5 py-2 rounded-lg transition-colors ${
-                    isNextDisabled() ? 'bg-gray-300' : 'bg-blue-600 hover:bg-blue-700'
+                    isNextDisabled() ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >
                   הבא
@@ -450,18 +524,32 @@ export default function BuilderPage() {
         </div>
       </div>
 
+      {/* ── Mobile preview button — visible on small screens only ─── */}
+      <div className="lg:hidden fixed bottom-16 left-4 z-40">
+        <a
+          href="/preview/local"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold px-4 py-2 rounded-full shadow-lg transition-colors"
+          aria-label="פתח תצוגה מקדימה"
+        >
+          👁️ תצוגה
+        </a>
+      </div>
+
       {/* ── RIGHT PANEL: live preview iframe ──────────────────────── */}
       {/* Only visible on lg+ screens */}
       <div className="hidden lg:flex lg:flex-col lg:h-screen" dir="ltr">
         {/* Panel header */}
         <div
           dir="rtl"
-          className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 border-b border-gray-200 flex-shrink-0"
+          className="flex items-center gap-2 px-4 py-2.5 flex-shrink-0"
+          style={{ background: 'var(--pb-surface2)', borderBottom: '1px solid var(--pb-border)' }}
         >
           <span className="text-sm">👁️</span>
-          <span className="text-sm font-medium text-gray-700">תצוגה מקדימה חיה</span>
+          <span className="text-sm font-medium" style={{ color: 'var(--pb-text)' }}>תצוגה מקדימה חיה</span>
           {/* Pulse indicator */}
-          <span className="me-auto flex items-center gap-1.5 text-xs text-gray-400">
+          <span className="me-auto flex items-center gap-1.5 text-xs" style={{ color: 'var(--pb-text2)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse" />
             מתעדכן בזמן אמת
           </span>
@@ -486,6 +574,8 @@ export default function BuilderPage() {
           onLoad={handleIframeLoad}
         />
       </div>
+      <FeedbackWidget />
+      <TutorialModal open={showTutorial} onClose={closeTutorial} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { PropertyProject, StoredImage } from '@/types/project';
 
 // ── Theme system ──────────────────────────────────────────────────────────────
@@ -73,6 +73,7 @@ const FONT_FAMILY: Record<PropertyProject['fontStyle'], string> = {
 
 const AIR_LABEL: Record<string, string> = { N: 'צפון', S: 'דרום', E: 'מזרח', W: 'מערב' };
 const PARKING_LABEL: Record<string, string> = { covered: 'מקורה', outdoor: 'חיצונית' };
+const FURNITURE_LABEL: Record<string, string> = { none: 'ללא ריהוט', partial: 'ריהוט חלקי', full: 'מרוהטת מלאה' };
 
 // ── Gallery ───────────────────────────────────────────────────────────────────
 
@@ -190,7 +191,60 @@ function buildSpecs(p: PropertyProject): SpecItem[] {
   if (p.airDirections?.length) {
     s.push({ icon: icons.airDirections ?? '🧭', label: 'כיוונים', value: p.airDirections.map((d) => AIR_LABEL[d] ?? d).join(', ') });
   }
+  if (p.listingType === 'rent' && p.furniture) {
+    s.push({ icon: '🛋️', label: 'ריהוט', value: FURNITURE_LABEL[p.furniture] ?? p.furniture });
+  }
   return s;
+}
+
+// ── Sold / Rented overlay ───────────────────────────────────────────────────
+// Bold, page-covering marker: a fixed top banner + a dimming watermark layer
+// that repeats the status across the whole viewport. pointer-events-none on the
+// watermark so the page underneath stays scrollable/readable.
+
+function StatusOverlay({ label, verb }: { label: string; verb: string }) {
+  return (
+    <>
+      {/* Sticky banner */}
+      <div
+        dir="rtl"
+        className="fixed top-0 right-0 left-0 z-[60] text-center font-bold text-white shadow-lg"
+        style={{ background: '#dc2626', padding: '12px 16px' }}
+        role="status"
+        aria-live="polite"
+      >
+        <span className="text-base sm:text-lg">
+          ❌ הנכס {verb} — לא רלוונטי יותר, אין צורך ליצור קשר
+        </span>
+      </div>
+
+      {/* Dimming watermark layer */}
+      <div
+        className="fixed inset-0 z-[55] overflow-hidden flex flex-wrap items-center justify-center gap-x-8 gap-y-2 select-none"
+        style={{
+          background: 'rgba(0,0,0,0.5)',
+          pointerEvents: 'none',
+          transform: 'rotate(-28deg) scale(1.5)',
+        }}
+        aria-hidden="true"
+      >
+        {Array.from({ length: 28 }).map((_, i) => (
+          <span
+            key={i}
+            className="font-black uppercase tracking-widest"
+            style={{
+              fontSize: 'clamp(2.5rem, 7vw, 5rem)',
+              color: 'rgba(255,255,255,0.16)',
+              textShadow: '0 2px 12px rgba(0,0,0,0.4)',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {label}
+          </span>
+        ))}
+      </div>
+    </>
+  );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -209,9 +263,17 @@ export default function PreviewContent({ project, editHref, shareCode }: {
   // Share bar state
   const [copied, setCopied] = useState(false);
   const [shareUrl, setShareUrl] = useState('');
+  const [showBackToTop, setShowBackToTop] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (shareCode) setShareUrl(`${window.location.origin}/preview/${shareCode}`);
   }, [shareCode]);
+
+  useEffect(() => {
+    function onScroll() { setShowBackToTop(window.scrollY > 600); }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const handleCopy = useCallback(() => {
     if (!shareUrl) return;
     void navigator.clipboard.writeText(shareUrl).then(() => {
@@ -222,14 +284,15 @@ export default function PreviewContent({ project, editHref, shareCode }: {
 
   const isVisible = (id: string) => project.sectionVisibility[id] !== false;
 
-  const title = project.aiTitle || project.title || 'נכס למכירה';
+  const isRent = project.listingType === 'rent';
+  const title = project.aiTitle || project.title || (isRent ? 'נכס להשכרה' : 'נכס למכירה');
   const tagline = project.aiTagline || '';
   const story = project.aiStory || '';
   const address = [project.street, project.neighborhood, project.city].filter(Boolean).join(', ');
   const price = project.priceOnRequest
     ? ''
     : project.price
-    ? `₪${project.price.toLocaleString('he-IL')}`
+    ? `₪${project.price.toLocaleString('he-IL')}${isRent ? ' לחודש' : ''}`
     : '';
 
   const whatsappNum = (project.whatsapp || project.phone).replace(/\D/g, '');
@@ -237,8 +300,16 @@ export default function PreviewContent({ project, editHref, shareCode }: {
     ? `https://wa.me/972${whatsappNum.replace(/^0/, '')}?text=${encodeURIComponent(`שלום, ראיתי את הנכס "${title}" ואשמח לשמוע פרטים`)}`
     : '';
 
+  // ── Lifecycle status: sold / rented ────────────────────────────────────────
+  const isClosed = project.status === 'sold' || project.status === 'rented';
+  const statusLabel = project.status === 'rented' ? 'הושכר' : 'נמכר';
+  const statusVerb = project.status === 'rented' ? 'הושכר' : 'נמכר';
+
   return (
-    <div dir="rtl" lang="he" style={{ backgroundColor: theme.pageBg, color: theme.pageText, fontFamily }}>
+    <div ref={scrollRef} dir="rtl" lang="he" style={{ backgroundColor: theme.pageBg, color: theme.pageText, fontFamily }}>
+
+      {/* ── Sold / Rented marker — bold, covers the page ───────────── */}
+      {isClosed && <StatusOverlay label={statusLabel} verb={statusVerb} />}
 
       {/* ── Edit bar (dev / local only) ─────────────────────────── */}
       {editHref && (
@@ -248,7 +319,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
             href={editHref}
             className="bg-white text-blue-600 px-3 py-1 rounded-full font-semibold text-xs hover:bg-blue-50 transition-colors"
           >
-            ← חזרה לעריכה
+            חזרה לעריכה →
           </a>
         </div>
       )}
@@ -271,6 +342,18 @@ export default function PreviewContent({ project, editHref, shareCode }: {
             </>
           )}
           <div className="relative z-10 text-center px-6 py-16 md:py-24 max-w-4xl mx-auto w-full">
+            <div className="flex justify-center mb-4">
+              <span
+                className="text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider"
+                style={{
+                  backgroundColor: isRent ? 'rgba(34,197,94,0.2)' : 'rgba(59,130,246,0.2)',
+                  color: heroImage ? (isRent ? '#86efac' : '#93c5fd') : theme.heroText,
+                  border: `1px solid ${isRent ? 'rgba(34,197,94,0.4)' : 'rgba(59,130,246,0.4)'}`,
+                }}
+              >
+                {isRent ? '🔑 להשכרה' : '🏷️ למכירה'}
+              </span>
+            </div>
             {address && (
               <p
                 className="text-sm font-medium tracking-widest uppercase mb-4 opacity-75"
@@ -280,7 +363,7 @@ export default function PreviewContent({ project, editHref, shareCode }: {
               </p>
             )}
             <h1
-              className="text-5xl md:text-7xl font-bold mb-4 leading-tight"
+              className="text-3xl sm:text-5xl md:text-7xl font-bold mb-4 leading-tight break-words"
               style={{ color: heroImage ? '#fff' : theme.heroText }}
             >
               {title}
@@ -306,15 +389,17 @@ export default function PreviewContent({ project, editHref, shareCode }: {
                 {price}
               </div>
             )}
-            <div>
-              <a
-                href="#contact"
-                className="inline-block font-semibold px-10 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-lg"
-                style={{ backgroundColor: accent }}
-              >
-                צור קשר עכשיו ↓
-              </a>
-            </div>
+            {!isClosed && (
+              <div>
+                <a
+                  href="#contact"
+                  className="inline-block font-semibold px-10 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-lg"
+                  style={{ backgroundColor: accent }}
+                >
+                  צור קשר עכשיו ↓
+                </a>
+              </div>
+            )}
           </div>
           {/* scroll indicator */}
           <div
@@ -486,40 +571,54 @@ export default function PreviewContent({ project, editHref, shareCode }: {
               style={{ background: theme.heroBg }}
             >
               <div className="max-w-xl mx-auto text-center">
-                <h2 className="text-3xl font-bold mb-2" style={{ color: theme.heroText }}>
-                  מתעניינים בנכס?
-                </h2>
-                <p className="text-lg mb-8 opacity-75" style={{ color: theme.heroText }}>
-                  צרו קשר ונחזור אליכם בהקדם
-                </p>
-                {project.sellerName && (
-                  <p className="text-xl font-semibold mb-6" style={{ color: theme.heroText }}>
-                    {project.sellerName}
-                  </p>
+                {isClosed ? (
+                  <>
+                    <div className="text-5xl mb-4">{project.status === 'rented' ? '🔑' : '🏡'}</div>
+                    <h2 className="text-3xl font-bold mb-2" style={{ color: theme.heroText }}>
+                      הנכס {statusVerb}
+                    </h2>
+                    <p className="text-lg opacity-75" style={{ color: theme.heroText }}>
+                      תודה על העניין — הנכס כבר אינו זמין ואין צורך ליצור קשר.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h2 className="text-3xl font-bold mb-2" style={{ color: theme.heroText }}>
+                      מתעניינים בנכס?
+                    </h2>
+                    <p className="text-lg mb-8 opacity-75" style={{ color: theme.heroText }}>
+                      צרו קשר ונחזור אליכם בהקדם
+                    </p>
+                    {project.sellerName && (
+                      <p className="text-xl font-semibold mb-6" style={{ color: theme.heroText }}>
+                        {project.sellerName}
+                      </p>
+                    )}
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                      {project.phone && (
+                        <a
+                          href={`tel:${project.phone.replace(/\s/g, '')}`}
+                          onClick={() => window.dispatchEvent(new CustomEvent('plb-contact-click'))}
+                          className="flex items-center justify-center gap-2 font-semibold px-8 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-md"
+                          style={{ backgroundColor: accent }}
+                        >
+                          📞 {project.phone}
+                        </a>
+                      )}
+                      {whatsappUrl && (
+                        <a
+                          href={whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => window.dispatchEvent(new CustomEvent('plb-whatsapp-click'))}
+                          className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
+                        >
+                          💬 WhatsApp
+                        </a>
+                      )}
+                    </div>
+                  </>
                 )}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  {project.phone && (
-                    <a
-                      href={`tel:${project.phone.replace(/\s/g, '')}`}
-                      onClick={() => window.dispatchEvent(new CustomEvent('plb-contact-click'))}
-                      className="flex items-center justify-center gap-2 font-semibold px-8 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-md"
-                      style={{ backgroundColor: accent }}
-                    >
-                      📞 {project.phone}
-                    </a>
-                  )}
-                  {whatsappUrl && (
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => window.dispatchEvent(new CustomEvent('plb-whatsapp-click'))}
-                      className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
-                    >
-                      💬 WhatsApp
-                    </a>
-                  )}
-                </div>
               </div>
             </section>
           );
@@ -542,6 +641,19 @@ export default function PreviewContent({ project, editHref, shareCode }: {
           תנאי שימוש
         </a>
       </footer>
+
+      {/* ── Back to top ───────────────────────────────────────────── */}
+      {showBackToTop && (
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="fixed bottom-6 left-4 z-40 w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-white text-lg transition-opacity hover:opacity-80"
+          style={{ backgroundColor: accent }}
+          aria-label="חזרה למעלה"
+        >
+          ↑
+        </button>
+      )}
 
       {/* ── Floating share bar (public /preview/[code] only) ─────── */}
       {shareCode && shareUrl && (

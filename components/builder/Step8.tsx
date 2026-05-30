@@ -39,23 +39,24 @@ export default function Step8({ project, onChange }: StepProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">פרטי יצירת קשר</h2>
+      <h2 className="text-2xl font-bold" style={{ color: 'var(--pb-text)' }}>פרטי יצירת קשר</h2>
 
       {/* Seller name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">שם המוכר</label>
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--pb-text2)' }}>שם המוכר</label>
         <input
           type="text"
           value={project.sellerName}
           onChange={(e) => onChange({ sellerName: e.target.value })}
           placeholder="ישראל ישראלי"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)', color: 'var(--pb-text)' }}
         />
       </div>
 
       {/* Phone */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--pb-text2)' }}>
           טלפון <span className="text-red-500">*</span>
         </label>
         <input
@@ -64,12 +65,13 @@ export default function Step8({ project, onChange }: StepProps) {
           onChange={handlePhoneChange}
           placeholder="050-123-4567"
           dir="ltr"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)', color: 'var(--pb-text)' }}
         />
         {!project.phone.trim() ? (
-          <p className="text-xs text-amber-600 mt-1">יש להזין טלפון כדי להמשיך</p>
+          <p className="text-xs text-amber-500 mt-1">יש להזין טלפון כדי להמשיך</p>
         ) : (
-          <p className="text-xs text-gray-400 mt-1">כפתור ה-WhatsApp בדף ישתמש באותו מספר</p>
+          <p className="text-xs mt-1" style={{ color: 'var(--pb-text2)' }}>כפתור ה-WhatsApp בדף ישתמש באותו מספר</p>
         )}
       </div>
 
@@ -82,24 +84,25 @@ export default function Step8({ project, onChange }: StepProps) {
             onChange={(e) => toggleSeparateWA(e.target.checked)}
             className="w-4 h-4 text-blue-600 rounded"
           />
-          <span className="text-sm text-gray-700">הוסף מספר WhatsApp שונה</span>
+          <span className="text-sm" style={{ color: 'var(--pb-text)' }}>הוסף מספר WhatsApp שונה</span>
         </label>
 
         {separateWA && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium mb-1" style={{ color: 'var(--pb-text2)' }}>
               מספר WhatsApp
             </label>
             <input
-              type="text"
+              type="tel"
               value={project.whatsapp}
-              onChange={(e) => onChange({ whatsapp: e.target.value.replace(/\D/g, '') })}
-              placeholder="0501234567"
+              onChange={(e) => onChange({ whatsapp: formatIsraeliPhone(e.target.value) })}
+              placeholder="050-123-4567"
               dir="ltr"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)', color: 'var(--pb-text)' }}
             />
-            <p className="text-xs text-gray-400 mt-1">
-              ללא קידומת מדינה, לדוגמה: 0501234567
+            <p className="text-xs mt-1" style={{ color: 'var(--pb-text2)' }}>
+              כפי שהוזן — הספרות ישלחו ל-WhatsApp אוטומטית
             </p>
           </div>
         )}

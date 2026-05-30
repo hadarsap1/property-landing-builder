@@ -1,5 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rate-limit';
+
+const MAX_TEXT_LEN = 20_000; // a pasted listing is never this long
 
 export interface ImportedListing {
   title?: string;
@@ -26,11 +29,22 @@ export interface ImportedListing {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const body = await req.json() as { text?: string };
+  const limited = await rateLimit(req, { name: 'import-listing', limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
+  let body: { text?: string };
+  try {
+    body = (await req.json()) as { text?: string };
+  } catch {
+    return NextResponse.json({ error: 'גוף בקשה לא תקין' }, { status: 400 });
+  }
   const text = body.text?.trim();
 
   if (!text || text.length < 20) {
     return NextResponse.json({ error: 'טקסט קצר מדי' }, { status: 400 });
+  }
+  if (text.length > MAX_TEXT_LEN) {
+    return NextResponse.json({ error: 'הטקסט ארוך מדי' }, { status: 413 });
   }
 
   if (!process.env.ANTHROPIC_API_KEY) {
@@ -39,7 +53,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-  const message = await client.messages.create({
+  let message: Anthropic.Message;
+  try {
+    message = await client.messages.create({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 1024,
     system: `אתה מחלץ מידע מובנה ממודעות נדל"ן בישראל. החזר JSON בלבד, ללא markdown, ללא הסברים.
@@ -77,7 +93,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 ${text}`,
       },
     ],
-  });
+    });
+  } catch (err: unknown) {
+    const m = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[import-listing] Anthropic error:', { message: m });
+    return NextResponse.json({ error: 'שגיאה בחיבור ל-AI' }, { status: 502 });
+  }
 
   const content = message.content[0];
   if (content.type !== 'text') {

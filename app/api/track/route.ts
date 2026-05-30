@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql, hasDb } from '@/lib/db';
+import { rateLimit } from '@/lib/rate-limit';
 
 interface TrackBody {
   event: string;
@@ -10,6 +11,9 @@ interface TrackBody {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const limited = await rateLimit(req, { name: 'track', limit: 120, windowMs: 60_000 });
+  if (limited) return limited;
+
   let body: TrackBody;
   try {
     body = (await req.json()) as TrackBody;

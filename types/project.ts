@@ -1,11 +1,18 @@
+// Lifecycle status of a listing. Set to a terminal value ('sold' / 'rented')
+// from the dashboard or the /manage page *after* the listing already exists —
+// never during the first build. Drives the "no longer available" overlay.
+export type PropertyStatus = 'available' | 'sold' | 'rented';
+
 export interface PropertyProject {
   // Step 1
+  listingType: 'sale' | 'rent';
   title: string;
   street: string;
   city: string;
   neighborhood: string;
   price: number | null;
   priceOnRequest: boolean;
+  furniture: 'none' | 'partial' | 'full' | '';
   builtArea: number | null;
   gardenArea: number | null;
   rooms: number | null;
@@ -59,6 +66,9 @@ export interface PropertyProject {
 
   // Marketplace
   isPublished: boolean;
+
+  // Lifecycle — defaults to 'available'; updated post-publish only
+  status: PropertyStatus;
 }
 
 export interface StoredImage {

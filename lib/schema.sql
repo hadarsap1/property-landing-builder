@@ -29,11 +29,15 @@ CREATE TABLE IF NOT EXISTS projects (
   price_on_request BOOLEAN NOT NULL DEFAULT false,
   template        TEXT,
   is_published    BOOLEAN NOT NULL DEFAULT false,
+  status          TEXT NOT NULL DEFAULT 'available',  -- 'available' | 'sold' | 'rented'
   data            JSONB NOT NULL,           -- full PropertyProject (images as blob URLs)
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   expires_at      TIMESTAMPTZ               -- null = permanent
 );
+
+-- Migration for existing databases (safe to re-run):
+ALTER TABLE projects ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'available';
 
 CREATE INDEX IF NOT EXISTS idx_projects_user_id     ON projects(user_id);
 CREATE INDEX IF NOT EXISTS idx_projects_is_published ON projects(is_published) WHERE is_published = true;

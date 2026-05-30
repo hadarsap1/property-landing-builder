@@ -151,7 +151,7 @@ function PublishedCard({ project }: { project: PublishedProject }) {
 
 export default function ExamplesGallery({ published }: Props) {
   return (
-    <div className="min-h-screen bg-gray-50" dir="rtl">
+    <div className="min-h-screen" dir="rtl" style={{ background: 'var(--pb-bg)' }}>
       {/* Hero */}
       <div className="bg-gradient-to-br from-blue-600 to-indigo-700 text-white px-6 py-16 text-center">
         <h1 className="text-3xl md:text-4xl font-extrabold mb-3 leading-tight">
@@ -174,7 +174,7 @@ export default function ExamplesGallery({ published }: Props) {
         {published.length > 0 && (
           <section>
             <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-xl font-bold text-gray-900">נכסים אמיתיים מהמערכת</h2>
+              <h2 className="text-xl font-bold" style={{ color: 'var(--pb-text)' }}>נכסים אמיתיים מהמערכת</h2>
               <span className="text-xs font-semibold bg-green-100 text-green-700 px-2.5 py-0.5 rounded-full">
                 {published.length} נכסים פעילים
               </span>
@@ -190,8 +190,8 @@ export default function ExamplesGallery({ published }: Props) {
         {/* Template showcase */}
         <section>
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-1">5 סגנונות לבחירה</h2>
-            <p className="text-sm text-gray-500">כל אחד עם פלטת צבעים, פונטים ותחושה שונה</p>
+            <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--pb-text)' }}>5 סגנונות לבחירה</h2>
+            <p className="text-sm" style={{ color: 'var(--pb-text2)' }}>כל אחד עם פלטת צבעים, פונטים ותחושה שונה</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {STATIC_EXAMPLES.map((ex) => (
@@ -202,10 +202,10 @@ export default function ExamplesGallery({ published }: Props) {
 
         {/* Bottom CTA */}
         <section className="text-center pb-6">
-          <div className="bg-white rounded-2xl border border-gray-200 px-8 py-10 max-w-lg mx-auto shadow-sm">
+          <div className="rounded-2xl px-8 py-10 max-w-lg mx-auto shadow-sm" style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)' }}>
             <div className="text-4xl mb-3">🏠</div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">מוכן להתחיל?</h3>
-            <p className="text-sm text-gray-500 mb-6">
+            <h3 className="text-lg font-bold mb-2" style={{ color: 'var(--pb-text)' }}>מוכן להתחיל?</h3>
+            <p className="text-sm mb-6" style={{ color: 'var(--pb-text2)' }}>
               מכניסים פרטים, AI כותב את הטקסט, אתה בוחר סגנון — ומקבל קישור לשיתוף
             </p>
             <a

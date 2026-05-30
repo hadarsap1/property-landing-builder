@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { signIn } from 'next-auth/react';
 import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
@@ -19,6 +20,18 @@ export default function Step9({ project, onChange }: StepProps) {
   const [copied, setCopied] = useState(false);
   const [codeTooltipOpen, setCodeTooltipOpen] = useState(false);
   const [confirmNew, setConfirmNew] = useState(false);
+  const [existingCode, setExistingCode] = useState<string | null>(null);
+
+  // Remember a previously-saved code so re-saving updates that listing
+  // instead of creating a duplicate.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('property-builder-code');
+      if (saved && /^\d{6}$/.test(saved)) setExistingCode(saved);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   useEffect(() => {
     fetch('/api/auth/session')
@@ -43,14 +56,20 @@ export default function Step9({ project, onChange }: StepProps) {
       const res = await fetch('/api/save-project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project }),
+        body: JSON.stringify({ project, code: existingCode ?? undefined }),
       });
       if (!res.ok) {
         const errData = (await res.json()) as { error?: string };
         throw new Error(errData.error ?? 'שגיאה בשמירה');
       }
-      const data = (await res.json()) as { code: string };
+      const data = (await res.json()) as { code: string; updated?: boolean };
       setCode(data.code);
+      setExistingCode(data.code);
+      try {
+        localStorage.setItem('property-builder-code', data.code);
+      } catch {
+        // ignore
+      }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'שגיאה לא צפויה');
     } finally {
@@ -75,8 +94,8 @@ export default function Step9({ project, onChange }: StepProps) {
       {/* ── Celebration header ──────────────────────────────────── */}
       <div className="text-center py-4">
         <div className="text-5xl mb-3">🎉</div>
-        <h2 className="text-2xl font-bold text-gray-800 mb-1">הדף שלך מוכן!</h2>
-        <p className="text-gray-500 text-sm">
+        <h2 className="text-2xl font-bold mb-1" style={{ color: 'var(--pb-text)' }}>הדף שלך מוכן!</h2>
+        <p className="text-sm" style={{ color: 'var(--pb-text2)' }}>
           {project.aiTitle || project.title || 'הנכס שלך'} נראה מדהים
         </p>
       </div>
@@ -112,10 +131,10 @@ export default function Step9({ project, onChange }: StepProps) {
       </div>
 
       {/* ── Local preview ────────────────────────────────────────── */}
-      <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-3">
+      <div className="rounded-xl p-4 flex items-center justify-between gap-3" style={{ background: 'var(--pb-surface2)', border: '1px solid var(--pb-border)' }}>
         <div>
-          <p className="font-medium text-gray-800 text-sm">תצוגה מקדימה מקומית</p>
-          <p className="text-xs text-gray-500 mt-0.5">ראה את הדף לפני השמירה</p>
+          <p className="font-medium text-sm" style={{ color: 'var(--pb-text)' }}>תצוגה מקדימה מקומית</p>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--pb-text2)' }}>ראה את הדף לפני השמירה</p>
         </div>
         <Link
           href="/preview/local"
@@ -148,14 +167,16 @@ export default function Step9({ project, onChange }: StepProps) {
         ) : (
           <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-4 space-y-3">
             <div>
-              <p className="font-semibold text-sm text-gray-800">שמור לצמיתות בחשבון שלך</p>
-              <p className="text-xs text-gray-500 mt-0.5">
+              <p className="font-semibold text-sm" style={{ color: 'var(--pb-text)' }}>שמור לצמיתות בחשבון שלך</p>
+              <p className="text-xs mt-0.5" style={{ color: 'var(--pb-text2)' }}>
                 ללא התחברות הפרויקט נשמר ל-90 יום בלבד. עם חשבון — לנצח, עם דשבורד מלא
               </p>
             </div>
-            <a
-              href="/api/auth/signin/google?callbackUrl=/dashboard"
-              className="w-full flex items-center justify-center gap-2.5 bg-white border border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 font-semibold text-sm py-2.5 rounded-xl transition-colors shadow-sm"
+            <button
+              type="button"
+              onClick={() => void signIn('google', { callbackUrl: '/dashboard' })}
+              className="w-full flex items-center justify-center gap-2.5 font-semibold text-sm py-2.5 rounded-xl transition-colors shadow-sm"
+              style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)', color: 'var(--pb-text)' }}
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 flex-shrink-0" aria-hidden="true">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -164,7 +185,7 @@ export default function Step9({ project, onChange }: StepProps) {
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
               </svg>
               המשך עם Google
-            </a>
+            </button>
             <p className="text-center text-xs text-gray-400">
               אפשר גם{' '}
               <button
@@ -181,13 +202,15 @@ export default function Step9({ project, onChange }: StepProps) {
       )}
 
       {/* ── Save & share ─────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
+      <div className="rounded-2xl p-6" style={{ background: 'color-mix(in srgb, var(--pb-accent) 8%, var(--pb-surface))', border: '1px solid color-mix(in srgb, var(--pb-accent) 20%, transparent)' }}>
         {code ? (
           <div className="space-y-4">
             {/* Success */}
             <div className="flex items-center gap-2 text-green-700 bg-green-50 border border-green-200 rounded-xl px-4 py-3">
               <span className="text-lg">✅</span>
-              <span className="font-semibold text-sm">הדף נשמר בהצלחה! הקישור שלך מוכן.</span>
+              <span className="font-semibold text-sm">
+                {existingCode ? 'הדף עודכן בהצלחה! הקישור הישן עדיין עובד.' : 'הדף נשמר בהצלחה! הקישור שלך מוכן.'}
+              </span>
             </div>
 
             {/* Preview link — primary CTA */}
@@ -201,8 +224,8 @@ export default function Step9({ project, onChange }: StepProps) {
             </Link>
 
             {/* Copy link row */}
-            <div className="flex items-center gap-2 bg-white border border-blue-200 rounded-xl px-4 py-3">
-              <p className="flex-1 text-sm text-gray-500 truncate font-mono">{fullUrl}</p>
+            <div className="flex items-center gap-2 rounded-xl px-4 py-3" style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)' }}>
+              <p className="flex-1 text-sm truncate font-mono" style={{ color: 'var(--pb-text2)' }}>{fullUrl}</p>
               <button
                 type="button"
                 onClick={() => void copyLink()}
@@ -213,10 +236,10 @@ export default function Step9({ project, onChange }: StepProps) {
             </div>
 
             {/* Access code */}
-            <div className="bg-white border border-gray-200 rounded-xl px-4 py-3 space-y-2">
+            <div className="rounded-xl px-4 py-3 space-y-2" style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <div className="text-xs text-gray-400">קוד גישה</div>
+                  <div className="text-xs" style={{ color: 'var(--pb-text2)' }}>קוד גישה</div>
                   <div className="group relative inline-block">
                     <button
                       type="button"
@@ -238,9 +261,16 @@ export default function Step9({ project, onChange }: StepProps) {
                     </div>
                   </div>
                 </div>
-                <div className="text-xs text-gray-400">תוקף: 90 יום</div>
+                <div className="text-xs" style={{ color: 'var(--pb-text2)' }}>תוקף: 90 יום</div>
               </div>
               <div className="text-2xl font-bold tracking-widest text-blue-700">{code}</div>
+              <p className="text-xs pt-1" style={{ color: 'var(--pb-text2)' }}>
+                כשהנכס יימכר או יושכר —{' '}
+                <Link href={`/manage?code=${code}`} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 text-blue-600">
+                  סמנו זאת כאן
+                </Link>{' '}
+                כדי שיפסיקו להתקשר.
+              </p>
             </div>
 
             {/* Share buttons */}
@@ -263,9 +293,13 @@ export default function Step9({ project, onChange }: StepProps) {
           </div>
         ) : (
           <div>
-            <h3 className="text-base font-semibold text-gray-800 mb-1">שמור ושתף</h3>
-            <p className="text-sm text-gray-500 mb-4">
-              שמירה תיצור קישור ייחודי שתוכל לשלוח לכל אחד. תוקף: 90 יום.
+            <h3 className="text-base font-semibold mb-1" style={{ color: 'var(--pb-text)' }}>
+              {existingCode ? 'עדכן דף קיים' : 'שמור ושתף'}
+            </h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--pb-text2)' }}>
+              {existingCode
+                ? `עדכון ישמור את השינויים תחת אותו קישור (קוד ${existingCode}).`
+                : 'שמירה תיצור קישור ייחודי שתוכל לשלוח לכל אחד. תוקף: 90 יום.'}
             </p>
             {error && (
               <p className="text-sm text-red-600 mb-3 bg-red-50 rounded-lg p-3">{error}</p>
@@ -282,10 +316,10 @@ export default function Step9({ project, onChange }: StepProps) {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                   </svg>
-                  שומר...
+                  {existingCode ? 'מעדכן...' : 'שומר...'}
                 </>
               ) : (
-                '💾 שמור וקבל קישור לשיתוף'
+                existingCode ? '🔄 עדכן דף קיים' : '💾 שמור וקבל קישור לשיתוף'
               )}
             </button>
           </div>
@@ -293,47 +327,47 @@ export default function Step9({ project, onChange }: StepProps) {
       </div>
 
       {/* ── Property summary ─────────────────────────────────────── */}
-      <details className="group bg-gray-50 rounded-xl border border-gray-200">
-        <summary className="px-4 py-3 text-sm font-semibold text-gray-600 cursor-pointer list-none flex items-center justify-between">
+      <details className="group rounded-xl" style={{ background: 'var(--pb-surface2)', border: '1px solid var(--pb-border)' }}>
+        <summary className="px-4 py-3 text-sm font-semibold cursor-pointer list-none flex items-center justify-between" style={{ color: 'var(--pb-text2)' }}>
           סיכום הנכס
-          <svg className="w-4 h-4 text-gray-400 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 transition-transform group-open:rotate-180" style={{ color: 'var(--pb-text2)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </summary>
         <div className="px-4 pb-4">
-          <dl className="grid grid-cols-2 gap-2 text-sm pt-2 border-t border-gray-200">
+          <dl className="grid grid-cols-2 gap-2 text-sm pt-2" style={{ borderTop: '1px solid var(--pb-border)' }}>
             {project.title && (
               <>
-                <dt className="text-gray-500">כותרת</dt>
-                <dd className="text-gray-800 font-medium">{project.aiTitle || project.title}</dd>
+                <dt style={{ color: 'var(--pb-text2)' }}>כותרת</dt>
+                <dd className="font-medium" style={{ color: 'var(--pb-text)' }}>{project.aiTitle || project.title}</dd>
               </>
             )}
             {project.city && (
               <>
-                <dt className="text-gray-500">מיקום</dt>
-                <dd className="text-gray-800">{[project.street, project.city].filter(Boolean).join(', ')}</dd>
+                <dt style={{ color: 'var(--pb-text2)' }}>מיקום</dt>
+                <dd style={{ color: 'var(--pb-text)' }}>{[project.street, project.city].filter(Boolean).join(', ')}</dd>
               </>
             )}
             {project.rooms && (
               <>
-                <dt className="text-gray-500">חדרים</dt>
-                <dd className="text-gray-800">{project.rooms}</dd>
+                <dt style={{ color: 'var(--pb-text2)' }}>חדרים</dt>
+                <dd style={{ color: 'var(--pb-text)' }}>{project.rooms}</dd>
               </>
             )}
             {project.builtArea && (
               <>
-                <dt className="text-gray-500">שטח</dt>
-                <dd className="text-gray-800">{project.builtArea} מ״ר</dd>
+                <dt style={{ color: 'var(--pb-text2)' }}>שטח</dt>
+                <dd style={{ color: 'var(--pb-text)' }}>{project.builtArea} מ״ר</dd>
               </>
             )}
             {project.images.length > 0 && (
               <>
-                <dt className="text-gray-500">תמונות</dt>
-                <dd className="text-gray-800">{project.images.length}</dd>
+                <dt style={{ color: 'var(--pb-text2)' }}>תמונות</dt>
+                <dd style={{ color: 'var(--pb-text)' }}>{project.images.length}</dd>
               </>
             )}
-            <dt className="text-gray-500">תבנית</dt>
-            <dd className="text-gray-800">{project.template}</dd>
+            <dt style={{ color: 'var(--pb-text2)' }}>תבנית</dt>
+            <dd style={{ color: 'var(--pb-text)' }}>{project.template}</dd>
           </dl>
         </div>
       </details>
@@ -344,7 +378,8 @@ export default function Step9({ project, onChange }: StepProps) {
           <button
             type="button"
             onClick={() => setConfirmNew(true)}
-            className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors"
+            className="text-sm underline underline-offset-2 transition-colors"
+            style={{ color: 'var(--pb-text2)' }}
           >
             + התחל נכס חדש
           </button>
@@ -356,6 +391,8 @@ export default function Step9({ project, onChange }: StepProps) {
                 type="button"
                 onClick={() => {
                   localStorage.removeItem('property-builder-draft');
+                  localStorage.removeItem('property-builder-step');
+                  localStorage.removeItem('property-builder-code');
                   window.location.reload();
                 }}
                 className="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-1.5 rounded-lg transition-colors"

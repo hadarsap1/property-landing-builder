@@ -44,7 +44,7 @@ export default function TermsPage() {
                 השירות מיועד לשימוש חוקי בלבד, לצורך יצירת ופרסום מידע על נכסי נדל"ן.
                 המשתמש מתחייב:
               </p>
-              <ul className="list-disc list-inside space-y-1 text-gray-600 mr-4">
+              <ul className="list-disc list-inside space-y-1 text-gray-600 ms-4">
                 <li>לפרסם מידע אמיתי ומדויק על הנכס</li>
                 <li>לא לפרסם תוכן מטעה, שקרי או פוגעני</li>
                 <li>לא להשתמש בשירות לפעולות בלתי חוקיות</li>
@@ -78,7 +78,7 @@ export default function TermsPage() {
                 הנתונים שהמשתמש מזין לאשף נשמרים בדפדפן (localStorage) בלבד, אלא אם המשתמש בחר לשמור את הפרויקט
                 ולקבל קישור שיתוף. במקרה של שמירה:
               </p>
-              <ul className="list-disc list-inside space-y-1 text-gray-600 mr-4">
+              <ul className="list-disc list-inside space-y-1 text-gray-600 ms-4">
                 <li>הנתונים, לרבות תמונות ופרטי הנכס, נשמרים בשרתי השירות עד 90 יום</li>
                 <li>לאחר 90 יום הנתונים נמחקים אוטומטית</li>
                 <li>אין אימות משתמשים, ולכן יש לשמור את קוד הגישה בסודיות</li>
@@ -104,7 +104,7 @@ export default function TermsPage() {
                 השירות מסופק "כמות שהוא", ללא כל אחריות מפורשת או משתמעת.
                 בעל השירות לא יהיה אחראי בגין:
               </p>
-              <ul className="list-disc list-inside space-y-1 text-gray-600 mr-4">
+              <ul className="list-disc list-inside space-y-1 text-gray-600 ms-4">
                 <li>נזק ישיר, עקיף, מקרי, או תוצאתי הנובע משימוש בשירות</li>
                 <li>אובדן נתונים, הכנסה, או רווח</li>
                 <li>שגיאות בתוכן שנוצר על ידי AI</li>

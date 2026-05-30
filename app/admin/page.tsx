@@ -1,7 +1,14 @@
 import { redirect } from 'next/navigation';
 import { auth, isAdmin } from '@/auth';
 import { sql, hasDb } from '@/lib/db';
-import AdminDashboard, { type AdminStats, type AdminProject, type AdminUser } from '@/components/admin/AdminDashboard';
+import AdminDashboard, {
+  type AdminStats,
+  type AdminProject,
+  type AdminUser,
+  type DailyPoint,
+  type ActivityItem,
+  type FeedbackItem,
+} from '@/components/admin/AdminDashboard';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,6 +35,7 @@ async function fetchProjects(): Promise<AdminProject[]> {
       p.price::float AS price,
       p.price_on_request,
       p.is_published,
+      p.status,
       p.created_at,
       p.expires_at,
       u.email AS user_email,
@@ -62,6 +70,100 @@ async function fetchUsers(): Promise<AdminUser[]> {
   return rows as AdminUser[];
 }
 
+async function fetchDailyStats(): Promise<DailyPoint[]> {
+  const rows = await sql!`
+    WITH days AS (
+      SELECT generate_series(
+        (NOW() - INTERVAL '29 days')::date,
+        NOW()::date,
+        '1 day'::interval
+      )::date AS day
+    ),
+    proj AS (
+      SELECT DATE(created_at) AS day, COUNT(*)::int AS n
+      FROM projects
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY 1
+    ),
+    vw AS (
+      SELECT
+        DATE(created_at) AS day,
+        COUNT(*)::int AS n,
+        SUM(CASE WHEN contact_clicked  THEN 1 ELSE 0 END)::int AS cc,
+        SUM(CASE WHEN whatsapp_clicked THEN 1 ELSE 0 END)::int AS wc
+      FROM project_views
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY 1
+    )
+    SELECT
+      d.day::text                         AS day,
+      COALESCE(proj.n, 0)::int            AS projects,
+      COALESCE(vw.n, 0)::int              AS views,
+      (COALESCE(vw.cc,0)+COALESCE(vw.wc,0))::int AS contact_clicks
+    FROM days d
+    LEFT JOIN proj ON proj.day = d.day
+    LEFT JOIN vw   ON vw.day   = d.day
+    ORDER BY d.day
+  `;
+  return rows as DailyPoint[];
+}
+
+async function fetchFeedback(): Promise<FeedbackItem[]> {
+  const rows = await sql!`
+    SELECT id, type, message, contact, user_email, screenshot,
+           status, resolved_at, admin_reply, replied_at, created_at
+    FROM feedback
+    ORDER BY
+      CASE WHEN status = 'open' THEN 0 ELSE 1 END,
+      created_at DESC
+    LIMIT 100
+  `;
+  return rows as FeedbackItem[];
+}
+
+async function fetchActivity(): Promise<ActivityItem[]> {
+  const rows = await sql!`
+    SELECT type, ref, label, user_email, ts FROM (
+      SELECT
+        'project_created'              AS type,
+        p.code                         AS ref,
+        COALESCE(p.title, p.code)      AS label,
+        u.email                        AS user_email,
+        p.created_at                   AS ts
+      FROM projects p
+      LEFT JOIN users u ON u.id = p.user_id
+
+      UNION ALL
+
+      SELECT
+        'user_joined',
+        u.id::text,
+        u.email,
+        u.email,
+        u.created_at
+      FROM users u
+
+      UNION ALL
+
+      SELECT
+        CASE
+          WHEN pv.contact_clicked  AND NOT pv.whatsapp_clicked THEN 'contact_click'
+          WHEN pv.whatsapp_clicked AND NOT pv.contact_clicked  THEN 'whatsapp_click'
+          WHEN pv.contact_clicked  AND pv.whatsapp_clicked     THEN 'contact_click'
+          ELSE 'view'
+        END,
+        pv.project_code,
+        pv.project_code,
+        NULL,
+        pv.created_at
+      FROM project_views pv
+    ) x
+    ORDER BY ts DESC
+    LIMIT 60
+  `;
+  return rows as ActivityItem[];
+}
+
 export default async function AdminPage() {
   const session = await auth();
   if (!isAdmin(session?.user?.email)) redirect('/');
@@ -81,10 +183,13 @@ export default async function AdminPage() {
     );
   }
 
-  const [stats, projects, users] = await Promise.all([
+  const [stats, projects, users, daily, activity, feedback] = await Promise.all([
     fetchStats(),
     fetchProjects(),
     fetchUsers(),
+    fetchDailyStats(),
+    fetchActivity(),
+    fetchFeedback(),
   ]);
 
   return (
@@ -92,6 +197,9 @@ export default async function AdminPage() {
       stats={stats}
       projects={projects}
       users={users}
+      daily={daily}
+      activity={activity}
+      feedback={feedback}
       adminEmail={adminEmail}
     />
   );

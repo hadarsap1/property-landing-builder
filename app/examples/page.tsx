@@ -30,6 +30,7 @@ async function fetchPublished(): Promise<PublishedProject[]> {
         ) AS hero_url
       FROM projects p
       WHERE p.is_published = true
+        AND p.status = 'available'
         AND (p.expires_at IS NULL OR p.expires_at > now())
       ORDER BY p.created_at DESC
       LIMIT 12

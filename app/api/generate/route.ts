@@ -1,12 +1,22 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rate-limit';
 import type { PropertyProject } from '@/types/project';
 
 interface GenerateRequestBody {
   project: PropertyProject;
 }
 
+const MAX_BODY_BYTES = 200_000; // ~200 KB — ample for a property's text fields
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const limited = await rateLimit(req, { name: 'generate', limit: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
+  if (Number(req.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) {
+    return NextResponse.json({ error: 'בקשה גדולה מדי' }, { status: 413 });
+  }
+
   let body: GenerateRequestBody;
   try {
     body = (await req.json()) as GenerateRequestBody;

@@ -1,9 +1,7 @@
 import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
-import NeonAdapter from '@auth/neon-adapter';
-import { Pool } from '@neondatabase/serverless';
+import { sql } from '@/lib/db';
 
-// Admin emails allowed to access /admin — comma-separated env var
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
   .split(',')
   .map((e) => e.trim())
@@ -13,53 +11,48 @@ export function isAdmin(email: string | null | undefined): boolean {
   return !!email && ADMIN_EMAILS.includes(email);
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth(() => {
-  // NeonAdapter needs a direct SQL connection (not pooled).
-  // If DATABASE_URL is absent we skip the adapter — auth still works
-  // with JWT-only sessions but user data won't be persisted to PG.
-  const adapter = process.env.DATABASE_URL
-    ? NeonAdapter(new Pool({ connectionString: process.env.DATABASE_URL }))
-    : undefined;
-
-  const providers = [];
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    providers.push(
-      Google({
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      })
-    );
-  }
-
-  return {
-    adapter,
-    providers,
-    session: {
-      // JWT strategy works without an adapter and is edge-compatible.
-      strategy: 'jwt',
-    },
-    callbacks: {
-      jwt({ token, user }) {
-        // Persist user id and admin flag into the JWT on first sign-in.
-        if (user) {
-          token.uid = user.id;
-          token.isAdmin = isAdmin(user.email);
+export const { handlers, signIn, signOut, auth } = NextAuth({
+  providers: [
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            checks: ['state'],
+          }),
+        ]
+      : []),
+  ],
+  session: { strategy: 'jwt' },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user?.email) {
+        // Upsert user into our DB on first sign-in and store our UUID.
+        if (sql) {
+          const rows = await sql`
+            INSERT INTO users (email, name, avatar_url)
+            VALUES (${user.email}, ${user.name ?? null}, ${user.image ?? null})
+            ON CONFLICT (email) DO UPDATE
+              SET name        = EXCLUDED.name,
+                  avatar_url  = EXCLUDED.avatar_url
+            RETURNING id
+          `;
+          if (rows[0]) token.uid = rows[0].id as string;
+        } else {
+          token.uid = user.id ?? user.email;
         }
-        return token;
-      },
-      session({ session, token }) {
-        if (session.user) {
-          session.user.id = token.uid as string;
-          (session.user as typeof session.user & { isAdmin: boolean }).isAdmin =
-            token.isAdmin as boolean;
-        }
-        return session;
-      },
+        token.isAdmin = isAdmin(user.email);
+      }
+      return token;
     },
-    pages: {
-      // Keep sign-in inline (no redirect to a separate page).
-      // We'll show a modal in the builder, so no custom signIn page needed.
+    session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.uid as string;
+        (session.user as typeof session.user & { isAdmin: boolean }).isAdmin =
+          token.isAdmin as boolean;
+      }
+      return session;
     },
-    trustHost: true,
-  };
+  },
+  trustHost: true,
 });

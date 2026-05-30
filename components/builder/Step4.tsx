@@ -56,11 +56,33 @@ export default function Step4({ project, onChange }: StepProps) {
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
   const [tipsOpen, setTipsOpen] = useState(false);
   const [enhancing, setEnhancing] = useState<Record<string, boolean>>({});
+  const [enhanceErrors, setEnhanceErrors] = useState<Record<string, string>>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
+  // Keep a ref to current images length so the dynamic input closure stays fresh
+  const imagesLenRef = useRef(project.images.length);
 
-  async function processFiles(files: FileList | File[]) {
+  // Keep ref in sync so the dynamic-input closure always reads the current length
+  imagesLenRef.current = project.images.length;
+
+  function openCamera(): void {
+    if (imagesLenRef.current >= 10) return;
+    // Create a fresh input each time — iOS WebKit blocks re-triggering an existing input
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.setAttribute('capture', 'environment');
+    input.style.cssText = 'position:fixed;top:-9999px;opacity:0;pointer-events:none';
+    document.body.appendChild(input);
+    input.onchange = () => {
+      const files = input.files ? Array.from(input.files) : [];
+      if (document.body.contains(input)) document.body.removeChild(input);
+      if (files.length) void processFiles(files);
+    };
+    input.click();
+  }
+
+  async function processFiles(files: FileList | File[]): Promise<void> {
     const arr = Array.from(files).filter((f) =>
       ['image/jpeg', 'image/png', 'image/webp'].includes(f.type)
     );
@@ -78,36 +100,50 @@ export default function Step4({ project, onChange }: StepProps) {
     onChange({ images: [...project.images, ...newImages] });
   }
 
-  async function enhanceImage(img: StoredImage) {
+  function applyEnhancement(dataUrl: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) { reject(new Error('canvas unavailable')); return; }
+        // Real-estate standard: brighter, punchier, warmer
+        ctx.filter = 'brightness(1.12) contrast(1.08) saturate(1.22)';
+        ctx.drawImage(image, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.9));
+      };
+      image.onerror = () => reject(new Error('image load failed'));
+      image.src = dataUrl;
+    });
+  }
+
+  async function enhanceImage(img: StoredImage): Promise<void> {
     setEnhancing((prev) => ({ ...prev, [img.id]: true }));
+    setEnhanceErrors((prev) => { const next = { ...prev }; delete next[img.id]; return next; });
     try {
-      const res = await fetch('/api/enhance-image', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ imageDataUrl: img.enhancedDataUrl ?? img.dataUrl }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const { enhancedDataUrl } = (await res.json()) as { enhancedDataUrl: string };
+      const enhancedDataUrl = await applyEnhancement(img.dataUrl);
       const updated = project.images.map((i) =>
         i.id === img.id ? { ...i, enhancedDataUrl } : i
       );
       onChange({ images: updated });
     } catch (err) {
       console.error('[enhance]', err);
-      alert('שיפור התמונה נכשל. נסה שוב.');
+      setEnhanceErrors((prev) => ({ ...prev, [img.id]: 'שיפור נכשל, נסה שוב' }));
     } finally {
       setEnhancing((prev) => ({ ...prev, [img.id]: false }));
     }
   }
 
-  function revertEnhancement(imgId: string) {
+  function revertEnhancement(imgId: string): void {
     const updated = project.images.map((i) =>
       i.id === imgId ? { ...i, enhancedDataUrl: undefined } : i
     );
     onChange({ images: updated });
   }
 
-  function moveImage(fromIdx: number, toIdx: number) {
+  function moveImage(fromIdx: number, toIdx: number): void {
     if (toIdx < 0 || toIdx >= project.images.length) return;
     const updated = [...project.images];
     const [moved] = updated.splice(fromIdx, 1);
@@ -119,7 +155,7 @@ export default function Step4({ project, onChange }: StepProps) {
     onChange({ images: updated, heroImageIndex: heroIdx });
   }
 
-  function removeImage(id: string) {
+  function removeImage(id: string): void {
     const updated = project.images.filter((img) => img.id !== id);
     let heroIdx = project.heroImageIndex;
     const removedIdx = project.images.findIndex((img) => img.id === id);
@@ -128,17 +164,17 @@ export default function Step4({ project, onChange }: StepProps) {
     onChange({ images: updated, heroImageIndex: Math.max(0, heroIdx) });
   }
 
-  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+  function handleDrop(e: React.DragEvent<HTMLDivElement>): void {
     e.preventDefault();
     setDragOver(false);
     void processFiles(e.dataTransfer.files);
   }
 
-  function handleItemDragStart(idx: number) {
+  function handleItemDragStart(idx: number): void {
     setDraggedIdx(idx);
   }
 
-  function handleItemDrop(targetIdx: number) {
+  function handleItemDrop(targetIdx: number): void {
     if (draggedIdx === null || draggedIdx === targetIdx) return;
     const updated = [...project.images];
     const [moved] = updated.splice(draggedIdx, 1);
@@ -151,7 +187,7 @@ export default function Step4({ project, onChange }: StepProps) {
     setDraggedIdx(null);
   }
 
-  async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleVideoUpload(e: React.ChangeEvent<HTMLInputElement>): Promise<void> {
     const file = e.target.files?.[0];
     if (!file || file.type !== 'video/mp4') return;
     const url = URL.createObjectURL(file);
@@ -160,7 +196,7 @@ export default function Step4({ project, onChange }: StepProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">תמונות ומדיה</h2>
+      <h2 className="text-2xl font-bold" style={{ color: 'var(--pb-text)' }}>תמונות ומדיה</h2>
 
       {/* Photo tips */}
       <div className="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
@@ -192,15 +228,18 @@ export default function Step4({ project, onChange }: StepProps) {
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
+          style={{ background: 'var(--pb-surface2)', borderColor: dragOver ? 'var(--pb-accent)' : 'var(--pb-border)' }}
           className={`flex-1 border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-colors ${
             dragOver
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
+              ? 'border-blue-500'
+              : 'hover:border-blue-400'
           }`}
         >
           <div className="text-3xl mb-1">🖼️</div>
-          <p className="text-gray-600 font-medium text-sm">גרור או לחץ לבחירה</p>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="font-medium text-sm" style={{ color: 'var(--pb-text)' }}>
+            <span className="hidden sm:inline">גרור או </span>לחץ לבחירה
+          </p>
+          <p className="text-xs mt-1" style={{ color: 'var(--pb-text2)' }}>
             JPG, PNG, WebP | עד 10 תמונות
             {project.images.length > 0 && ` (${project.images.length}/10)`}
           </p>
@@ -214,34 +253,28 @@ export default function Step4({ project, onChange }: StepProps) {
           />
         </div>
 
-        {/* Camera capture — mobile only (capture attr is only useful on phones) */}
+        {/* Camera capture — mobile only */}
         {project.images.length < 10 && (
           <button
             type="button"
-            onClick={() => cameraInputRef.current?.click()}
-            className="md:hidden flex flex-col items-center justify-center gap-1 w-28 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 hover:border-blue-400 hover:bg-blue-50 transition-colors cursor-pointer"
+            onClick={openCamera}
+            className="md:hidden flex flex-col items-center justify-center gap-1 w-28 border-2 border-dashed rounded-xl hover:border-blue-400 transition-colors cursor-pointer"
+            style={{ borderColor: 'var(--pb-border)', background: 'var(--pb-surface2)' }}
           >
             <span className="text-3xl">📷</span>
-            <span className="text-xs text-gray-600 font-medium">צלם עכשיו</span>
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => { if (e.target.files) void processFiles(e.target.files); }}
-            />
+            <span className="text-xs font-medium" style={{ color: 'var(--pb-text2)' }}>צלם עכשיו</span>
           </button>
         )}
       </div>
 
-      {/* Image grid */}
+      {/* Image grid — 2 cols on mobile for bigger touch targets, 3 cols on sm+ */}
       {project.images.length > 0 && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           {project.images.map((img, idx) => {
             const displaySrc = img.enhancedDataUrl ?? img.dataUrl;
             const isEnhancing = enhancing[img.id] ?? false;
             const isEnhanced = !!img.enhancedDataUrl;
+            const enhanceError = enhanceErrors[img.id];
 
             return (
               <div
@@ -260,17 +293,17 @@ export default function Step4({ project, onChange }: StepProps) {
                 <img
                   src={displaySrc}
                   alt={img.name}
-                  className="w-full h-28 object-cover"
+                  className="w-full h-32 object-cover"
                 />
 
                 {/* Enhanced badge */}
                 {isEnhanced && (
                   <div className="absolute top-1 left-1 bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full leading-none pointer-events-none">
-                    AI ✨
+                    ✨ שופר
                   </div>
                 )}
 
-                {/* Hero star */}
+                {/* Hero star badge */}
                 {project.heroImageIndex === idx && (
                   <div className="absolute top-1 right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-xs pointer-events-none">
                     ⭐
@@ -282,6 +315,13 @@ export default function Step4({ project, onChange }: StepProps) {
                   <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-1">
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     <span className="text-white text-[10px]">משפר…</span>
+                  </div>
+                )}
+
+                {/* Inline enhance error */}
+                {enhanceError && !isEnhancing && (
+                  <div className="absolute top-0 inset-x-0 bg-red-600/90 text-white text-[10px] text-center px-1 py-1 leading-tight">
+                    {enhanceError}
                   </div>
                 )}
 
@@ -325,60 +365,72 @@ export default function Step4({ project, onChange }: StepProps) {
                   </div>
                 )}
 
-                {/* Mobile: always-visible bottom controls */}
+                {/* Mobile: always-visible bottom bar — large touch targets */}
                 {!isEnhancing && (
-                  <div className="absolute bottom-0 inset-x-0 flex md:hidden items-center justify-between px-1 py-1 bg-gradient-to-t from-black/60 to-transparent">
-                    <div className="flex gap-0.5">
-                      <button
-                        type="button"
-                        onClick={() => moveImage(idx, idx - 1)}
-                        disabled={idx === 0}
-                        className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
-                        aria-label="הזז שמאלה"
-                      >‹</button>
-                      <button
-                        type="button"
-                        onClick={() => moveImage(idx, idx + 1)}
-                        disabled={idx === project.images.length - 1}
-                        className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
-                        aria-label="הזז ימינה"
-                      >›</button>
-                    </div>
-                    <div className="flex gap-0.5">
-                      <button
-                        type="button"
-                        onClick={() => onChange({ heroImageIndex: idx })}
-                        className={`w-6 h-6 rounded flex items-center justify-center text-xs leading-none ${
-                          project.heroImageIndex === idx ? 'bg-yellow-400' : 'bg-white/80 text-gray-800'
-                        }`}
-                        aria-label="הגדר כראשי"
-                      >⭐</button>
-                      <button
-                        type="button"
-                        onClick={() => isEnhanced ? revertEnhancement(img.id) : void enhanceImage(img)}
-                        className={`w-6 h-6 rounded flex items-center justify-center text-xs leading-none ${
-                          isEnhanced ? 'bg-gray-500 text-white' : 'bg-purple-600 text-white'
-                        }`}
-                        aria-label={isEnhanced ? 'בטל שיפור' : 'שפר עם AI'}
-                      >{isEnhanced ? '↩' : '✨'}</button>
-                      <button
-                        type="button"
-                        onClick={() => removeImage(img.id)}
-                        className="w-6 h-6 rounded bg-red-500/90 text-white flex items-center justify-center text-xs leading-none"
-                        aria-label="מחק תמונה"
-                      >✕</button>
-                    </div>
+                  <div className="absolute bottom-0 inset-x-0 flex md:hidden">
+                    {/* Hero toggle — left third */}
+                    <button
+                      type="button"
+                      onClick={() => onChange({ heroImageIndex: idx })}
+                      className={`flex-1 h-10 flex items-center justify-center text-lg transition-colors ${
+                        project.heroImageIndex === idx
+                          ? 'bg-yellow-400'
+                          : 'bg-black/55'
+                      }`}
+                      aria-label="הגדר כראשי"
+                    >
+                      ⭐
+                    </button>
+                    {/* AI enhance — middle third */}
+                    <button
+                      type="button"
+                      onClick={() => isEnhanced ? revertEnhancement(img.id) : void enhanceImage(img)}
+                      className={`flex-1 h-10 flex items-center justify-center text-lg transition-colors ${
+                        isEnhanced ? 'bg-gray-700' : 'bg-purple-700/80'
+                      }`}
+                      aria-label={isEnhanced ? 'בטל שיפור' : 'שפר עם AI'}
+                    >
+                      {isEnhanced ? '↩' : '✨'}
+                    </button>
+                    {/* Delete — right third */}
+                    <button
+                      type="button"
+                      onClick={() => removeImage(img.id)}
+                      className="flex-1 h-10 flex items-center justify-center text-lg bg-black/55 active:bg-red-600 transition-colors"
+                      aria-label="מחק תמונה"
+                    >
+                      🗑️
+                    </button>
                   </div>
                 )}
               </div>
             );
           })}
+
+          {/* Take-another camera cell — mobile only, always last in grid */}
+          {project.images.length < 10 && (
+            <button
+              type="button"
+              onClick={openCamera}
+              className="md:hidden h-32 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 flex flex-col items-center justify-center gap-1 active:bg-blue-100 transition-colors"
+            >
+              <span className="text-3xl">📷</span>
+              <span className="text-xs text-blue-600 font-semibold">צלם עוד</span>
+            </button>
+          )}
         </div>
+      )}
+
+      {/* Reorder hint — desktop only */}
+      {project.images.length > 1 && (
+        <p className="hidden sm:block text-xs text-center" style={{ color: 'var(--pb-text2)' }}>
+          גרור תמונות לסידור מחדש. התמונה הראשונה תהיה הכותרת.
+        </p>
       )}
 
       {/* Gallery type */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">סוג גלריה</label>
+        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--pb-text2)' }}>סוג גלריה</label>
         <div className="space-y-2">
           {GALLERY_OPTIONS.map((opt) => (
             <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
@@ -390,7 +442,7 @@ export default function Step4({ project, onChange }: StepProps) {
                 onChange={() => onChange({ galleryType: opt.value })}
                 className="text-blue-600"
               />
-              <span className="text-gray-700">{opt.label}</span>
+              <span style={{ color: 'var(--pb-text)' }}>{opt.label}</span>
             </label>
           ))}
         </div>
@@ -398,16 +450,17 @@ export default function Step4({ project, onChange }: StepProps) {
 
       {/* Video upload */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--pb-text2)' }}>
           סרטון (אופציונלי){' '}
-          <span className="text-gray-400 font-normal">MP4 בלבד</span>
+          <span style={{ color: 'var(--pb-text2)', fontWeight: 400 }}>MP4 בלבד</span>
         </label>
         <input
           ref={videoInputRef}
           type="file"
           accept="video/mp4"
           onChange={(e) => void handleVideoUpload(e)}
-          className="block text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          className="block text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          style={{ color: 'var(--pb-text2)' }}
         />
         {project.videoUrl && (
           <p className="text-sm text-green-600 mt-1">

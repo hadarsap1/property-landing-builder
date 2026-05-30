@@ -42,17 +42,11 @@ interface StepProps {
 
 const PRESET_COLORS = ['#2563eb', '#dc2626', '#16a34a', '#d97706', '#7c3aed'];
 
-const FONT_OPTIONS: { value: PropertyProject['fontStyle']; label: string; sample: string }[] = [
-  { value: 'serif', label: 'Serif', sample: 'בית חלומות' },
-  { value: 'sans-serif', label: 'Sans-serif', sample: 'בית חלומות' },
-  { value: 'display', label: 'Display', sample: 'בית חלומות' },
+const FONT_OPTIONS: { value: PropertyProject['fontStyle']; label: string; family: string }[] = [
+  { value: 'serif', label: 'קלאסי', family: 'Georgia,"Times New Roman",serif' },
+  { value: 'sans-serif', label: 'נקי', family: '"Segoe UI",Arial,sans-serif' },
+  { value: 'display', label: 'נועז', family: '"Trebuchet MS","Gill Sans",sans-serif' },
 ];
-
-const FONT_CLASS: Record<PropertyProject['fontStyle'], string> = {
-  serif: 'font-serif',
-  'sans-serif': 'font-sans',
-  display: 'font-mono',
-};
 
 const SECTION_LABELS: Record<string, string> = {
   hero: 'תמונה ראשית',
@@ -107,11 +101,11 @@ export default function Step7({ project, onChange }: StepProps) {
 
   return (
     <div className="space-y-8">
-      <h2 className="text-2xl font-bold text-gray-800">התאמה אישית</h2>
+      <h2 className="text-2xl font-bold" style={{ color: 'var(--pb-text)' }}>התאמה אישית</h2>
 
       {/* Accent color */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">צבע הדגשה</label>
+        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--pb-text2)' }}>צבע הדגשה</label>
         <div className="flex items-center gap-3 flex-wrap">
           {PRESET_COLORS.map((color) => (
             <button
@@ -129,7 +123,8 @@ export default function Step7({ project, onChange }: StepProps) {
           ))}
           <label className="cursor-pointer">
             <div
-              className="w-9 h-9 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-lg hover:border-gray-400 transition-colors"
+              className="w-9 h-9 rounded-full border-2 border-dashed flex items-center justify-center text-lg hover:opacity-70 transition-colors"
+            style={{ borderColor: 'var(--pb-border)', color: 'var(--pb-text2)' }}
               title="צבע מותאם אישית"
             >
               +
@@ -141,13 +136,13 @@ export default function Step7({ project, onChange }: StepProps) {
               className="sr-only"
             />
           </label>
-          <span className="text-sm text-gray-500 font-mono">{project.accentColor}</span>
+          <span className="text-sm font-mono" style={{ color: 'var(--pb-text2)' }}>{project.accentColor}</span>
         </div>
       </div>
 
       {/* Font style */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">סגנון פונט</label>
+        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--pb-text2)' }}>סגנון פונט</label>
         <div className="grid grid-cols-3 gap-3">
           {FONT_OPTIONS.map((opt) => {
             const selected = project.fontStyle === opt.value;
@@ -156,19 +151,20 @@ export default function Step7({ project, onChange }: StepProps) {
                 key={opt.value}
                 type="button"
                 onClick={() => onChange({ fontStyle: opt.value })}
-                className={`rounded-xl border-2 p-4 text-center transition-all focus:outline-none ${
+                className="rounded-xl border-2 p-4 text-center transition-all focus:outline-none"
+                style={
                   selected
-                    ? 'border-blue-600 bg-blue-50 shadow-sm'
-                    : 'border-gray-200 hover:border-blue-300'
-                }`}
+                    ? { borderColor: 'var(--pb-accent)', background: 'color-mix(in srgb, var(--pb-accent) 8%, transparent)' }
+                    : { borderColor: 'var(--pb-border)', background: 'var(--pb-surface2)' }
+                }
               >
                 <p
-                  className={`text-xl mb-1 ${FONT_CLASS[opt.value]}`}
-                  style={{ color: project.accentColor }}
+                  className="text-xl mb-1"
+                  style={{ color: project.accentColor, fontFamily: opt.family }}
                 >
-                  {opt.sample}
+                  בית חלומות
                 </p>
-                <p className="text-xs text-gray-500">{opt.label}</p>
+                <p className="text-xs" style={{ color: 'var(--pb-text2)' }}>{opt.label}</p>
               </button>
             );
           })}
@@ -177,10 +173,10 @@ export default function Step7({ project, onChange }: StepProps) {
 
       {/* Icon picker for spec items */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--pb-text2)' }}>
           אייקונים של פרטי הנכס
         </label>
-        <p className="text-xs text-gray-400 mb-3">לחץ על אייקון כדי להחליף אותו</p>
+        <p className="text-xs mb-3" style={{ color: 'var(--pb-text2)' }}>לחץ על אייקון כדי להחליף אותו</p>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {SPEC_KEY_LABEL.map(({ key, label }) => {
             const current = project.specIcons?.[key] ?? SPEC_ICON_OPTIONS[key]?.[0] ?? '•';
@@ -190,27 +186,27 @@ export default function Step7({ project, onChange }: StepProps) {
                 <button
                   type="button"
                   onClick={() => setOpenIconKey(isOpen ? null : key)}
-                  className={`w-full flex flex-col items-center gap-1 border rounded-xl p-2 transition-all focus:outline-none ${
+                  className="w-full flex flex-col items-center gap-1 rounded-xl p-2 transition-all focus:outline-none"
+                  style={
                     isOpen
-                      ? 'border-blue-400 bg-blue-50 shadow-sm'
-                      : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
-                  }`}
+                      ? { border: '1px solid var(--pb-accent)', background: 'color-mix(in srgb, var(--pb-accent) 8%, transparent)' }
+                      : { border: '1px solid var(--pb-border)', background: 'var(--pb-surface2)' }
+                  }
                 >
                   <span className="text-2xl leading-none">{current}</span>
-                  <span className="text-xs text-gray-500 truncate w-full text-center">{label}</span>
+                  <span className="text-xs truncate w-full text-center" style={{ color: 'var(--pb-text2)' }}>{label}</span>
                 </button>
 
                 {/* Emoji options popover */}
                 {isOpen && (
-                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-20 bg-white border border-gray-200 rounded-xl shadow-lg p-2 flex gap-1.5 flex-wrap w-44">
+                  <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 z-20 rounded-xl shadow-lg p-2 flex gap-1.5 flex-wrap w-44" style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)' }}>
                     {(SPEC_ICON_OPTIONS[key] ?? []).map((emoji) => (
                       <button
                         key={emoji}
                         type="button"
                         onClick={() => handleIconSelect(key, emoji)}
-                        className={`text-xl w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:scale-110 focus:outline-none ${
-                          emoji === current ? 'bg-blue-100 ring-2 ring-blue-400' : 'hover:bg-gray-100'
-                        }`}
+                        className="text-xl w-9 h-9 rounded-lg flex items-center justify-center transition-all hover:scale-110 focus:outline-none"
+                        style={emoji === current ? { background: 'color-mix(in srgb, var(--pb-accent) 15%, transparent)', outline: '2px solid var(--pb-accent)' } : { background: 'var(--pb-surface2)' }}
                       >
                         {emoji}
                       </button>
@@ -225,9 +221,10 @@ export default function Step7({ project, onChange }: StepProps) {
 
       {/* Section order */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium mb-3" style={{ color: 'var(--pb-text2)' }}>
           סדר ונראות מקטעים
-          <span className="text-gray-400 font-normal mr-2 text-xs">גרור לסידור מחדש</span>
+          <span className="font-normal me-2 text-xs hidden sm:inline" style={{ color: 'var(--pb-text2)' }}> גרור לסידור מחדש</span>
+          <span className="font-normal me-2 text-xs sm:hidden" style={{ color: 'var(--pb-text2)' }}> לחץ ↑↓ לסידור</span>
         </label>
         <div className="space-y-2">
           {project.sectionOrder.map((sectionId, idx) => (
@@ -237,15 +234,16 @@ export default function Step7({ project, onChange }: StepProps) {
               onDragStart={() => handleSectionDragStart(sectionId)}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleSectionDrop(sectionId)}
-              className={`flex items-center gap-3 bg-white border rounded-lg px-4 py-3 md:cursor-grab active:cursor-grabbing transition-colors ${
+              className="flex items-center gap-3 rounded-lg px-4 py-3 md:cursor-grab active:cursor-grabbing transition-colors"
+              style={
                 draggedSection === sectionId
-                  ? 'border-blue-400 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
+                  ? { border: '1px solid var(--pb-accent)', background: 'color-mix(in srgb, var(--pb-accent) 8%, transparent)' }
+                  : { border: '1px solid var(--pb-border)', background: 'var(--pb-surface2)' }
+              }
             >
               {/* Drag handle — desktop only */}
-              <span className="text-gray-300 select-none hidden md:block">⣿</span>
-              <span className="flex-1 text-gray-700 text-sm font-medium">
+              <span className="select-none hidden md:block" style={{ color: 'var(--pb-border)' }}>⣿</span>
+              <span className="flex-1 text-sm font-medium" style={{ color: 'var(--pb-text)' }}>
                 {SECTION_LABELS[sectionId] ?? sectionId}
               </span>
               {/* Mobile: ↑↓ reorder buttons */}
@@ -254,14 +252,16 @@ export default function Step7({ project, onChange }: StepProps) {
                   type="button"
                   onClick={() => moveSection(idx, idx - 1)}
                   disabled={idx === 0}
-                  className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 disabled:opacity-30 hover:bg-gray-100 transition-colors text-sm"
+                  className="w-7 h-7 rounded flex items-center justify-center disabled:opacity-30 transition-colors text-sm"
+                  style={{ border: '1px solid var(--pb-border)', color: 'var(--pb-text2)', background: 'var(--pb-surface)' }}
                   aria-label="הזז למעלה"
                 >↑</button>
                 <button
                   type="button"
                   onClick={() => moveSection(idx, idx + 1)}
                   disabled={idx === project.sectionOrder.length - 1}
-                  className="w-7 h-7 rounded border border-gray-200 flex items-center justify-center text-gray-500 disabled:opacity-30 hover:bg-gray-100 transition-colors text-sm"
+                  className="w-7 h-7 rounded flex items-center justify-center disabled:opacity-30 transition-colors text-sm"
+                  style={{ border: '1px solid var(--pb-border)', color: 'var(--pb-text2)', background: 'var(--pb-surface)' }}
                   aria-label="הזז למטה"
                 >↓</button>
               </div>
@@ -269,6 +269,7 @@ export default function Step7({ project, onChange }: StepProps) {
               <button
                 type="button"
                 role="switch"
+                dir="ltr"
                 aria-checked={project.sectionVisibility[sectionId] !== false}
                 onClick={() => toggleSection(sectionId)}
                 className={`relative inline-flex h-5 w-10 items-center rounded-full transition-colors flex-shrink-0 ${
