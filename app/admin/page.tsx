@@ -183,13 +183,22 @@ export default async function AdminPage() {
     );
   }
 
+  // Each query is isolated: a single failure (e.g. a not-yet-run migration or a
+  // missing table) degrades that section instead of 500'ing the whole dashboard.
+  const emptyStats: AdminStats = {
+    total_projects: 0, active_projects: 0, total_users: 0,
+    total_views: 0, contact_clicks: 0, whatsapp_clicks: 0,
+  };
+  const onErr = (label: string) => (err: unknown) => {
+    console.error(`[admin] ${label} query failed:`, err instanceof Error ? err.message : err);
+  };
   const [stats, projects, users, daily, activity, feedback] = await Promise.all([
-    fetchStats(),
-    fetchProjects(),
-    fetchUsers(),
-    fetchDailyStats(),
-    fetchActivity(),
-    fetchFeedback(),
+    fetchStats().catch((e) => { onErr('stats')(e); return emptyStats; }),
+    fetchProjects().catch((e) => { onErr('projects')(e); return []; }),
+    fetchUsers().catch((e) => { onErr('users')(e); return []; }),
+    fetchDailyStats().catch((e) => { onErr('daily')(e); return []; }),
+    fetchActivity().catch((e) => { onErr('activity')(e); return []; }),
+    fetchFeedback().catch((e) => { onErr('feedback')(e); return []; }),
   ]);
 
   return (
