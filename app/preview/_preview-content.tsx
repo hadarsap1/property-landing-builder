@@ -565,7 +565,7 @@ function LeadCaptureForm({
   accent: string;
   heroText: string;
 }) {
-  const [form, setForm] = useState({ name: '', phone: '', email: '' });
+  const [form, setForm] = useState({ name: '', phone: '', email: '', _hp: '' });
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -588,6 +588,7 @@ function LeadCaptureForm({
           phone: form.phone.trim() || null,
           email: form.email.trim() || null,
           source: 'direct',
+          _hp: form._hp,
         }),
       });
       if (res.ok) setDone(true);
@@ -640,6 +641,17 @@ function LeadCaptureForm({
         className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-sm placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
         style={{ color: heroText }}
         dir="ltr"
+      />
+      {/* Honeypot — hidden from humans, filled by bots */}
+      <input
+        type="text"
+        name="website"
+        value={form._hp}
+        onChange={e => setForm(f => ({ ...f, _hp: e.target.value }))}
+        autoComplete="off"
+        tabIndex={-1}
+        aria-hidden="true"
+        style={{ position: 'absolute', left: '-9999px', opacity: 0, height: 0 }}
       />
       {error && <p className="text-sm text-red-300">{error}</p>}
       <button

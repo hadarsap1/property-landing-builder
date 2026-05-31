@@ -29,6 +29,7 @@ export default function ReviewPage() {
   const [loading, setLoading] = useState(true)
   const [sellerUrl, setSellerUrl] = useState<string | null>(null)
   const [sendingLink, setSendingLink] = useState(false)
+  const [sellerEmail, setSellerEmail] = useState('')
 
   const loadChanges = useCallback(async () => {
     const res = await fetch(`/api/listings/${id}/pending-changes`)
@@ -43,7 +44,11 @@ export default function ReviewPage() {
 
   async function generateSellerLink() {
     setSendingLink(true)
-    const res = await fetch(`/api/listings/${id}/seller-token`, { method: 'POST' })
+    const res = await fetch(`/api/listings/${id}/seller-token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: sellerEmail.trim() || undefined }),
+    })
     if (res.ok) {
       const d = (await res.json()) as { sellerUrl: string }
       setSellerUrl(d.sellerUrl)
@@ -74,13 +79,23 @@ export default function ReviewPage() {
           <Link href="/dashboard" className="text-sm text-gray-400 hover:text-gray-600">← נכסים</Link>
           <h1 className="text-xl font-bold text-gray-900 mt-1">שינויים מהמוכר</h1>
         </div>
-        <button
-          onClick={() => void generateSellerLink()}
-          disabled={sendingLink}
-          className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-        >
-          {sendingLink ? 'יוצר...' : '+ שלח קישור למוכר'}
-        </button>
+        <div className="flex items-center gap-2">
+          <input
+            type="email"
+            placeholder="מייל מוכר (אופציונלי)"
+            value={sellerEmail}
+            onChange={e => setSellerEmail(e.target.value)}
+            className="text-sm border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-48"
+            dir="ltr"
+          />
+          <button
+            onClick={() => void generateSellerLink()}
+            disabled={sendingLink}
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
+          >
+            {sendingLink ? 'יוצר...' : '+ שלח קישור למוכר'}
+          </button>
+        </div>
       </div>
 
       {sellerUrl && (

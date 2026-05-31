@@ -34,18 +34,20 @@ export async function createAgentWithInvite(data: {
   email: string
   role?: 'admin' | 'agent'
   phone?: string | null
+  calendly_url?: string | null
 }): Promise<Agent & { raw_token: string }> {
   const raw_token = crypto.randomUUID()
   const expires_at = new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 h
 
   const { rows } = await sql<Agent>`
-    INSERT INTO agents (agency_id, name, email, role, phone, invitation_token, invitation_expires_at)
+    INSERT INTO agents (agency_id, name, email, role, phone, calendly_url, invitation_token, invitation_expires_at)
     VALUES (
       ${data.agency_id},
       ${data.name},
       ${data.email},
       ${data.role ?? 'agent'},
       ${data.phone ?? null},
+      ${data.calendly_url ?? null},
       ${raw_token},
       ${expires_at.toISOString()}
     )

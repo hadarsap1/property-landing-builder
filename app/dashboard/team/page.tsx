@@ -134,7 +134,7 @@ function InviteForm({
   onClose: () => void
   onInvited: (inviteUrl: string) => void
 }) {
-  const [form, setForm] = useState({ name: '', email: '', role: 'agent', phone: '' })
+  const [form, setForm] = useState({ name: '', email: '', role: 'agent', phone: '', calendly_url: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -190,6 +190,12 @@ function InviteForm({
               <option value="agent">נציג</option>
               <option value="admin">מנהל</option>
             </select>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-600 mb-1">קישור Calendly (אופציונלי)</label>
+            <input type="url" value={form.calendly_url} onChange={e => setForm(f => ({ ...f, calendly_url: e.target.value }))}
+              placeholder="https://calendly.com/your-name"
+              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" dir="ltr" />
           </div>
         </div>
 

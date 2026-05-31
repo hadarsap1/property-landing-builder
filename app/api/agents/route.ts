@@ -19,7 +19,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const body = (await req.json()) as { name?: string; email?: string; role?: string; phone?: string }
+  const body = (await req.json()) as { name?: string; email?: string; role?: string; phone?: string; calendly_url?: string }
   if (!body.name || !body.email) {
     return NextResponse.json({ error: 'name and email are required' }, { status: 400 })
   }
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     email: body.email,
     role: body.role === 'admin' ? 'admin' : 'agent',
     phone: body.phone ?? null,
+    calendly_url: body.calendly_url ?? null,
   })
 
   const agency = await getAgencyById(session.user.agencyId)
