@@ -127,6 +127,35 @@ CREATE OR REPLACE TRIGGER listings_updated_at
   BEFORE UPDATE ON listings
   FOR EACH ROW EXECUTE FUNCTION set_updated_at();
 
+-- Subscriptions (one per agency)
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id                     uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  agency_id              uuid UNIQUE NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+  stripe_customer_id     text UNIQUE,
+  stripe_subscription_id text UNIQUE,
+  plan                   text CHECK (plan IN ('monthly', 'yearly')),
+  status                 text NOT NULL DEFAULT 'trialing'
+                           CHECK (status IN ('trialing', 'active', 'past_due', 'canceled', 'unpaid')),
+  trial_ends_at          timestamp,
+  current_period_end     timestamp,
+  cancel_at_period_end   boolean NOT NULL DEFAULT false,
+  manual_override        boolean NOT NULL DEFAULT false,
+  created_at             timestamp NOT NULL DEFAULT now(),
+  updated_at             timestamp NOT NULL DEFAULT now()
+);
+
+-- Discount codes (admin-managed)
+CREATE TABLE IF NOT EXISTS discount_codes (
+  id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  code          text UNIQUE NOT NULL,
+  discount_pct  integer NOT NULL CHECK (discount_pct BETWEEN 1 AND 100),
+  max_uses      integer,
+  uses_count    integer NOT NULL DEFAULT 0,
+  expires_at    timestamp,
+  active        boolean NOT NULL DEFAULT true,
+  created_at    timestamp NOT NULL DEFAULT now()
+);
+
 -- Seller access (magic link tokens)
 CREATE TABLE IF NOT EXISTS seller_tokens (
   id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),

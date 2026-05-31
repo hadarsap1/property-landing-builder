@@ -3,6 +3,8 @@ import { auth } from '@/auth'
 import { createAgency } from '@/lib/db/queries/agencies'
 import { upgradePersonalUser } from '@/lib/db/queries/personal-users'
 import { sendAdminNotificationEmail } from '@/lib/email'
+import { upsertSubscription } from '@/lib/billing/access'
+import { PLAN_TRIAL_DAYS } from '@/lib/billing/config'
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth()
@@ -35,6 +37,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   await upgradePersonalUser(session.user.personalUserId, agency.id)
+
+  // Create trial subscription for the new agency
+  const trialEndsAt = new Date(Date.now() + PLAN_TRIAL_DAYS * 86_400_000)
+  await upsertSubscription({
+    agencyId: agency.id,
+    status: 'trialing',
+    trialEndsAt,
+  })
 
   // Notify admin — fire-and-forget, don't fail the request
   void sendAdminNotificationEmail({

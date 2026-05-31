@@ -1,3 +1,29 @@
+export interface Subscription {
+  id: string
+  agency_id: string
+  stripe_customer_id: string | null
+  stripe_subscription_id: string | null
+  plan: 'monthly' | 'yearly' | null
+  status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid'
+  trial_ends_at: Date | null
+  current_period_end: Date | null
+  cancel_at_period_end: boolean
+  manual_override: boolean
+  created_at: Date
+  updated_at: Date
+}
+
+export interface DiscountCode {
+  id: string
+  code: string
+  discount_pct: number
+  max_uses: number | null
+  uses_count: number
+  expires_at: Date | null
+  active: boolean
+  created_at: Date
+}
+
 export interface PersonalUser {
   id: string
   email: string | null

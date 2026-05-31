@@ -3,10 +3,12 @@ import { auth, signOut } from '@/auth'
 import Link from 'next/link'
 
 const ADMIN_NAV = [
-  { href: '/admin',                label: 'סקירה',         icon: '📊' },
-  { href: '/admin/agencies',       label: 'סוכנויות',      icon: '🏢' },
-  { href: '/admin/personal-users', label: 'משתמשים פרטיים', icon: '👤' },
-  { href: '/admin/listings',       label: 'נכסים',          icon: '🏠' },
+  { href: '/admin',                     label: 'סקירה',         icon: '📊' },
+  { href: '/admin/agencies',            label: 'סוכנויות',      icon: '🏢' },
+  { href: '/admin/personal-users',      label: 'משתמשים פרטיים', icon: '👤' },
+  { href: '/admin/listings',            label: 'נכסים',          icon: '🏠' },
+  { href: '/admin/billing',             label: 'מנויים',         icon: '💳' },
+  { href: '/admin/discount-codes',      label: 'קודי הנחה',      icon: '🏷️' },
 ]
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

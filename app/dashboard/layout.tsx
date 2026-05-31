@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { auth, signOut } from '@/auth'
+import { getSubscription, subscriptionIsActive } from '@/lib/billing/access'
 import Link from 'next/link'
+import { headers } from 'next/headers'
 
 const NAV = [
   { href: '/dashboard',             label: 'נכסים',    icon: '🏠' },
@@ -8,11 +10,26 @@ const NAV = [
   { href: '/dashboard/analytics',   label: 'אנליטיקס', icon: '📊' },
   { href: '/dashboard/team',        label: 'צוות',     icon: '👥' },
   { href: '/dashboard/settings',    label: 'הגדרות',   icon: '⚙️' },
+  { href: '/dashboard/billing',     label: 'חיוב',     icon: '💳' },
 ]
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
   if (!session) redirect('/auth/login?callbackUrl=/dashboard')
+
+  // Subscription gate — always allow /dashboard/billing so user can pay
+  const agencyId = session.user?.agencyId
+  if (agencyId) {
+    const hdrs = await headers()
+    const pathname = hdrs.get('x-pathname') ?? hdrs.get('x-invoke-path') ?? ''
+    const isBillingPage = pathname.startsWith('/dashboard/billing')
+    if (!isBillingPage) {
+      const sub = await getSubscription(agencyId)
+      if (!subscriptionIsActive(sub)) {
+        redirect('/dashboard/billing')
+      }
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col" dir="rtl">
