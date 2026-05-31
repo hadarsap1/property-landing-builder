@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 const NAV = [
   { href: '/dashboard',          label: 'נכסים',    icon: '🏠' },
+  { href: '/dashboard/leads',    label: 'לידים',    icon: '📬' },
   { href: '/dashboard/team',     label: 'צוות',     icon: '👥' },
   { href: '/dashboard/settings', label: 'הגדרות',   icon: '⚙️' },
 ]

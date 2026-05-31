@@ -43,5 +43,5 @@ export default async function ListingPage({ params }: Props) {
 
   const project = listingToProject(listing)
 
-  return <PreviewContent project={project} />
+  return <PreviewContent project={project} listingId={listing.id} agencyId={agency.id} />
 }
