@@ -209,11 +209,13 @@ function buildSpecs(p: PropertyProject): SpecItem[] {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function PreviewContent({ project, editHref, listingId, agencyId }: {
+export default function PreviewContent({ project, editHref, listingId, agencyId, agencyLogoUrl, agencyName }: {
   project: PropertyProject;
   editHref?: string;
   listingId?: string;
   agencyId?: string;
+  agencyLogoUrl?: string | null;
+  agencyName?: string | null;
 }) {
   const theme = THEMES[project.template] ?? THEMES['modern-blue'];
   const fontFamily = FONT_FAMILY[project.fontStyle] ?? FONT_FAMILY['sans-serif'];
@@ -243,6 +245,26 @@ export default function PreviewContent({ project, editHref, listingId, agencyId 
 
   return (
     <div dir="rtl" lang="he" style={{ backgroundColor: theme.pageBg, color: theme.pageText, fontFamily }}>
+
+      {/* ── Agency branded navbar ────────────────────────────────── */}
+      {agencyLogoUrl && (
+        <div
+          className="sticky top-0 z-40 flex items-center gap-3 px-5 py-3 shadow-sm"
+          style={{ backgroundColor: theme.cardBg, borderBottom: `1px solid ${theme.cardBorder}` }}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={agencyLogoUrl}
+            alt={agencyName ?? 'לוגו סוכנות'}
+            className="h-8 w-auto object-contain max-w-[140px]"
+          />
+          {agencyName && (
+            <span className="text-sm font-semibold truncate" style={{ color: theme.pageText }}>
+              {agencyName}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Edit bar (dev / local only) ─────────────────────────── */}
       {editHref && (
