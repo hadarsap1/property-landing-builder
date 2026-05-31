@@ -111,10 +111,16 @@ export default function HomePage() {
               ))}
             </ul>
             <Link
-              href="/auth/login?mode=commercial"
-              className="block w-full text-center bg-white group-hover:bg-blue-50 text-gray-900 font-bold px-6 py-3.5 rounded-2xl text-sm transition-colors"
+              href="/pricing"
+              className="block w-full text-center bg-white group-hover:bg-blue-50 text-gray-900 font-bold px-6 py-3.5 rounded-2xl text-sm transition-colors mb-3"
             >
-              כניסה לחשבון מקצועי ←
+              ראה מחירים ←
+            </Link>
+            <Link
+              href="/auth/login?mode=commercial"
+              className="block w-full text-center text-gray-400 hover:text-gray-200 text-xs transition-colors py-1"
+            >
+              כבר יש לי חשבון
             </Link>
           </div>
         </div>

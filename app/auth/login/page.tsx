@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { loginAction, googleSignInAction } from './actions'
 
-type SP = { callbackUrl?: string; error?: string; mode?: string; upgraded?: string }
+type SP = { callbackUrl?: string; error?: string; mode?: string; upgraded?: string; registered?: string }
 
 export default function LoginPage({
   searchParams,
@@ -21,11 +21,17 @@ export default function LoginPage({
 }
 
 async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
-  const { callbackUrl, error, mode, upgraded } = await searchParams
+  const { callbackUrl, error, mode, upgraded, registered } = await searchParams
   const isCommercial = mode === 'commercial'
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 space-y-6">
+
+      {registered && (
+        <div className="bg-green-50 text-green-700 text-sm rounded-xl px-4 py-3 border border-green-200">
+          החשבון נוצר בהצלחה! התחבר כדי להתחיל.
+        </div>
+      )}
 
       {upgraded && (
         <div className="bg-green-50 text-green-700 text-sm rounded-xl px-4 py-3 border border-green-200">
@@ -125,6 +131,12 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
 
           <p className="text-center text-xs text-gray-400">
             שכחת סיסמה? פנה למנהל הסוכנות.
+          </p>
+          <p className="text-center text-xs text-gray-400">
+            אין לך חשבון?{' '}
+            <Link href="/auth/register" className="text-blue-600 hover:underline">
+              הרשמה חינם
+            </Link>
           </p>
         </form>
       )}

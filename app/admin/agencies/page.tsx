@@ -1,6 +1,7 @@
 import { sql } from '@/lib/db'
 import Link from 'next/link'
 import type { Agency } from '@/lib/db/types'
+import CreateAgencyForm from './_create-form'
 
 interface AgencyWithCount extends Agency {
   listing_count: string
@@ -23,7 +24,10 @@ export default async function AdminAgenciesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">סוכנויות ({agencies.length})</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-white">סוכנויות ({agencies.length})</h1>
+        <CreateAgencyForm />
+      </div>
 
       {agencies.length === 0 ? (
         <p className="text-gray-400">אין סוכנויות עדיין</p>

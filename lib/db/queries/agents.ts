@@ -100,3 +100,25 @@ export async function updateAgent(
 export async function deleteAgent(id: string): Promise<void> {
   await sql`DELETE FROM agents WHERE id = ${id}`
 }
+
+export async function createAgentWithPassword(data: {
+  agency_id: string
+  name: string
+  email: string
+  password: string
+  role?: 'admin' | 'agent'
+}): Promise<Agent> {
+  const hash = await bcrypt.hash(data.password, 12)
+  const { rows } = await sql<Agent>`
+    INSERT INTO agents (agency_id, name, email, role, password_hash)
+    VALUES (
+      ${data.agency_id},
+      ${data.name},
+      ${data.email.toLowerCase()},
+      ${data.role ?? 'admin'},
+      ${hash}
+    )
+    RETURNING *
+  `
+  return rows[0]
+}

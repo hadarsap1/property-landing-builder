@@ -1,6 +1,24 @@
 import { sql, db } from '@/lib/db'
 import type { Agency } from '@/lib/db/types'
 
+function slugifyAgency(s: string): string {
+  return s.toLowerCase().trim()
+    .replace(/[\s_]+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/^-+|-+$/g, '') || 'agency'
+}
+
+export async function generateUniqueAgencySlug(base: string): Promise<string> {
+  let slug = slugifyAgency(base)
+  let existing = await getAgencyBySlug(slug)
+  let i = 2
+  while (existing) {
+    slug = `${slugifyAgency(base)}-${i++}`
+    existing = await getAgencyBySlug(slug)
+  }
+  return slug
+}
+
 export async function getAgencyBySlug(slug: string): Promise<Agency | null> {
   const { rows } = await sql<Agency>`
     SELECT * FROM agencies WHERE slug = ${slug} LIMIT 1
