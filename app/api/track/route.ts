@@ -11,6 +11,11 @@ interface TrackBody {
   step?: number
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+function isUUID(v: unknown): v is string {
+  return typeof v === 'string' && UUID_RE.test(v)
+}
+
 // Events that map to analytics_events in Postgres
 const DB_EVENTS = new Set<string>([
   'page_view',
@@ -38,6 +43,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 })
   }
 
+  // Drop events with invalid UUIDs to prevent data pollution — silently accept
+  // so bots don't learn which IDs are valid
+  if (listingId && !isUUID(listingId)) return NextResponse.json({ ok: true })
+  if (agencyId && !isUUID(agencyId)) return NextResponse.json({ ok: true })
+
   // Listing-level events go to Postgres analytics_events
   if (DB_EVENTS.has(event) && process.env.POSTGRES_URL) {
     try {
@@ -46,9 +56,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         event_type: event as AnalyticsEvent['event_type'],
         listing_id: listingId ?? null,
         agency_id: agencyId ?? null,
-        referrer: referrer ?? req.headers.get('referer') ?? null,
-        utm_source: utmSource ?? null,
-        session_id: sessionId,
+        referrer: (referrer ?? req.headers.get('referer') ?? null)?.slice(0, 500) ?? null,
+        utm_source: (utmSource ?? null)?.slice(0, 200) ?? null,
+        session_id: sessionId.slice(0, 64),
       })
     } catch (err) {
       console.error('[track] Postgres error:', err)
@@ -57,7 +67,12 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   // Builder wizard events go to KV (existing behaviour)
-  const entry = { event, sessionId, step: body.step, timestamp: new Date().toISOString() }
+  const entry = {
+    event,
+    sessionId: sessionId.slice(0, 64),
+    step: body.step,
+    timestamp: new Date().toISOString(),
+  }
 
   if (!process.env.KV_URL) {
     console.info('[track] Dev event:', entry)

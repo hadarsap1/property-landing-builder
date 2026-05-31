@@ -27,7 +27,7 @@ export default function Step3({ project, onChange, agencyId }: StepProps) {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project, agencyId }),
+        body: JSON.stringify({ project }),
       });
 
       if (!res.ok) {

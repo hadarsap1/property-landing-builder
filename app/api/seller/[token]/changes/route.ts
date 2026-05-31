@@ -5,11 +5,29 @@ import type { PendingChange } from '@/lib/db/types'
 
 type RouteContext = { params: Promise<{ token: string }> }
 
+async function isTokenRateLimited(tokenId: string): Promise<boolean> {
+  if (!process.env.KV_URL) return false
+  try {
+    const { kv } = await import('@vercel/kv')
+    const today = new Date().toISOString().slice(0, 10)
+    const key = `rl:seller_changes:${tokenId}:${today}`
+    const count = await kv.incr(key)
+    if (count === 1) await kv.expire(key, 86_400)
+    return count > 10 // 10 change submissions per seller token per day
+  } catch {
+    return false
+  }
+}
+
 export async function POST(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { token } = await params
   const sellerToken = await getValidSellerToken(token)
   if (!sellerToken) {
     return NextResponse.json({ error: 'Token invalid or expired' }, { status: 401 })
+  }
+
+  if (await isTokenRateLimited(sellerToken.id)) {
+    return NextResponse.json({ error: 'הגעת למגבלה היומית לשליחת שינויים' }, { status: 429 })
   }
 
   const body = (await req.json()) as {

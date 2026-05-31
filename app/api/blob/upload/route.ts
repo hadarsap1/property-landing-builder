@@ -28,7 +28,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'File too large (max 5 MB)' }, { status: 413 })
   }
 
-  const ext = file.name.split('.').pop() ?? 'jpg'
+  const MIME_EXT: Record<string, string> = {
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+  }
+  const ext = MIME_EXT[file.type] ?? 'jpg'
   const pathname = `listings/${session.user.agencyId}/${Date.now()}.${ext}`
 
   const blob = await put(pathname, file, { access: 'public', contentType: file.type })

@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
 
 export interface ImportedListing {
   title?: string
@@ -43,7 +44,13 @@ async function isAgencyRateLimited(agencyId: string): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  const body = await req.json() as { text?: string; agencyId?: string };
+  // Must be a logged-in agent — no public access to AI endpoints
+  const session = await auth();
+  if (!session?.user?.agencyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const body = await req.json() as { text?: string };
   const raw = body.text?.trim() ?? ''
 
   if (raw.length < 20) {
@@ -57,8 +64,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
   }
 
-  // Per-agency daily rate limit (graceful — no block in dev without KV)
-  if (body.agencyId && await isAgencyRateLimited(body.agencyId)) {
+  // Always use the session's agency — never trust client-supplied agencyId
+  const agencyId = session.user.agencyId;
+  if (await isAgencyRateLimited(agencyId)) {
     return NextResponse.json({ error: 'הגעת למגבלה היומית לייבוא נכסים' }, { status: 429 });
   }
 

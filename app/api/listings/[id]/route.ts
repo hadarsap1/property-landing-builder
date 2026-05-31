@@ -37,13 +37,25 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const data = (await req.json()) as Record<string, unknown>
-  // Strip fields that must not be client-writable
-  delete data.id
-  delete data.agency_id
-  delete data.created_at
+  // Allowlist: only known listing columns may be written — prevents column-name injection
+  // into the buildUpdate SQL string interpolation
+  const WRITABLE_FIELDS = new Set([
+    'title', 'street', 'city', 'neighborhood', 'price', 'price_on_request',
+    'built_area', 'outdoor_area', 'rooms', 'floor', 'total_floors',
+    'parking_spots', 'parking_covered', 'has_storage', 'has_saferoom',
+    'has_elevator', 'air_directions', 'build_year', 'renovation_year', 'bathrooms',
+    'raw_description', 'ai_title', 'ai_tagline', 'ai_story', 'ai_highlights',
+    'hero_image_url', 'image_urls', 'video_url', 'gallery_type', 'carousel_speed',
+    'show_map', 'map_query_override', 'template_id', 'accent_color', 'font_style',
+    'section_order', 'hidden_sections', 'seller_name', 'seller_phone', 'seller_whatsapp',
+    'open_house_date', 'open_house_end', 'status', 'slug',
+  ])
+  const raw = (await req.json()) as Record<string, unknown>
+  const data = Object.fromEntries(
+    Object.entries(raw).filter(([k]) => WRITABLE_FIELDS.has(k))
+  ) as Record<string, string | number | boolean | string[] | null>
 
-  const updated = await updateListing(id, data as Record<string, string | number | boolean | string[] | null>)
+  const updated = await updateListing(id, data)
   return NextResponse.json({ listing: updated })
 }
 

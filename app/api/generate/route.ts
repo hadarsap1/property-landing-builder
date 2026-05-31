@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import type { PropertyProject } from '@/types/project';
+import { auth } from '@/auth';
 
 const MAX_STORY_CHARS = 2_000  // truncate rawStory before sending
 const MAX_TOKENS_OUTPUT = 640  // title+tagline+story+highlights well under this
@@ -25,6 +26,12 @@ async function isAgencyRateLimited(agencyId: string): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  // Must be a logged-in agent — no public access to AI endpoints
+  const session = await auth();
+  if (!session?.user?.agencyId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   let body: GenerateRequestBody;
   try {
     body = (await req.json()) as GenerateRequestBody;
@@ -32,7 +39,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { project, agencyId } = body;
+  const { project } = body;
+  // Always use the session's agency — never trust client-supplied agencyId for rate limiting
+  const agencyId = session.user.agencyId;
 
   if (!project || typeof project !== 'object') {
     return NextResponse.json({ error: 'Missing project data' }, { status: 400 });
@@ -43,7 +52,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
   }
 
-  if (agencyId && await isAgencyRateLimited(agencyId)) {
+  if (await isAgencyRateLimited(agencyId)) {
     return NextResponse.json({ error: 'הגעת למגבלה היומית ליצירת תוכן' }, { status: 429 });
   }
 

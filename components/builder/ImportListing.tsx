@@ -104,7 +104,7 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
       const res = await fetch('/api/import-listing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text, agencyId }),
+        body: JSON.stringify({ text }),
       });
       const data = await res.json() as { listing?: ImportedListing; error?: string };
       if (!res.ok || data.error) {
