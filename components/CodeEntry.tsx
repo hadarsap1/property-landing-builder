@@ -29,7 +29,9 @@ export default function CodeEntry() {
         onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
         placeholder="קוד נכס (6 ספרות)"
         aria-label="קוד נכס בן 6 ספרות"
-        className="w-40 text-center text-sm font-mono tracking-widest rounded-lg py-2 px-3"
+        className={`w-48 text-sm rounded-lg py-2 px-3 ${
+          code ? 'text-center font-mono tracking-widest' : 'text-right'
+        }`}
         style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)', color: 'var(--pb-text)' }}
       />
       <button
