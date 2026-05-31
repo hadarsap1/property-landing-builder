@@ -5,7 +5,7 @@ import { getListingBySlug } from '@/lib/db/queries/listings'
 import { listingToProject } from '@/lib/listings/adapt'
 import PreviewContent from '@/app/preview/_preview-content'
 
-export const dynamic = 'force-dynamic'
+export const revalidate = 60 // cache for 60 s; paused/sold listings go dark within a minute
 
 type Props = { params: Promise<{ slug: string; listingSlug: string }> }
 

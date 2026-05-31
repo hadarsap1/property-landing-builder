@@ -1,7 +1,7 @@
 import { auth } from '@/auth'
 import { getListingsByAgency } from '@/lib/db/queries/listings'
 import { getAgencyById } from '@/lib/db/queries/agencies'
-import { getPendingChangesByListing } from '@/lib/db/queries/pending-changes'
+import { getActivePendingCountsByListings } from '@/lib/db/queries/pending-changes'
 import Link from 'next/link'
 import { ListingCard } from './_listing-card'
 
@@ -15,14 +15,7 @@ export default async function DashboardPage() {
     getAgencyById(agencyId),
   ])
 
-  const pendingCounts = Object.fromEntries(
-    await Promise.all(
-      listings.map(async (l) => {
-        const changes = await getPendingChangesByListing(l.id)
-        return [l.id, changes.filter(c => c.status === 'pending').length] as [string, number]
-      })
-    )
-  )
+  const pendingCounts = await getActivePendingCountsByListings(listings.map(l => l.id))
 
   return (
     <div className="space-y-6">

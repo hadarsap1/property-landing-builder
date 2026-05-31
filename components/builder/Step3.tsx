@@ -6,6 +6,7 @@ import type { PropertyProject } from '@/types/project';
 interface StepProps {
   project: PropertyProject;
   onChange: (partial: Partial<PropertyProject>) => void;
+  agencyId?: string;
 }
 
 interface AIResult {
@@ -15,7 +16,7 @@ interface AIResult {
   highlights: string[];
 }
 
-export default function Step3({ project, onChange }: StepProps) {
+export default function Step3({ project, onChange, agencyId }: StepProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,7 +27,7 @@ export default function Step3({ project, onChange }: StepProps) {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ project }),
+        body: JSON.stringify({ project, agencyId }),
       });
 
       if (!res.ok) {

@@ -2,8 +2,26 @@ import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import type { PropertyProject } from '@/types/project';
 
+const MAX_STORY_CHARS = 2_000  // truncate rawStory before sending
+const MAX_TOKENS_OUTPUT = 640  // title+tagline+story+highlights well under this
+
 interface GenerateRequestBody {
   project: PropertyProject;
+  agencyId?: string;
+}
+
+async function isAgencyRateLimited(agencyId: string): Promise<boolean> {
+  if (!process.env.KV_URL) return false
+  try {
+    const { kv } = await import('@vercel/kv')
+    const today = new Date().toISOString().slice(0, 10)
+    const key = `ai_rl:generate:${agencyId}:${today}`
+    const count = await kv.incr(key)
+    if (count === 1) await kv.expire(key, 86_400)
+    return count > 50 // 50 generate calls per agency per day
+  } catch {
+    return false
+  }
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -14,7 +32,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
   }
 
-  const { project } = body;
+  const { project, agencyId } = body;
 
   if (!project || typeof project !== 'object') {
     return NextResponse.json({ error: 'Missing project data' }, { status: 400 });
@@ -25,21 +43,29 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'API key not configured' }, { status: 500 });
   }
 
+  if (agencyId && await isAgencyRateLimited(agencyId)) {
+    return NextResponse.json({ error: 'הגעת למגבלה היומית ליצירת תוכן' }, { status: 429 });
+  }
+
   const client = new Anthropic({ apiKey });
 
-  const propertyDesc = `
-    נכס: ${project.title}
-    כתובת: ${project.street}, ${project.neighborhood}, ${project.city}
-    חדרים: ${project.rooms}, שטח: ${project.builtArea} מ"ר
-    קומה: ${project.floor} מתוך ${project.totalFloors}
-    שנת בנייה: ${project.buildYear}
-    מה אמר המוכר: ${project.rawStory}
-  `;
+  // Truncate free-text seller description to cap input tokens
+  const rawStory = (project.rawStory ?? '').slice(0, MAX_STORY_CHARS)
+
+  const propertyDesc = [
+    project.title        && `נכס: ${project.title}`,
+    project.street       && `כתובת: ${project.street}${project.neighborhood ? `, ${project.neighborhood}` : ''}${project.city ? `, ${project.city}` : ''}`,
+    project.rooms        && `חדרים: ${project.rooms}`,
+    project.builtArea    && `שטח: ${project.builtArea} מ"ר`,
+    project.floor        && `קומה: ${project.floor}${project.totalFloors ? ` מתוך ${project.totalFloors}` : ''}`,
+    project.buildYear    && `שנת בנייה: ${project.buildYear}`,
+    rawStory             && `מה אמר המוכר: ${rawStory}`,
+  ].filter(Boolean).join('\n')
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1024,
+      model: 'claude-sonnet-4-6',
+      max_tokens: MAX_TOKENS_OUTPUT,
       system: `אתה קופירייטר נדל"ן מהשורה הראשונה בשוק הישראלי. כותב בעברית. סגנון חם, ספציפי, ושכנועי - לא גנרי. הדגש על ייחודיות הנכס.`,
       messages: [
         {

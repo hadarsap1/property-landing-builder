@@ -1,6 +1,22 @@
-import { sql } from '@/lib/db'
+import { sql, db } from '@/lib/db'
 import type { PendingChange } from '@/lib/db/types'
 import { updateListing } from '@/lib/db/queries/listings'
+
+/** Single query replacing the N+1 pattern on the dashboard. */
+export async function getActivePendingCountsByListings(
+  listingIds: string[]
+): Promise<Record<string, number>> {
+  if (!listingIds.length) return {}
+  const { rows } = await db.query<{ listing_id: string; count: string }>(
+    `SELECT listing_id, COUNT(*) AS count
+     FROM pending_changes
+     WHERE status = 'pending'
+       AND listing_id = ANY($1)
+     GROUP BY listing_id`,
+    [listingIds]
+  )
+  return Object.fromEntries(rows.map(r => [r.listing_id, parseInt(r.count, 10)]))
+}
 
 export async function createPendingChange(data: {
   listing_id: string

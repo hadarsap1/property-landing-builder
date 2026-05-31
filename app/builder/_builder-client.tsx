@@ -315,6 +315,7 @@ export default function BuilderClient({
               <ImportListing
                 onImport={(partial) => { onChange(partial); goToStep(1) }}
                 onSkip={() => goToStep(1)}
+                agencyId={agencyId}
               />
             </div>
           )}
@@ -381,7 +382,7 @@ export default function BuilderClient({
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-7">
               {step === 1 && <Step1 project={project} onChange={onChange} />}
               {step === 2 && <Step2 project={project} onChange={onChange} />}
-              {step === 3 && <Step3 project={project} onChange={onChange} />}
+              {step === 3 && <Step3 project={project} onChange={onChange} agencyId={agencyId} />}
               {step === 4 && <Step4 project={project} onChange={onChange} />}
               {step === 5 && <Step5 project={project} onChange={onChange} />}
               {step === 6 && <Step6 project={project} onChange={onChange} />}

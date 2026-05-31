@@ -7,6 +7,7 @@ import type { ImportedListing } from '@/app/api/import-listing/route';
 interface Props {
   onImport: (partial: Partial<PropertyProject>) => void;
   onSkip: () => void;
+  agencyId?: string;
 }
 
 const AIR_LABEL: Record<string, string> = { N: 'צפון', S: 'דרום', E: 'מזרח', W: 'מערב' };
@@ -80,13 +81,13 @@ function buildPreview(listing: ImportedListing): { label: string; value: string 
   if (listing.hasElevator) extras.push('מעלית');
   if (extras.length) items.push({ label: 'תוספות', value: extras.join(' · ') });
   if (listing.airDirections?.length) {
-    items.push({ label: 'כיוונים', value: listing.airDirections.map((d) => AIR_LABEL[d] ?? d).join(', ') });
+    items.push({ label: 'כיוונים', value: listing.airDirections.map((d: string) => AIR_LABEL[d] ?? d).join(', ') });
   }
 
   return items;
 }
 
-export default function ImportListing({ onImport, onSkip }: Props) {
+export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -103,7 +104,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
       const res = await fetch('/api/import-listing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, agencyId }),
       });
       const data = await res.json() as { listing?: ImportedListing; error?: string };
       if (!res.ok || data.error) {

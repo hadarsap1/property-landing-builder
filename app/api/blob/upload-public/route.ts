@@ -28,6 +28,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Only JPEG, PNG, WebP and GIF are allowed' }, { status: 415 })
   }
 
+  const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+  if (file.size > MAX_BYTES) {
+    return NextResponse.json({ error: 'File too large (max 5 MB)' }, { status: 413 })
+  }
+
   const ext = file.name.split('.').pop() ?? 'jpg'
   const pathname = `seller-uploads/${sellerToken.listing_id}/${Date.now()}.${ext}`
 
