@@ -3,10 +3,11 @@ import { auth, signOut } from '@/auth'
 import Link from 'next/link'
 
 const NAV = [
-  { href: '/dashboard',          label: 'נכסים',    icon: '🏠' },
-  { href: '/dashboard/leads',    label: 'לידים',    icon: '📬' },
-  { href: '/dashboard/team',     label: 'צוות',     icon: '👥' },
-  { href: '/dashboard/settings', label: 'הגדרות',   icon: '⚙️' },
+  { href: '/dashboard',             label: 'נכסים',    icon: '🏠' },
+  { href: '/dashboard/leads',       label: 'לידים',    icon: '📬' },
+  { href: '/dashboard/analytics',   label: 'אנליטיקס', icon: '📊' },
+  { href: '/dashboard/team',        label: 'צוות',     icon: '👥' },
+  { href: '/dashboard/settings',    label: 'הגדרות',   icon: '⚙️' },
 ]
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

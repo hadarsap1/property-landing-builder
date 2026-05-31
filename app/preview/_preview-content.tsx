@@ -1,7 +1,22 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { PropertyProject, StoredImage } from '@/types/project';
+
+function useTrack(listingId?: string, agencyId?: string) {
+  const sessionId = useRef<string>('')
+  if (!sessionId.current) {
+    sessionId.current = Math.random().toString(36).slice(2)
+  }
+  return useCallback((event: string) => {
+    if (!listingId || !agencyId) return
+    void fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, sessionId: sessionId.current, listingId, agencyId }),
+    })
+  }, [listingId, agencyId])
+}
 
 // ── Theme system ──────────────────────────────────────────────────────────────
 
@@ -205,6 +220,9 @@ export default function PreviewContent({ project, editHref, listingId, agencyId 
   const accent = project.accentColor || '#2563eb';
   const heroImage = project.images[project.heroImageIndex];
   const specs = buildSpecs(project);
+
+  const track = useTrack(listingId, agencyId);
+  useEffect(() => { track('page_view') }, [track]);
 
   const isVisible = (id: string) => project.sectionVisibility[id] !== false;
 
@@ -487,6 +505,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId 
                   {project.phone && (
                     <a
                       href={`tel:${project.phone.replace(/\s/g, '')}`}
+                      onClick={() => track('phone_click')}
                       className="flex items-center justify-center gap-2 font-semibold px-8 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-md"
                       style={{ backgroundColor: accent }}
                     >
@@ -498,6 +517,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId 
                       href={whatsappUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      onClick={() => track('whatsapp_click')}
                       className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
                     >
                       💬 WhatsApp
