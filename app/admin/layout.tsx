@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { auth, signOut } from '@/auth'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 
 const ADMIN_NAV = [
@@ -19,6 +20,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     redirect('/')
   }
 
+  const hdrs = await headers()
+  const pathname = hdrs.get('x-pathname') ?? ''
+
+  function isActive(href: string) {
+    if (href === '/admin') return pathname === '/admin' || pathname === ''
+    return pathname.startsWith(href)
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col" dir="rtl">
       <header className="bg-gray-800 border-b border-gray-700 h-14 flex items-center px-4 gap-4">
@@ -29,7 +38,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link
               key={n.href}
               href={n.href}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:bg-gray-700 hover:text-white whitespace-nowrap transition-colors"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
+                isActive(n.href)
+                  ? 'bg-gray-600 text-white font-semibold'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+              }`}
             >
               <span>{n.icon}</span>
               <span>{n.label}</span>

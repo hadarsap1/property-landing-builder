@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { getAgencyBySlug } from '@/lib/db/queries/agencies'
 import { getListingsByAgency } from '@/lib/db/queries/listings'
+import { isAgencyActive } from '@/lib/billing/access'
 import type { Listing } from '@/lib/db/types'
 import type { Metadata } from 'next'
 
@@ -20,6 +21,9 @@ export default async function AgencyPage({ params }: Props) {
   const { slug } = await params
   const agency = await getAgencyBySlug(slug)
   if (!agency) notFound()
+
+  const active_subscription = await isAgencyActive(agency.id)
+  if (!active_subscription) notFound()
 
   const listings = await getListingsByAgency(agency.id)
   const active = listings.filter((l) => l.status === 'active')

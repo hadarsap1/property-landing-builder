@@ -1,4 +1,16 @@
+import type { Metadata } from 'next'
 import Link from 'next/link';
+
+export const metadata: Metadata = {
+  title: 'PropBuilder — דף נחיתה מקצועי לנכס שלך',
+  description: 'צור דף נחיתה מרשים לנכס בדקות — בעברית מלאה, ללא קידוד, עם AI שכותב את הסיפור.',
+  openGraph: {
+    title: 'PropBuilder — דף נחיתה מקצועי לנכס שלך',
+    description: 'צור דף נחיתה מרשים לנכס בדקות — בעברית מלאה, ללא קידוד, עם AI שכותב את הסיפור.',
+    type: 'website',
+    locale: 'he_IL',
+  },
+}
 
 const PERSONAL_FEATURES = [
   { icon: '📋', text: 'ייבוא ממודעה קיימת (יד2, מדלן)' },

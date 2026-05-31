@@ -19,9 +19,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   // Subscription gate — always allow /dashboard/billing so user can pay
   const agencyId = session.user?.agencyId
+  const hdrs = await headers()
+  const pathname = hdrs.get('x-pathname') ?? hdrs.get('x-invoke-path') ?? ''
+
   if (agencyId) {
-    const hdrs = await headers()
-    const pathname = hdrs.get('x-pathname') ?? hdrs.get('x-invoke-path') ?? ''
     const isBillingPage = pathname.startsWith('/dashboard/billing')
     if (!isBillingPage) {
       const sub = await getSubscription(agencyId)
@@ -29,6 +30,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
         redirect('/dashboard/billing')
       }
     }
+  }
+
+  function isActive(href: string) {
+    if (href === '/dashboard') return pathname === '/dashboard' || pathname === ''
+    return pathname.startsWith(href)
   }
 
   return (
@@ -47,7 +53,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <Link
                 key={n.href}
                 href={n.href}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 whitespace-nowrap shrink-0"
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap shrink-0 transition-colors ${
+                  isActive(n.href)
+                    ? 'bg-blue-50 text-blue-700 font-semibold'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
               >
                 <span>{n.icon}</span>
                 <span>{n.label}</span>
@@ -84,7 +94,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <Link
                 key={n.href}
                 href={n.href}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-gray-700 hover:bg-gray-100 transition-colors font-medium"
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors font-medium ${
+                  isActive(n.href)
+                    ? 'bg-blue-50 text-blue-700'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
               >
                 <span className="text-base">{n.icon}</span>
                 <span>{n.label}</span>

@@ -1,7 +1,9 @@
+import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getListingById } from '@/lib/db/queries/listings'
 import { getAgencyById } from '@/lib/db/queries/agencies'
 import { listingToProject } from '@/lib/listings/adapt'
+import { isAgencyActive } from '@/lib/billing/access'
 import BuilderClient from './_builder-client'
 import type { PropertyProject } from '@/types/project'
 
@@ -15,6 +17,11 @@ export default async function BuilderPage({
 
   const agencyId = session?.user?.agencyId ?? ''
   const personalUserId = session?.user?.personalUserId ?? ''
+
+  // Commercial users with a lapsed subscription go to billing
+  if (agencyId && !await isAgencyActive(agencyId)) {
+    redirect('/dashboard/billing')
+  }
 
   let listingId: string | null = null
   let listingSlug: string | null = null

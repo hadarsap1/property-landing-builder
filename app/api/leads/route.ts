@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { createLead, getLeadsByAgency } from '@/lib/db/queries/leads'
 import { getListingById } from '@/lib/db/queries/listings'
+import { getAgencyById } from '@/lib/db/queries/agencies'
+import { sendLeadNotificationEmail } from '@/lib/email'
 import type { Lead } from '@/lib/db/types'
 
 const RATE_LIMIT_MAX = 5       // requests
@@ -69,6 +71,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     phone: body.phone ?? null,
     email: body.email ?? null,
     source,
+  })
+
+  // Fire-and-forget email notification to agency contact
+  void getAgencyById(body.agency_id).then((agency) => {
+    const contactEmail = agency?.contact_email
+    if (!contactEmail) return
+    const listingTitle = listing.ai_title || listing.title || 'נכס'
+    const origin = process.env.NEXTAUTH_URL ?? 'https://app.propbuilder.co.il'
+    void sendLeadNotificationEmail({
+      to: contactEmail,
+      leadName: body.name ?? null,
+      leadPhone: body.phone ?? null,
+      leadEmail: body.email ?? null,
+      listingTitle,
+      listingUrl: `${origin}/dashboard/leads`,
+    })
   })
 
   return NextResponse.json({ lead }, { status: 201 })

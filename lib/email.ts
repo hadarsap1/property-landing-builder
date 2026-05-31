@@ -24,6 +24,51 @@ export async function sendAdminNotificationEmail({
   })
 }
 
+export async function sendLeadNotificationEmail({
+  to,
+  leadName,
+  leadPhone,
+  leadEmail,
+  listingTitle,
+  listingUrl,
+}: {
+  to: string
+  leadName: string | null
+  leadPhone: string | null
+  leadEmail: string | null
+  listingTitle: string
+  listingUrl: string
+}): Promise<void> {
+  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
+    console.info(`\n[lead-notify] New lead for "${listingTitle}" from ${leadName ?? 'אנונימי'} (${leadPhone ?? leadEmail ?? '—'})`)
+    return
+  }
+
+  const transport = nodemailer.createTransport(process.env.EMAIL_SERVER)
+  const contact = [leadPhone, leadEmail].filter(Boolean).join(' · ') || '—'
+
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: `ליד חדש: ${listingTitle}`,
+    text: `ליד חדש התקבל לנכס "${listingTitle}".\n\nשם: ${leadName ?? '—'}\nיצירת קשר: ${contact}\n\nצפה בלוח הבקרה:\n${listingUrl}`,
+    html: `
+      <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#1e3a5f">ליד חדש התקבל</h2>
+        <p>נכס: <strong>${listingTitle}</strong></p>
+        <table style="border-collapse:collapse;width:100%;margin:12px 0">
+          <tr><td style="padding:6px 0;color:#6b7280">שם</td><td style="padding:6px 0;font-weight:600">${leadName ?? '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280">יצירת קשר</td><td style="padding:6px 0;font-weight:600">${contact}</td></tr>
+        </table>
+        <a href="${listingUrl}"
+           style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+          צפה בלידים
+        </a>
+      </div>
+    `,
+  })
+}
+
 interface SellerMagicLinkOptions {
   to: string
   sellerName: string | null

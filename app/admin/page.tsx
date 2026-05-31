@@ -7,14 +7,16 @@ interface ListingRow { id: string; title: string | null; city: string | null; st
 interface CountRow { count: string }
 
 async function getStats() {
-  const [agencies, personalUsers, listingsRes, eventsRes] = await Promise.all([
+  const [recentAgencies, agencyCountRes, personalUsers, listingsRes, eventsRes] = await Promise.all([
     sql<AgencyRow>`SELECT id, name, slug, created_at FROM agencies ORDER BY created_at DESC LIMIT 10`,
+    sql<CountRow>`SELECT COUNT(*)::text AS count FROM agencies`,
     getAllPersonalUsers(),
     sql<CountRow>`SELECT COUNT(*)::text AS count FROM listings`,
     sql<CountRow>`SELECT COUNT(*)::text AS count FROM analytics_events WHERE event_type = 'page_view'`,
   ])
   return {
-    agencies: agencies.rows,
+    agencies: recentAgencies.rows,
+    agencyCount: parseInt(agencyCountRes.rows[0]?.count ?? '0', 10),
     personalUsers,
     listingCount: parseInt(listingsRes.rows[0]?.count ?? '0', 10),
     pageViews: parseInt(eventsRes.rows[0]?.count ?? '0', 10),
@@ -39,7 +41,7 @@ export default async function AdminOverview() {
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {[
-          { label: 'סוכנויות', value: stats.agencies.length },
+          { label: 'סוכנויות', value: stats.agencyCount },
           { label: 'משתמשים פרטיים', value: stats.personalUsers.length },
           { label: 'נכסים', value: stats.listingCount },
           { label: 'צפיות (סה"כ)', value: stats.pageViews.toLocaleString('he-IL') },
