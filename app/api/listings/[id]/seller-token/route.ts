@@ -3,19 +3,27 @@ import { auth } from '@/auth'
 import { getListingById } from '@/lib/db/queries/listings'
 import { createSellerToken } from '@/lib/db/queries/seller-tokens'
 import { sendSellerMagicLinkEmail } from '@/lib/email'
+import type { Session } from 'next-auth'
 
 type RouteContext = { params: Promise<{ id: string }> }
+
+function ownsListing(
+  listing: { agency_id: string | null; user_id: string | null },
+  session: Session | null
+): boolean {
+  const user = session?.user as { agencyId?: string; personalUserId?: string } | undefined
+  if (user?.agencyId && listing.agency_id === user.agencyId) return true
+  if (user?.personalUserId && listing.user_id === user.personalUserId) return true
+  return false
+}
 
 export async function POST(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { id } = await params
   const session = await auth()
-  if (!session?.user?.agencyId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
   const listing = await getListingById(id)
   if (!listing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  if (listing.agency_id !== session.user.agencyId) {
+  if (!ownsListing(listing, session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -25,7 +33,6 @@ export async function POST(req: NextRequest, { params }: RouteContext): Promise<
   const protocol = rootDomain.startsWith('localhost') ? 'http' : 'https'
   const sellerUrl = `${protocol}://${rootDomain}/seller/${sellerToken.token}`
 
-  // Optionally email the seller if we have their contact
   let body: { email?: string } = {}
   try { body = (await req.json()) as typeof body } catch { /* optional body */ }
 

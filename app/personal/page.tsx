@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getListingsByUser } from '@/lib/db/queries/listings'
+import { getActivePendingCountsByListings } from '@/lib/db/queries/pending-changes'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
 
@@ -15,6 +16,7 @@ export default async function PersonalDashboard() {
   if (!session?.user?.personalUserId) redirect('/auth/login?callbackUrl=/personal')
 
   const listings = await getListingsByUser(session.user.personalUserId)
+  const pendingCounts = await getActivePendingCountsByListings(listings.map(l => l.id))
 
   return (
     <div>
@@ -49,6 +51,7 @@ export default async function PersonalDashboard() {
         <div className="grid gap-4">
           {listings.map((listing) => {
             const st = statusLabel(listing.status)
+            const pending = pendingCounts[listing.id] ?? 0
             return (
               <div
                 key={listing.id}
@@ -76,7 +79,7 @@ export default async function PersonalDashboard() {
                     {st.text}
                   </span>
                 </div>
-                <div className="flex flex-col gap-2 shrink-0">
+                <div className="flex flex-col gap-2 shrink-0 items-end">
                   <Link
                     href={`/builder?id=${listing.id}`}
                     className="text-sm text-blue-600 hover:underline"
@@ -91,6 +94,16 @@ export default async function PersonalDashboard() {
                   >
                     צפה
                   </a>
+                  <Link
+                    href={`/personal/listings/${listing.id}/review`}
+                    className={`text-xs rounded-lg px-2.5 py-1 font-medium transition-colors ${
+                      pending > 0
+                        ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
+                        : 'text-gray-400 hover:text-gray-600 border border-gray-200'
+                    }`}
+                  >
+                    {pending > 0 ? `${pending} שינויים` : 'מוכר'}
+                  </Link>
                 </div>
               </div>
             )

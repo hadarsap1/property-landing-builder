@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { sql } from '@/lib/db'
-import type { PendingChange } from '@/lib/db/types'
+import type { PendingChange, Listing } from '@/lib/db/types'
 import { reviewChange } from '@/lib/db/queries/pending-changes'
 import { getListingById } from '@/lib/db/queries/listings'
+import type { Session } from 'next-auth'
 
 type RouteContext = { params: Promise<{ id: string }> }
+
+function ownsListing(listing: Listing, session: Session | null): boolean {
+  const user = session?.user as { agencyId?: string; personalUserId?: string } | undefined
+  if (user?.agencyId && listing.agency_id === user.agencyId) return true
+  if (user?.personalUserId && listing.user_id === user.personalUserId) return true
+  return false
+}
 
 export async function PATCH(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {
   const { id } = await params
   const session = await auth()
-  if (!session?.user?.agencyId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
 
-  // Fetch the change to verify agency ownership
   const { rows } = await sql<PendingChange>`
     SELECT * FROM pending_changes WHERE id = ${id} LIMIT 1
   `
@@ -22,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
   const listing = await getListingById(existing.listing_id)
-  if (!listing || listing.agency_id !== session.user.agencyId) {
+  if (!listing || !ownsListing(listing, session)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 

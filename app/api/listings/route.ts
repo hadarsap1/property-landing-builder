@@ -62,8 +62,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ listing }, { status: 201 })
   }
 
-  // Anonymous users: create listing with no owner (they use localStorage only)
-  // We still create a DB record so the URL works, but without ownership
+  // Anonymous users: rate-limit by IP (5 listings/IP/day) to prevent DB spam
+  if (process.env.KV_URL) {
+    try {
+      const { kv } = await import('@vercel/kv')
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+      const today = new Date().toISOString().slice(0, 10)
+      const key = `rl:anon_listings:${ip}:${today}`
+      const count = await kv.incr(key)
+      if (count === 1) await kv.expire(key, 86_400)
+      if (count > 5) {
+        return NextResponse.json({ error: 'יותר מדי נכסים — נסה מחר' }, { status: 429 })
+      }
+    } catch { /* KV down — allow through */ }
+  }
+
   const slug = `listing-${Date.now()}`
   const listing = await createListing({
     agency_id: null,

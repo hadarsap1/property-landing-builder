@@ -1,5 +1,29 @@
 import nodemailer from 'nodemailer'
 
+export async function sendAdminNotificationEmail({
+  subject,
+  body,
+}: {
+  subject: string
+  body: string
+}): Promise<void> {
+  const to = process.env.SUPER_ADMIN_EMAIL
+  if (!to) return
+
+  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
+    console.info(`\n[admin-notify] ${subject}\n${body}\n`)
+    return
+  }
+
+  const transport = nodemailer.createTransport(process.env.EMAIL_SERVER)
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject,
+    text: body,
+  })
+}
+
 interface SellerMagicLinkOptions {
   to: string
   sellerName: string | null

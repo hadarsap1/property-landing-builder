@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { createAgency } from '@/lib/db/queries/agencies'
 import { upgradePersonalUser } from '@/lib/db/queries/personal-users'
+import { sendAdminNotificationEmail } from '@/lib/email'
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth()
@@ -25,8 +26,27 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'agencyName and agencySlug are required' }, { status: 422 })
   }
 
-  const agency = await createAgency({ slug, name })
+  let agency
+  try {
+    agency = await createAgency({ slug, name })
+  } catch {
+    // Most likely a unique constraint violation on slug
+    return NextResponse.json({ error: 'כתובת הסוכנות כבר תפוסה — בחר כתובת אחרת' }, { status: 409 })
+  }
+
   await upgradePersonalUser(session.user.personalUserId, agency.id)
+
+  // Notify admin — fire-and-forget, don't fail the request
+  void sendAdminNotificationEmail({
+    subject: `שדרוג חשבון: ${name} (${slug})`,
+    body: [
+      `משתמש שדרג לחשבון מסחרי:`,
+      `  שם: ${session.user.name ?? '—'}`,
+      `  מייל: ${session.user.email ?? '—'}`,
+      `  סוכנות: ${name} (/${slug})`,
+      `  מזהה סוכנות: ${agency.id}`,
+    ].join('\n'),
+  })
 
   return NextResponse.json({ ok: true, agencyId: agency.id })
 }
