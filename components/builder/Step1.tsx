@@ -11,10 +11,17 @@ const ROOM_OPTIONS = [
   1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
 ];
 
+function Required() {
+  return <span className="text-red-400 mr-0.5" title="שדה חובה">*</span>;
+}
+
 export default function Step1({ project, onChange }: StepProps) {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">פרטי הנכס</h2>
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">פרטי הנכס</h2>
+        <p className="text-xs text-gray-400 mt-1">שדות המסומנים ב-* הם חובה</p>
+      </div>
 
       {/* Title */}
       <div>
@@ -45,13 +52,17 @@ export default function Step1({ project, onChange }: StepProps) {
       {/* City + Neighborhood */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">עיר</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            עיר<Required />
+          </label>
           <input
             type="text"
             value={project.city}
             onChange={(e) => onChange({ city: e.target.value })}
             placeholder="תל אביב"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full border rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              !project.city.trim() ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
+            }`}
           />
         </div>
         <div>
@@ -68,32 +79,39 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Price */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">מחיר</label>
-        <div className="flex items-center gap-3 mb-3">
-          <input
-            type="checkbox"
-            id="priceOnRequest"
-            checked={project.priceOnRequest}
-            onChange={(e) => onChange({ priceOnRequest: e.target.checked, price: e.target.checked ? null : project.price })}
-            className="w-4 h-4 text-blue-600 rounded"
-          />
-          <label htmlFor="priceOnRequest" className="text-sm text-gray-700">
-            מחיר לפי פניה
-          </label>
-        </div>
-        {!project.priceOnRequest && (
-          <div className="relative">
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₪</span>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          מחיר<Required />
+        </label>
+        <div className="space-y-3">
+          <label className="flex items-center gap-3 cursor-pointer select-none">
             <input
-              type="number"
-              value={project.price ?? ''}
-              onChange={(e) => onChange({ price: e.target.value ? Number(e.target.value) : null })}
-              placeholder="2,500,000"
-              min={0}
-              className="w-full border border-gray-300 rounded-lg pr-8 pl-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              type="checkbox"
+              id="priceOnRequest"
+              checked={project.priceOnRequest}
+              onChange={(e) => onChange({ priceOnRequest: e.target.checked, price: e.target.checked ? null : project.price })}
+              className="w-4 h-4 text-blue-600 rounded"
             />
-          </div>
-        )}
+            <span className="text-sm text-gray-700">מחיר לפי פנייה (המחיר לא יוצג)</span>
+          </label>
+          {!project.priceOnRequest && (
+            <div className="relative">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₪</span>
+              <input
+                type="number"
+                value={project.price ?? ''}
+                onChange={(e) => onChange({ price: e.target.value ? Number(e.target.value) : null })}
+                placeholder="2500000"
+                min={0}
+                className={`w-full border rounded-lg pr-8 pl-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  !project.priceOnRequest && !project.price ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
+                }`}
+              />
+            </div>
+          )}
+          {!project.priceOnRequest && !project.price && (
+            <p className="text-xs text-orange-500">הזן מחיר או סמן "מחיר לפי פנייה"</p>
+          )}
+        </div>
       </div>
 
       {/* Areas */}
@@ -114,7 +132,7 @@ export default function Step1({ project, onChange }: StepProps) {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             גינה/מרפסת{' '}
-            <span className="text-gray-400 font-normal">מ״ר (אופציונלי)</span>
+            <span className="text-gray-400 font-normal">מ״ר</span>
           </label>
           <input
             type="number"
@@ -138,7 +156,7 @@ export default function Step1({ project, onChange }: StepProps) {
           <option value="">בחר...</option>
           {ROOM_OPTIONS.map((r) => (
             <option key={r} value={r}>
-              {r}
+              {r} חדרים
             </option>
           ))}
         </select>

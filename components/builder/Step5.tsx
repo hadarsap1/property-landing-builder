@@ -73,8 +73,8 @@ export default function Step5({ project, onChange }: StepProps) {
               <div className="h-full flex items-center justify-center bg-gray-100 text-gray-500 text-sm text-center p-4">
                 <div>
                   <div className="text-3xl mb-2">🗺️</div>
-                  <p>תצוגת המפה תהיה זמינה לאחר הגדרת</p>
-                  <p className="font-mono text-xs mt-1">NEXT_PUBLIC_MAPS_KEY</p>
+                  <p className="font-medium">תצוגת המפה אינה זמינה כרגע</p>
+                  <p className="text-xs text-gray-400 mt-1">המפה תוצג בדף הנכס הסופי לאחר הגדרת המערכת</p>
                 </div>
               </div>
             )}

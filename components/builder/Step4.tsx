@@ -154,30 +154,38 @@ export default function Step4({ project, onChange }: StepProps) {
       <h2 className="text-2xl font-bold text-gray-800">תמונות ומדיה</h2>
 
       {/* Drop zone */}
-      <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-          dragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
-        }`}
-      >
-        <div className="text-4xl mb-2">🖼️</div>
-        <p className="text-gray-600 font-medium">גרור תמונות לכאן או לחץ לבחירה</p>
-        <p className="text-sm text-gray-400 mt-1">
-          JPG, PNG, WebP — עד 10 תמונות
-          {project.images.length > 0 && ` (${project.images.length}/10 נבחרו)`}
-        </p>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="hidden"
-          onChange={(e) => { if (e.target.files) void processFiles(e.target.files) }}
-        />
-      </div>
+      {project.images.length >= 10 ? (
+        <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 opacity-50 cursor-not-allowed select-none">
+          <div className="text-4xl mb-2">🖼️</div>
+          <p className="text-gray-500 font-medium">הגעת למקסימום — 10/10 תמונות</p>
+          <p className="text-sm text-gray-400 mt-1">הסר תמונה כדי להוסיף חדשה</p>
+        </div>
+      ) : (
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={handleDrop}
+          onClick={() => fileInputRef.current?.click()}
+          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
+            dragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
+          }`}
+        >
+          <div className="text-4xl mb-2">🖼️</div>
+          <p className="text-gray-600 font-medium">גרור תמונות לכאן או לחץ לבחירה</p>
+          <p className="text-sm text-gray-400 mt-1">
+            JPG, PNG, WebP — עד 10 תמונות
+            {project.images.length > 0 && ` (${project.images.length}/10 נבחרו)`}
+          </p>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            className="hidden"
+            onChange={(e) => { if (e.target.files) void processFiles(e.target.files) }}
+          />
+        </div>
+      )}
 
       {/* Image grid */}
       {project.images.length > 0 && (

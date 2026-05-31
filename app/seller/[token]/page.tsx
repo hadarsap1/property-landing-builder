@@ -22,9 +22,13 @@ export default async function SellerPage({ params }: Props) {
     )
   }
 
-  const { listing } = result
+  const { sellerToken, listing } = result
   const title = listing.ai_title ?? listing.title ?? 'נכס'
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
+  const expiresAt = sellerToken.expires_at ? new Date(sellerToken.expires_at) : null
+  const daysLeft = expiresAt
+    ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86_400_000))
+    : null
 
   return (
     <main className="min-h-screen bg-gray-50" dir="rtl">
@@ -32,6 +36,13 @@ export default async function SellerPage({ params }: Props) {
         <div className="max-w-2xl mx-auto">
           <h1 className="font-bold text-gray-900 text-lg">{title}</h1>
           {address && <p className="text-sm text-gray-500 mt-0.5">{address}</p>}
+          {daysLeft !== null && (
+            <p className={`text-xs mt-1 ${daysLeft <= 3 ? 'text-red-500' : 'text-gray-400'}`}>
+              {daysLeft > 0
+                ? `קישור זה תקף עוד ${daysLeft} ימים`
+                : 'קישור זה פג תוקף היום'}
+            </p>
+          )}
         </div>
       </header>
 

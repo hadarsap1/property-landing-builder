@@ -227,6 +227,14 @@ export default function Step9({ project, listingUrl }: StepProps) {
   )
 }
 
+const TEMPLATE_NAMES: Record<PropertyProject['template'], string> = {
+  'modern-blue': 'כחול מודרני',
+  'dark-luxury': 'יוקרה כהה',
+  'warm-homey': 'חמים וביתי',
+  'nature-space': 'טבע ומרחב',
+  'urban-bold': 'אורבני נועז',
+}
+
 function Summary({ project }: { project: PropertyProject }) {
   return (
     <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
@@ -238,7 +246,7 @@ function Summary({ project }: { project: PropertyProject }) {
         {project.builtArea && (<><dt className="text-gray-500">שטח</dt><dd className="text-gray-800">{project.builtArea} מ״ר</dd></>)}
         {project.images.length > 0 && (<><dt className="text-gray-500">תמונות</dt><dd className="text-gray-800">{project.images.length}</dd></>)}
         <dt className="text-gray-500">תבנית</dt>
-        <dd className="text-gray-800">{project.template}</dd>
+        <dd className="text-gray-800">{TEMPLATE_NAMES[project.template] ?? project.template}</dd>
       </dl>
     </div>
   )

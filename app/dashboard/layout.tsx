@@ -23,19 +23,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
           PropBuilder
         </Link>
 
-        {/* Mobile nav */}
-        <nav className="flex gap-1 sm:hidden overflow-x-auto flex-1">
-          {NAV.map((n) => (
-            <Link
-              key={n.href}
-              href={n.href}
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 whitespace-nowrap"
-            >
-              <span>{n.icon}</span>
-              <span>{n.label}</span>
-            </Link>
-          ))}
-        </nav>
+        {/* Mobile nav — scrollable with fade hint */}
+        <div className="flex sm:hidden flex-1 relative min-w-0">
+          <nav className="flex gap-1 overflow-x-auto flex-1 scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+            {NAV.map((n) => (
+              <Link
+                key={n.href}
+                href={n.href}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm text-gray-600 hover:bg-gray-100 whitespace-nowrap shrink-0"
+              >
+                <span>{n.icon}</span>
+                <span>{n.label}</span>
+              </Link>
+            ))}
+          </nav>
+          {/* Fade on left edge to hint at more items */}
+          <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-white to-transparent pointer-events-none" />
+        </div>
 
         <div className="mr-auto flex items-center gap-3">
           <span className="text-sm text-gray-500 hidden sm:block truncate max-w-[180px]">

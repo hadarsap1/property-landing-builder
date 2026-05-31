@@ -35,9 +35,18 @@ export default async function DashboardPage() {
       </div>
 
       {listings.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
-          <div className="text-4xl mb-3">🏠</div>
-          <p className="text-sm">עדיין אין נכסים. צור את הראשון!</p>
+        <div className="text-center py-20 text-gray-400 space-y-4">
+          <div className="text-5xl">🏠</div>
+          <div>
+            <p className="text-base font-semibold text-gray-700">אין נכסים עדיין</p>
+            <p className="text-sm text-gray-400 mt-1">צור את דף הנחיתה הראשון שלך תוך כמה דקות</p>
+          </div>
+          <Link
+            href="/builder"
+            className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors"
+          >
+            + צור נכס ראשון
+          </Link>
         </div>
       ) : (
         <div className="grid gap-3">

@@ -248,8 +248,15 @@ export default function BuilderClient({
   }
 
   function isNextDisabled() {
+    if (step === 1 && !project.city.trim()) return true
     if (step === 3 && !project.rawStory.trim()) return true
     return false
+  }
+
+  function nextButtonTitle() {
+    if (step === 1 && !project.city.trim()) return 'יש למלא עיר לפני המשך'
+    if (step === 3 && !project.rawStory.trim()) return 'יש לכתוב משהו על הנכס לפני המשך'
+    return undefined
   }
 
   const progress = (step / TOTAL_STEPS) * 100
@@ -347,7 +354,7 @@ export default function BuilderClient({
                   <><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />נשמר</>
                 )}
                 {saveStatus === 'error' && (
-                  <span className="text-red-500">שגיאה בשמירה</span>
+                  <span className="text-red-500 font-medium">⚠ שגיאה בשמירה</span>
                 )}
                 {(saveStatus === 'idle' || saveStatus === 'pending') && (
                   <span>{Math.round(progress)}%</span>
@@ -360,17 +367,19 @@ export default function BuilderClient({
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex gap-1 mt-2 justify-center">
+            <div className="flex gap-0.5 mt-2 justify-center">
               {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
                 <button
                   key={s}
                   type="button"
                   onClick={() => goToStep(s)}
                   title={STEP_NAMES[s]}
-                  className={`w-2 h-2 rounded-full transition-colors ${
+                  className="w-6 h-6 flex items-center justify-center"
+                >
+                  <span className={`block w-2 h-2 rounded-full transition-colors ${
                     s === step ? 'bg-blue-600' : s < step ? 'bg-blue-300' : 'bg-gray-300'
-                  }`}
-                />
+                  }`} />
+                </button>
               ))}
             </div>
           </div>
@@ -412,6 +421,7 @@ export default function BuilderClient({
                 type="button"
                 onClick={() => goToStep(step + 1)}
                 disabled={isNextDisabled()}
+                title={nextButtonTitle()}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium px-5 py-2 rounded-lg transition-colors disabled:cursor-not-allowed"
               >
                 הבא

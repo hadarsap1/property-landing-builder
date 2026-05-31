@@ -6,6 +6,10 @@ import type { Agent } from '@/lib/db/types'
 type SafeAgent = Omit<Agent, 'password_hash' | 'invitation_token'>
 
 const ROLE_LABELS = { admin: 'מנהל', agent: 'נציג' }
+const ROLE_DESC = {
+  admin: 'גישה מלאה: ניהול נכסים, לידים, אנליטיקס, צוות והגדרות',
+  agent: 'יכול ליצור ולערוך נכסים ולצפות בלידים',
+}
 
 export default function TeamPage() {
   const [agents, setAgents] = useState<SafeAgent[]>([])
@@ -72,7 +76,20 @@ export default function TeamPage() {
 
       {/* Agent list */}
       {loading ? (
-        <p className="text-gray-400 text-sm">טוען...</p>
+        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden animate-pulse">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-0">
+              <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="flex gap-2">
+                  <div className="w-24 h-3.5 bg-gray-200 rounded" />
+                  <div className="w-14 h-3.5 bg-gray-100 rounded" />
+                </div>
+                <div className="w-36 h-3 bg-gray-100 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
       ) : agents.length === 0 ? (
         <p className="text-gray-400 text-sm text-center py-10">אין נציגים עדיין</p>
       ) : (
@@ -190,6 +207,11 @@ function InviteForm({
               <option value="agent">נציג</option>
               <option value="admin">מנהל</option>
             </select>
+          </div>
+          <div className="col-span-2">
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              תפקיד — <span className="font-normal text-gray-400">{ROLE_DESC[form.role as keyof typeof ROLE_DESC]}</span>
+            </label>
           </div>
           <div className="col-span-2">
             <label className="block text-xs font-medium text-gray-600 mb-1">קישור Calendly (אופציונלי)</label>

@@ -81,7 +81,7 @@ export default function LeadsPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-400 text-sm">טוען...</p>
+        <LeadsSkeleton />
       ) : leads.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <div className="text-4xl mb-3">📬</div>
@@ -111,6 +111,26 @@ export default function LeadsPage() {
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+function LeadsSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden animate-pulse">
+      {[...Array(5)].map((_, i) => (
+        <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-0">
+          <div className="w-9 h-9 rounded-full bg-gray-200 shrink-0" />
+          <div className="flex-1 space-y-2">
+            <div className="flex gap-2">
+              <div className="w-24 h-3.5 bg-gray-200 rounded" />
+              <div className="w-14 h-3.5 bg-gray-100 rounded" />
+            </div>
+            <div className="w-36 h-3 bg-gray-100 rounded" />
+          </div>
+          <div className="w-12 h-3 bg-gray-100 rounded shrink-0" />
+        </div>
+      ))}
     </div>
   )
 }

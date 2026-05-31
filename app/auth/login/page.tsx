@@ -75,6 +75,10 @@ async function LoginForm({
       >
         כניסה
       </button>
+
+      <p className="text-center text-xs text-gray-400 pt-1">
+        שכחת סיסמה? פנה למנהל הסוכנות.
+      </p>
     </form>
   )
 }

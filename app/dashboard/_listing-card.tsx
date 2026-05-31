@@ -38,6 +38,8 @@ export function ListingCard({
 
   async function changeStatus(next: Listing['status']) {
     if (next === status) return
+    const LABELS: Record<Listing['status'], string> = { active: 'פעיל', paused: 'מושהה', sold: 'נמכר' }
+    if (!confirm(`לשנות סטטוס ל"${LABELS[next]}"?`)) return
     setSaving(true)
     const res = await fetch(`/api/listings/${listing.id}`, {
       method: 'PATCH',
