@@ -70,8 +70,12 @@ CREATE TABLE IF NOT EXISTS project_views (
   contact_clicked    BOOLEAN NOT NULL DEFAULT false,
   whatsapp_clicked   BOOLEAN NOT NULL DEFAULT false,
   duration_seconds   INT,
+  viewer_email       TEXT,   -- logged-in viewer's email (null = anonymous); used to exclude admin/self views from analytics
   created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Migration for existing databases (safe to re-run):
+ALTER TABLE project_views ADD COLUMN IF NOT EXISTS viewer_email TEXT;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_views_unique
   ON project_views(project_code, viewer_session_id);

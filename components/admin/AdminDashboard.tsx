@@ -405,7 +405,7 @@ export default function AdminDashboard({ stats, projects: initialProjects, users
           <StatCard label="פרויקטים" value={stats.total_projects} color="bg-white border-gray-200" />
           <StatCard label="פעילים" value={stats.active_projects} color="bg-white border-gray-200" />
           <StatCard label="משתמשים" value={stats.total_users} color="bg-blue-50 border-blue-100" />
-          <StatCard label="צפיות" value={stats.total_views} color="bg-white border-gray-200" />
+          <StatCard label="מבקרים ייחודיים" value={stats.total_views} color="bg-white border-gray-200" />
           <StatCard label="קליקי יצירת קשר" value={stats.contact_clicks} color="bg-green-50 border-green-100" />
           <StatCard label="קליקי WhatsApp" value={stats.whatsapp_clicks} color="bg-green-50 border-green-100" />
         </div>

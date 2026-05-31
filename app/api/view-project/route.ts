@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { sql, hasDb } from '@/lib/db';
 import { rateLimit } from '@/lib/rate-limit';
+import { auth } from '@/auth';
 
 interface ViewBody {
   projectCode: string;
@@ -43,15 +44,21 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ ok: true }); // silently skip in dev
   }
 
+  // Tag the view with the logged-in viewer's email (from the session cookie, not
+  // client-supplied) so admin/owner self-views can be excluded from analytics.
+  const session = await auth();
+  const viewerEmail = session?.user?.email ?? null;
+
   try {
     // Upsert: one row per (project_code, viewer_session_id)
     await sql!`
-      INSERT INTO project_views (project_code, viewer_session_id, referrer, contact_clicked, whatsapp_clicked, duration_seconds)
-      VALUES (${projectCode}, ${viewerSessionId}, ${referrer ?? null}, ${contactClicked ?? false}, ${whatsappClicked ?? false}, ${durationSeconds ?? null})
+      INSERT INTO project_views (project_code, viewer_session_id, referrer, contact_clicked, whatsapp_clicked, duration_seconds, viewer_email)
+      VALUES (${projectCode}, ${viewerSessionId}, ${referrer ?? null}, ${contactClicked ?? false}, ${whatsappClicked ?? false}, ${durationSeconds ?? null}, ${viewerEmail})
       ON CONFLICT (project_code, viewer_session_id) DO UPDATE SET
         contact_clicked  = project_views.contact_clicked  OR EXCLUDED.contact_clicked,
         whatsapp_clicked = project_views.whatsapp_clicked OR EXCLUDED.whatsapp_clicked,
-        duration_seconds = COALESCE(EXCLUDED.duration_seconds, project_views.duration_seconds)
+        duration_seconds = COALESCE(EXCLUDED.duration_seconds, project_views.duration_seconds),
+        viewer_email     = COALESCE(EXCLUDED.viewer_email, project_views.viewer_email)
     `;
     return NextResponse.json({ ok: true });
   } catch (err: unknown) {

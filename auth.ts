@@ -2,7 +2,7 @@ import NextAuth from 'next-auth';
 import Google from 'next-auth/providers/google';
 import { sql } from '@/lib/db';
 
-const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
+export const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? '')
   .split(',')
   .map((e) => e.trim())
   .filter(Boolean);

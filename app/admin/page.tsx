@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
-import { auth, isAdmin } from '@/auth';
+import { auth, isAdmin, ADMIN_EMAILS } from '@/auth';
 import { sql, hasDb } from '@/lib/db';
 import AdminDashboard, {
   type AdminStats,
@@ -13,14 +13,20 @@ import AdminDashboard, {
 export const dynamic = 'force-dynamic';
 
 async function fetchStats(): Promise<AdminStats> {
+  // total_views = unique visitors (distinct sessions), excluding admin/self views.
   const rows = await sql!`
     SELECT
       (SELECT COUNT(*) FROM projects)::int                                    AS total_projects,
       (SELECT COUNT(*) FROM projects WHERE expires_at IS NULL OR expires_at > now())::int AS active_projects,
       (SELECT COUNT(*) FROM users)::int                                       AS total_users,
-      (SELECT COUNT(*) FROM project_views)::int                               AS total_views,
-      (SELECT COUNT(*) FROM project_views WHERE contact_clicked = true)::int  AS contact_clicks,
-      (SELECT COUNT(*) FROM project_views WHERE whatsapp_clicked = true)::int AS whatsapp_clicks
+      (SELECT COUNT(DISTINCT viewer_session_id) FROM project_views
+         WHERE viewer_email IS NULL OR NOT (viewer_email = ANY(${ADMIN_EMAILS}::text[])))::int AS total_views,
+      (SELECT COUNT(*) FROM project_views
+         WHERE contact_clicked = true
+           AND (viewer_email IS NULL OR NOT (viewer_email = ANY(${ADMIN_EMAILS}::text[]))))::int AS contact_clicks,
+      (SELECT COUNT(*) FROM project_views
+         WHERE whatsapp_clicked = true
+           AND (viewer_email IS NULL OR NOT (viewer_email = ANY(${ADMIN_EMAILS}::text[]))))::int AS whatsapp_clicks
   `;
   return rows[0] as AdminStats;
 }
@@ -45,6 +51,7 @@ async function fetchProjects(): Promise<AdminProject[]> {
     FROM projects p
     LEFT JOIN users u ON u.id = p.user_id
     LEFT JOIN project_views pv ON pv.project_code = p.code
+      AND (pv.viewer_email IS NULL OR NOT (pv.viewer_email = ANY(${ADMIN_EMAILS}::text[])))
     GROUP BY p.id, u.email
     ORDER BY p.created_at DESC
     LIMIT 200
@@ -93,6 +100,7 @@ async function fetchDailyStats(): Promise<DailyPoint[]> {
         SUM(CASE WHEN whatsapp_clicked THEN 1 ELSE 0 END)::int AS wc
       FROM project_views
       WHERE created_at >= NOW() - INTERVAL '30 days'
+        AND (viewer_email IS NULL OR NOT (viewer_email = ANY(${ADMIN_EMAILS}::text[])))
       GROUP BY 1
     )
     SELECT
@@ -157,6 +165,7 @@ async function fetchActivity(): Promise<ActivityItem[]> {
         NULL,
         pv.created_at
       FROM project_views pv
+      WHERE pv.viewer_email IS NULL OR NOT (pv.viewer_email = ANY(${ADMIN_EMAILS}::text[]))
     ) x
     ORDER BY ts DESC
     LIMIT 60
