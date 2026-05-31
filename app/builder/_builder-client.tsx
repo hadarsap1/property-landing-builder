@@ -18,6 +18,7 @@ import ImportListing from '@/components/builder/ImportListing'
 interface BuilderClientProps {
   agencyId: string
   agencySlug: string
+  personalUserId: string
   listingId: string | null
   listingSlug: string | null
   initialProject: PropertyProject | null
@@ -93,6 +94,7 @@ function track(event: string, step?: number) {
 export default function BuilderClient({
   agencyId,
   agencySlug,
+  personalUserId,
   listingId: initialListingId,
   listingSlug: initialListingSlug,
   initialProject,
@@ -146,8 +148,9 @@ export default function BuilderClient({
   // ── Create listing in DB on first use (if no ID yet) ────────────────────
 
   useEffect(() => {
-    if (!hydrated || listingId || !agencyId) return
-    // Create a stub listing so we have an ID to autosave against
+    if (!hydrated || listingId) return
+    // Create a stub listing for authenticated users (agency or personal)
+    // Anonymous users still get a DB record so the preview URL works
     void (async () => {
       try {
         const res = await fetch('/api/listings', {
@@ -163,7 +166,7 @@ export default function BuilderClient({
       } catch { /* non-critical — just won't persist to DB */ }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated, agencyId])
+  }, [hydrated])
 
   // ── localStorage write-through (offline resilience) ────────────────────
 
@@ -262,10 +265,11 @@ export default function BuilderClient({
   const progress = (step / TOTAL_STEPS) * 100
   const isWelcomeScreen = step === 0 || step === -1
 
-  const listingUrl =
-    agencySlug && listingSlug
-      ? `/agency/${agencySlug}/listings/${listingSlug}`
-      : null
+  const listingUrl = agencySlug && listingSlug
+    ? `/agency/${agencySlug}/listings/${listingSlug}`
+    : listingId
+    ? `/p/${listingId}`
+    : null
 
   // ── Loading ────────────────────────────────────────────────────────────
 
@@ -391,7 +395,7 @@ export default function BuilderClient({
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-7">
               {step === 1 && <Step1 project={project} onChange={onChange} />}
               {step === 2 && <Step2 project={project} onChange={onChange} />}
-              {step === 3 && <Step3 project={project} onChange={onChange} agencyId={agencyId} />}
+              {step === 3 && <Step3 project={project} onChange={onChange} agencyId={agencyId || personalUserId} />}
               {step === 4 && <Step4 project={project} onChange={onChange} />}
               {step === 5 && <Step5 project={project} onChange={onChange} />}
               {step === 6 && <Step6 project={project} onChange={onChange} />}

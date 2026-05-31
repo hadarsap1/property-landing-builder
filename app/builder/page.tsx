@@ -1,4 +1,3 @@
-import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getListingById } from '@/lib/db/queries/listings'
 import { getAgencyById } from '@/lib/db/queries/agencies'
@@ -12,12 +11,10 @@ export default async function BuilderPage({
   searchParams: Promise<{ id?: string }>
 }) {
   const session = await auth()
-  if (!session) {
-    redirect('/auth/login?callbackUrl=/builder')
-  }
-
-  const agencyId = session.user?.agencyId ?? ''
   const { id } = await searchParams
+
+  const agencyId = session?.user?.agencyId ?? ''
+  const personalUserId = session?.user?.personalUserId ?? ''
 
   let listingId: string | null = null
   let listingSlug: string | null = null
@@ -31,10 +28,16 @@ export default async function BuilderPage({
 
   if (id) {
     const listing = await getListingById(id)
-    if (listing && listing.agency_id === agencyId) {
-      listingId = listing.id
-      listingSlug = listing.slug
-      initialProject = listingToProject(listing)
+    if (listing) {
+      const ownsIt =
+        (agencyId && listing.agency_id === agencyId) ||
+        (personalUserId && listing.user_id === personalUserId) ||
+        (!listing.agency_id && !listing.user_id) // anonymous listing
+      if (ownsIt) {
+        listingId = listing.id
+        listingSlug = listing.slug
+        initialProject = listingToProject(listing)
+      }
     }
   }
 
@@ -42,6 +45,7 @@ export default async function BuilderPage({
     <BuilderClient
       agencyId={agencyId}
       agencySlug={agencySlug}
+      personalUserId={personalUserId}
       listingId={listingId}
       listingSlug={listingSlug}
       initialProject={initialProject}

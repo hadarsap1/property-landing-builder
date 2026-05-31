@@ -42,8 +42,45 @@ export async function getListingBySlug(agencyId: string, slug: string): Promise<
   return rows[0] ?? null
 }
 
+export async function getListingsByUser(userId: string): Promise<Listing[]> {
+  const { rows } = await sql<Listing>`
+    SELECT * FROM listings WHERE user_id = ${userId} ORDER BY created_at DESC
+  `
+  return rows
+}
+
+export async function getListingByIdForUser(id: string, userId: string): Promise<Listing | null> {
+  const { rows } = await sql<Listing>`
+    SELECT * FROM listings WHERE id = ${id} AND user_id = ${userId} LIMIT 1
+  `
+  return rows[0] ?? null
+}
+
+export async function slugExistsForUser(userId: string, slug: string): Promise<boolean> {
+  const { rows } = await sql`
+    SELECT 1 FROM listings WHERE user_id = ${userId} AND slug = ${slug} LIMIT 1
+  `
+  return rows.length > 0
+}
+
+export async function generateUniqueSlugForUser(userId: string, base: string): Promise<string> {
+  const clean = base
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .slice(0, 60)
+  let slug = clean || 'listing'
+  let n = 1
+  while (await slugExistsForUser(userId, slug)) {
+    slug = `${clean}-${n++}`
+  }
+  return slug
+}
+
 export async function createListing(data: {
-  agency_id: string
+  agency_id?: string | null
+  user_id?: string | null
   agent_id?: string | null
   slug: string
   [key: string]: PgValue | undefined

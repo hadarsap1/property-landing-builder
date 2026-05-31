@@ -23,3 +23,8 @@ export async function loginAction(formData: FormData): Promise<void> {
     throw err
   }
 }
+
+export async function googleSignInAction(formData: FormData): Promise<void> {
+  const callbackUrl = (formData.get('callbackUrl') as string) || '/personal'
+  await signIn('google', { redirectTo: callbackUrl })
+}

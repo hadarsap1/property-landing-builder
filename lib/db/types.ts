@@ -1,3 +1,13 @@
+export interface PersonalUser {
+  id: string
+  email: string | null
+  name: string | null
+  photo_url: string | null
+  plan: 'free' | 'commercial'
+  agency_id: string | null
+  created_at: Date
+}
+
 export interface Agency {
   id: string
   slug: string
@@ -27,7 +37,8 @@ export interface Agent {
 
 export interface Listing {
   id: string
-  agency_id: string
+  agency_id: string | null
+  user_id: string | null
   agent_id: string | null
   slug: string
   status: 'active' | 'paused' | 'sold'

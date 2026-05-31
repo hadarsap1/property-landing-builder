@@ -14,6 +14,17 @@ CREATE TABLE IF NOT EXISTS agencies (
   created_at    timestamp NOT NULL DEFAULT now()
 );
 
+-- Personal users (private sellers: anonymous or Google sign-in)
+CREATE TABLE IF NOT EXISTS personal_users (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email      text UNIQUE,
+  name       text,
+  photo_url  text,
+  plan       text NOT NULL DEFAULT 'free' CHECK (plan IN ('free', 'commercial')),
+  agency_id  uuid REFERENCES agencies(id) ON DELETE SET NULL,
+  created_at timestamp NOT NULL DEFAULT now()
+);
+
 -- Agents (employees of an agency)
 CREATE TABLE IF NOT EXISTS agents (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -33,7 +44,8 @@ CREATE TABLE IF NOT EXISTS agents (
 -- Listings (properties)
 CREATE TABLE IF NOT EXISTS listings (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  agency_id           uuid NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+  agency_id           uuid REFERENCES agencies(id) ON DELETE CASCADE,
+  user_id             uuid REFERENCES personal_users(id) ON DELETE CASCADE,
   agent_id            uuid REFERENCES agents(id) ON DELETE SET NULL,
   slug                text NOT NULL,
   status              text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'sold')),
@@ -187,9 +199,19 @@ CREATE TABLE IF NOT EXISTS analytics_events (
 );
 
 -- Indexes for common query patterns
+CREATE INDEX IF NOT EXISTS idx_personal_users_email    ON personal_users(email) WHERE email IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_personal_users_agency   ON personal_users(agency_id) WHERE agency_id IS NOT NULL;
+
 CREATE INDEX IF NOT EXISTS idx_agents_agency_id        ON agents(agency_id);
 CREATE INDEX IF NOT EXISTS idx_listings_agency_id      ON listings(agency_id);
+CREATE INDEX IF NOT EXISTS idx_listings_user_id        ON listings(user_id);
 CREATE INDEX IF NOT EXISTS idx_listings_agent_id       ON listings(agent_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_listings_agency_slug
+  ON listings(agency_id, slug) WHERE agency_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_listings_user_slug
+  ON listings(user_id, slug) WHERE user_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_listings_status         ON listings(status);
 CREATE INDEX IF NOT EXISTS idx_seller_tokens_listing   ON seller_tokens(listing_id);
 CREATE INDEX IF NOT EXISTS idx_seller_tokens_expires   ON seller_tokens(expires_at);
