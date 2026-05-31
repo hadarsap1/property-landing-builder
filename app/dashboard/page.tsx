@@ -1,6 +1,7 @@
 import { auth } from '@/auth'
 import { getListingsByAgency } from '@/lib/db/queries/listings'
 import { getAgencyById } from '@/lib/db/queries/agencies'
+import { getPendingChangesByListing } from '@/lib/db/queries/pending-changes'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
 
@@ -31,6 +32,15 @@ export default async function DashboardPage() {
     getAgencyById(agencyId),
   ])
 
+  const pendingCounts = Object.fromEntries(
+    await Promise.all(
+      listings.map(async (l) => {
+        const changes = await getPendingChangesByListing(l.id)
+        return [l.id, changes.filter(c => c.status === 'pending').length] as [string, number]
+      })
+    )
+  )
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -56,7 +66,12 @@ export default async function DashboardPage() {
       ) : (
         <div className="grid gap-3">
           {listings.map((listing) => (
-            <ListingCard key={listing.id} listing={listing} agencySlug={agency?.slug ?? ''} />
+            <ListingCard
+              key={listing.id}
+              listing={listing}
+              agencySlug={agency?.slug ?? ''}
+              pendingChanges={pendingCounts[listing.id] ?? 0}
+            />
           ))}
         </div>
       )}
@@ -64,7 +79,15 @@ export default async function DashboardPage() {
   )
 }
 
-function ListingCard({ listing, agencySlug }: { listing: Listing; agencySlug: string }) {
+function ListingCard({
+  listing,
+  agencySlug,
+  pendingChanges,
+}: {
+  listing: Listing
+  agencySlug: string
+  pendingChanges: number
+}) {
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
   const publicUrl = agencySlug ? `/agency/${agencySlug}/${listing.slug}` : null
 
@@ -99,7 +122,7 @@ function ListingCard({ listing, agencySlug }: { listing: Listing; agencySlug: st
         </p>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
         {publicUrl && (
           <Link
             href={publicUrl}
@@ -109,6 +132,16 @@ function ListingCard({ listing, agencySlug }: { listing: Listing; agencySlug: st
             צפה
           </Link>
         )}
+        <Link
+          href={`/dashboard/listings/${listing.id}/review`}
+          className={`relative text-xs rounded-lg px-3 py-1.5 font-medium transition-colors ${
+            pendingChanges > 0
+              ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700'
+              : 'text-gray-500 hover:text-gray-800 border border-gray-200'
+          }`}
+        >
+          {pendingChanges > 0 ? `${pendingChanges} שינויים` : 'מוכר'}
+        </Link>
         <Link
           href={`/dashboard/listings/${listing.id}/edit`}
           className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg px-3 py-1.5 font-medium transition-colors"

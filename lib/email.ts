@@ -1,5 +1,45 @@
 import nodemailer from 'nodemailer'
 
+interface SellerMagicLinkOptions {
+  to: string
+  sellerName: string | null
+  listingTitle: string
+  sellerUrl: string
+}
+
+export async function sendSellerMagicLinkEmail({
+  to,
+  sellerName,
+  listingTitle,
+  sellerUrl,
+}: SellerMagicLinkOptions): Promise<void> {
+  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
+    console.info(`\n[seller-link] Send this link to ${to}:\n${sellerUrl}\n`)
+    return
+  }
+
+  const transport = nodemailer.createTransport(process.env.EMAIL_SERVER)
+  const greeting = sellerName ? `שלום ${sellerName},` : 'שלום,'
+
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: `קישור לעדכון נכס: ${listingTitle}`,
+    text: `${greeting}\n\nהנה הקישור שלך לצפייה ועדכון פרטי הנכס:\n${sellerUrl}\n\nהקישור תקף ל-7 ימים.`,
+    html: `
+      <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#1e3a5f">עדכון נכס: ${listingTitle}</h2>
+        <p>${greeting}<br>הנה הקישור שלך לצפייה ועדכון פרטי הנכס.</p>
+        <a href="${sellerUrl}"
+           style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+          צפה בנכס ועדכן פרטים
+        </a>
+        <p style="color:#6b7280;font-size:13px">הקישור תקף ל-7 ימים.</p>
+      </div>
+    `,
+  })
+}
+
 interface InviteEmailOptions {
   to: string
   agencyName: string
