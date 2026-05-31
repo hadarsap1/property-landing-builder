@@ -22,10 +22,12 @@ CREATE TABLE IF NOT EXISTS agents (
   email         text UNIQUE NOT NULL,
   phone         text,
   photo_url     text,
-  role          text NOT NULL DEFAULT 'agent' CHECK (role IN ('admin', 'agent')),
-  password_hash text,
-  calendly_url  text,
-  created_at    timestamp NOT NULL DEFAULT now()
+  role                   text NOT NULL DEFAULT 'agent' CHECK (role IN ('admin', 'agent')),
+  password_hash          text,
+  calendly_url           text,
+  invitation_token       text UNIQUE,
+  invitation_expires_at  timestamp,
+  created_at             timestamp NOT NULL DEFAULT now()
 );
 
 -- Listings (properties)

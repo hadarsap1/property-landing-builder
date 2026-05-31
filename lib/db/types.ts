@@ -20,6 +20,8 @@ export interface Agent {
   role: 'admin' | 'agent'
   password_hash: string | null
   calendly_url: string | null
+  invitation_token: string | null
+  invitation_expires_at: Date | null
   created_at: Date
 }
 
