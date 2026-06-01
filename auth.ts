@@ -8,6 +8,12 @@ import { upsertPersonalUser, getPersonalUserById } from '@/lib/db/queries/person
 import { getAgentByEmail } from '@/lib/db/queries/agents'
 import { ensureSchema } from '@/lib/db/ensure-schema'
 
+// Clear AUTH_URL so next-auth derives the callback URL from the live request host
+// (via trustHost + x-forwarded-host). This fixes OAuth when AUTH_URL in the Vercel
+// env var points to a different domain than the one the user actually visits.
+// Runs once at module init — applies to both route handlers and Server Actions.
+process.env.AUTH_URL = ''
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   providers: [
