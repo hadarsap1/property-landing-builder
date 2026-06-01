@@ -7,6 +7,7 @@ import type { Agent } from '@/lib/db/types'
 import { upsertPersonalUser, getPersonalUserById } from '@/lib/db/queries/personal-users'
 import { getAgentByEmail } from '@/lib/db/queries/agents'
 import { ensureSchema } from '@/lib/db/ensure-schema'
+import { recordAuthError } from '@/lib/auth-error-log'
 
 // Clear AUTH_URL so next-auth derives the callback URL from the live request host
 // (via trustHost + x-forwarded-host). This fixes OAuth when AUTH_URL in the Vercel
@@ -17,6 +18,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
   trustHost: true,
   debug: true,
+  logger: {
+    error(error) {
+      recordAuthError('error', error)
+      console.error('[next-auth][error]', error)
+    },
+    warn(code) {
+      recordAuthError('warn', { name: 'warn', message: code })
+      console.warn('[next-auth][warn]', code)
+    },
+    debug(code, metadata) {
+      console.log('[next-auth][debug]', code, metadata)
+    },
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
