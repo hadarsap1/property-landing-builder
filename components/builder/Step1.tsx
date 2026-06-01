@@ -12,17 +12,50 @@ const ROOM_OPTIONS = [
   1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
 ];
 
-// Top Israeli cities — covers >95% of listings
 const ISRAELI_CITIES = [
-  'אבו גוש','אור יהודה','אור עקיבא','אילת','אלעד','אריאל','אשדוד','אשקלון',
-  'באקה אל-גרביה','בית שאן','בית שמש','בני ברק','בת ים','גבעת שמואל','גבעתיים',
-  'דימונה','הוד השרון','הרצליה','חדרה','חולון','חיפה','טבריה','טירה','טירת כרמל',
-  'יבנה','יהוד','יקנעם','ירושלים','כפר יונה','כפר סבא','כרמיאל','לוד','מודיעין',
-  'מודיעין עילית','מעלה אדומים','מעלות תרשיחא','נהריה','נס ציונה','נצרת','נצרת עילית',
-  'נתיבות','נתניה','עכו','עפולה','ערד','פתח תקווה','צפת','קרית אונו','קרית אתא',
-  'קרית ביאליק','קרית גת','קרית מוצקין','קרית שמונה','ראש העין','ראשון לציון',
-  'רהט','רחובות','רמלה','רמת גן','רמת השרון','רעננה','שדרות','תל אביב',
-];
+  // ערים גדולות
+  'ירושלים','תל אביב','חיפה','ראשון לציון','פתח תקווה','אשדוד','נתניה','באר שבע',
+  'בני ברק','בת ים','חולון','רמת גן','אשקלון','רחובות','בית שמש','הרצליה',
+  'כפר סבא','חדרה','מודיעין','לוד','רמלה','נצרת','קרית גת','עכו',
+  // ערים בינוניות
+  'נהריה','נס ציונה','יבנה','אור יהודה','גבעתיים','אלעד','קרית ביאליק',
+  'קרית מוצקין','קרית אתא','הוד השרון','רמת השרון','רעננה','כפר יונה',
+  'אריאל','מעלה אדומים','מודיעין עילית','גבעת שמואל','קרית אונו','יהוד',
+  'אילת','דימונה','צפת','טבריה','עפולה','בית שאן','נצרת עילית',
+  // ערים קטנות ויישובים עירוניים
+  'כרמיאל','יוקנעם','קרית שמונה','מעלות תרשיחא','נתיבות','שדרות','ערד',
+  'אופקים','ירוחם','מצפה רמון','קרית מלאכי','טירה','ג\'לג\'וליה',
+  'כפר קאסם','רהט','ערערה','כפר מנדא','טמרה','אום אל-פחם','באקה אל-גרביה',
+  'מג\'ד אל-כרום','עוספיה','דאלית אל-כרמל','פרדס חנה כרכור','זכרון יעקב',
+  'עתלית','טירת כרמל','נשר','קרית ים','שפרעם','סח\'נין','מגדל העמק',
+  'עראבה','כפר מסריק','אכסאל','משהד','ריינה','כפר כנא','כפר תבור',
+  'כפר ורדים','מסעדה','חורפיש','פקיעין','עמקה','כאבול','ירכא',
+  'טורעאן','עילוט','נין','דיר חנא','ח\'ולה','אבו גוש','אבו סנאן',
+  // יישובים נוספים
+  'גן יבנה','ניר ציון','מזכרת בתיה','כרם יבנה','יבנאל',
+  'מגדל','טבריה','לביא','שבלי אום אל-גנם','אחיהוד',
+  'כפר חסידים','עין כרמל','בנימינה','קיסריה','חדרה',
+  'אלישיב','תל מונד','כפר סבא','הוד השרון','כוכב יאיר',
+  'צור יצחק','בית אריה','מכבים-רעות','שוהם','ראש העין',
+  'כפר שמריהו','הרצליה פיתוח','גני תקווה','אזור','יהוד מונוסון',
+  'אור עקיבא','ציפורי','מגדל העמק','שמשית','כפר יהושע',
+  'קרית טבעון','נשר','כפר חרוב','אפיקים','דגניה',
+  'שלומי','מטולה','קריית שמונה','מנחמיה','כינרת',
+  'גנוסר','כפר נהר','מצדה','עין גב','מעגן',
+  'נחשולים','דור','עין כרמל','פוריידיס','ג\'סר אל-זרקא',
+  'קיסריה','בנימינה גבעת עדה','זכרון יעקב','רמות מנשה',
+  'גבעת ניל','ניר עם','שדה דוד','נגבה','קריית מלאכי',
+  'ברור חיל','בית גוברין','כפר מנחם','בני עי\'ש','גדרה',
+  'נס ציונה','ראשון לציון','ברקן','גבעת ברנר',
+  'רחובות','נחל שורק','יבנה','אשדוד','בני דרום',
+  'חולון','בת ים','אזור','צפריה','קריית עקרון',
+  'גדרה','יבנה','עקרון','בית שמש','מטה יהודה',
+  'בית זית','מבשרת ציון','מוצא','כסלון','בית מאיר',
+  'גבעת יערים','שורש','צובה','הר אדר','גבעון החדשה',
+  'ביר נבאלא','ג\'יב','בדו','בית נקופה','בית סוריק',
+  'ניל','גבעת זאב','אלמוג','קריית ספר','ביתר עילית',
+  'אפרת','גוש עציון','מעלה אדומים','מבשרת ציון',
+].sort()
 
 function useClickOutside(ref: React.RefObject<HTMLElement | null>, cb: () => void) {
   useEffect(() => {
@@ -49,15 +82,14 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState(value)
   const containerRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  // Keep local query in sync when parent changes value externally
+  // Keep local query in sync when parent resets the value (e.g. city change resets street)
   useEffect(() => { setQuery(value) }, [value])
 
   useClickOutside(containerRef, () => setOpen(false))
 
   const filtered = query.length >= 1
-    ? options.filter((o) => o.includes(query) || o.startsWith(query)).slice(0, 10)
+    ? options.filter((o) => o.includes(query)).slice(0, 10)
     : []
 
   function select(opt: string) {
@@ -69,7 +101,6 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
   return (
     <div ref={containerRef} className="relative">
       <input
-        ref={inputRef}
         id={id}
         type="text"
         value={query}
@@ -114,24 +145,23 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
   )
 }
 
-function useStreets(city: string, query: string) {
+function useStreets(query: string) {
   const [streets, setStreets] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!city || query.length < 2) { setStreets([]); return }
+    if (query.length < 2) { setStreets([]); return }
     const ctrl = new AbortController()
     const t = setTimeout(async () => {
       setLoading(true)
       try {
-        const filters = encodeURIComponent(JSON.stringify({ city_name: city }))
         const res = await fetch(
-          `/api/location/streets?city=${encodeURIComponent(city)}&q=${encodeURIComponent(query)}`,
+          `/api/location/streets?q=${encodeURIComponent(query)}`,
           { signal: ctrl.signal }
         )
         if (!res.ok) throw new Error('failed')
         const data = (await res.json()) as { streets: string[] }
-        setStreets(data.streets)
+        setStreets(data.streets ?? [])
       } catch {
         setStreets([])
       } finally {
@@ -139,7 +169,7 @@ function useStreets(city: string, query: string) {
       }
     }, 300)
     return () => { clearTimeout(t); ctrl.abort() }
-  }, [city, query])
+  }, [query])
 
   return { streets, loading }
 }
@@ -150,7 +180,7 @@ function Required() {
 
 export default function Step1({ project, onChange }: StepProps) {
   const isRent = project.listingType === 'rent';
-  const { streets, loading: streetsLoading } = useStreets(project.city, project.street)
+  const { streets, loading: streetsLoading } = useStreets(project.street)
 
   return (
     <div className="space-y-6">
@@ -235,7 +265,7 @@ export default function Step1({ project, onChange }: StepProps) {
           placeholder={project.city ? 'הרצל 12' : 'בחר עיר תחילה'}
           disabled={!project.city.trim()}
           loading={streetsLoading}
-          inputClassName={`w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
+          inputClassName="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
         />
         {project.city && (
           <p className="text-xs text-gray-400 mt-1">הקלד לפחות 2 אותיות לחיפוש רחוב</p>
