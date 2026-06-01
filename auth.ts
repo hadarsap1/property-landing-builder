@@ -1,6 +1,5 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
-import Nodemailer from 'next-auth/providers/nodemailer'
 import Google from 'next-auth/providers/google'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
@@ -49,13 +48,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
 
-    // Magic link for sellers (no password required)
-    Nodemailer({
-      id: 'seller-magic-link',
-      name: 'Seller Magic Link',
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
-    }),
   ],
 
   callbacks: {
