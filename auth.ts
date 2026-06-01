@@ -64,16 +64,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         // Otherwise upsert as personal user
-        const pu = await upsertPersonalUser({
-          email: user.email,
-          name: user.name ?? null,
-          photo_url: user.image ?? null,
-        })
-        const u = user as unknown as Record<string, unknown>
-        u.personalUserId = pu.id
-        u.plan = pu.plan
-        u.agencyId = pu.agency_id ?? undefined
-        u.userType = 'personal'
+        try {
+          const pu = await upsertPersonalUser({
+            email: user.email,
+            name: user.name ?? null,
+            photo_url: user.image ?? null,
+          })
+          const u = user as unknown as Record<string, unknown>
+          u.personalUserId = pu.id
+          u.plan = pu.plan
+          u.agencyId = pu.agency_id ?? undefined
+          u.userType = 'personal'
+        } catch (err) {
+          // DB tables may not exist yet — allow sign-in, session will have no personalUserId
+          console.error('[signIn] upsertPersonalUser failed:', err)
+          const u = user as unknown as Record<string, unknown>
+          u.userType = 'personal'
+        }
       }
       return true
     },
