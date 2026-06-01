@@ -59,7 +59,7 @@ export default function PricingPage() {
               </span>
               <span className="text-gray-400 mb-2 text-lg">/ חודש</span>
             </div>
-            <div className="min-h-[3.5rem]">
+            <div className="h-16 flex flex-col justify-end mb-6">
               <p className="text-sm text-gray-400">מתחדש אוטומטית · ביטול בכל עת</p>
             </div>
             <Link
@@ -88,10 +88,8 @@ export default function PricingPage() {
               <span className="text-5xl font-extrabold">₪{yearly.priceIls.toLocaleString('he-IL')}</span>
               <span className="text-blue-200 mb-2 text-lg">/ שנה</span>
             </div>
-            <div className="min-h-[3.5rem]">
-              <p className="text-sm text-blue-100 font-medium">
-                שווה ל-₪{monthlyFromYearly} לחודש
-              </p>
+            <div className="h-16 flex flex-col justify-end mb-6">
+              <p className="text-sm text-blue-100 font-medium">שווה ל-₪{monthlyFromYearly} לחודש</p>
               <p className="text-sm text-blue-200">תשלום אחד לשנה שלמה</p>
             </div>
             <Link
