@@ -8,6 +8,7 @@ import { upsertPersonalUser, getPersonalUserById } from '@/lib/db/queries/person
 import { getAgentByEmail } from '@/lib/db/queries/agents'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  trustHost: true,
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
