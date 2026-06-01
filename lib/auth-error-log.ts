@@ -14,13 +14,16 @@ const buf: Entry[] = []
 const MAX = 50
 
 function extractCause(err: unknown): CauseEntry | undefined {
-  const c = (err as { cause?: unknown })?.cause
-  if (!c) return undefined
-  const ce = c as { name?: string; message?: string; stack?: string }
+  // AuthError wraps the original error as cause.err (not cause directly)
+  const cause = (err as { cause?: unknown })?.cause
+  if (!cause) return undefined
+  const causeObj = cause as { err?: unknown; name?: string; message?: string; stack?: string }
+  // The real error lives in cause.err when AuthError wraps it
+  const real = (causeObj.err ?? cause) as { name?: string; message?: string; stack?: string }
   return {
-    name: ce.name,
-    message: ce.message,
-    stack: ce.stack?.split('\n').slice(0, 10).join('\n'),
+    name: real.name ?? causeObj.name,
+    message: real.message ?? causeObj.message,
+    stack: (real.stack ?? causeObj.stack)?.split('\n').slice(0, 10).join('\n'),
   }
 }
 

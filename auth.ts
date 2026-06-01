@@ -16,15 +16,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   logger: {
     error(error) {
       recordAuthError('error', error)
-      const e = error as Error & { cause?: Error }
-      const cause = e?.cause instanceof Error ? e.cause : null
+      // AuthError stores real cause as error.cause.err (not error.cause directly)
+      const e = error as Error & { cause?: { err?: Error; [k: string]: unknown } }
+      const realCause = e?.cause?.err ?? null
       const data = JSON.stringify({
         name: e?.name,
         message: e?.message,
         stack: e?.stack?.split('\n').slice(0, 5).join('\n'),
-        cause_name: cause?.name,
-        cause_message: cause?.message,
-        cause_stack: cause?.stack?.split('\n').slice(0, 10).join('\n'),
+        cause_obj: JSON.stringify(e?.cause),
+        cause_name: realCause?.name,
+        cause_message: realCause?.message,
+        cause_stack: realCause?.stack?.split('\n').slice(0, 10).join('\n'),
       })
       console.error('[next-auth][error]', data)
       sql`
