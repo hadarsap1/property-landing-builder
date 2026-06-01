@@ -6,6 +6,7 @@ import bcrypt from 'bcryptjs'
 import type { Agent } from '@/lib/db/types'
 import { upsertPersonalUser, getPersonalUserById } from '@/lib/db/queries/personal-users'
 import { getAgentByEmail } from '@/lib/db/queries/agents'
+import { ensureSchema } from '@/lib/db/ensure-schema'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
@@ -53,6 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === 'google' && user.email) {
+        await ensureSchema().catch(() => {})
         // Check if this Google account belongs to an existing agent (broker)
         const agent = await getAgentByEmail(user.email).catch(() => null)
         if (agent) {
