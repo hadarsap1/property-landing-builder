@@ -2,10 +2,12 @@ import { sql, db } from '@/lib/db'
 import type { Agency } from '@/lib/db/types'
 
 function slugifyAgency(s: string): string {
-  return s.toLowerCase().trim()
+  const latin = s.toLowerCase().trim()
     .replace(/[\s_]+/g, '-')
     .replace(/[^a-z0-9-]/g, '')
-    .replace(/^-+|-+$/g, '') || 'agency'
+    .replace(/^-+|-+$/g, '')
+  // If all chars were stripped (e.g. Hebrew-only name), fall back to timestamp
+  return latin || `agency-${Date.now().toString(36)}`
 }
 
 export async function generateUniqueAgencySlug(base: string): Promise<string> {

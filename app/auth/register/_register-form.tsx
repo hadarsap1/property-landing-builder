@@ -22,14 +22,20 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
     if (form.password.length < 8) { setError('הסיסמה חייבת להכיל לפחות 8 תווים'); return }
 
     setLoading(true)
-    const res = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: form.name, agency_name: form.agency_name, email: form.email, password: form.password }),
-    })
-    const data = (await res.json()) as { error?: string }
-    if (!res.ok) { setError(data.error ?? 'שגיאה בהרשמה'); setLoading(false); return }
-    router.push('/auth/login?mode=commercial&registered=1')
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: form.name, agency_name: form.agency_name, email: form.email, password: form.password }),
+      })
+      let data: { error?: string } = {}
+      try { data = (await res.json()) as { error?: string } } catch { /* non-JSON body */ }
+      if (!res.ok) { setError(data.error ?? `שגיאת שרת (${res.status}) — נסה שוב`); setLoading(false); return }
+      router.push('/auth/login?mode=commercial&registered=1')
+    } catch {
+      setError('לא ניתן להגיע לשרת — בדוק חיבור לאינטרנט ונסה שוב')
+      setLoading(false)
+    }
   }
 
   return (
