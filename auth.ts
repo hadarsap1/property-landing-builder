@@ -2,12 +2,24 @@ import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 import { sql } from '@/lib/db'
+import { after } from 'next/server'
 import bcrypt from 'bcryptjs'
 import type { Agent } from '@/lib/db/types'
 import { upsertPersonalUser, getPersonalUserById } from '@/lib/db/queries/personal-users'
 import { getAgentByEmail } from '@/lib/db/queries/agents'
 import { ensureSchema } from '@/lib/db/ensure-schema'
 import { recordAuthError } from '@/lib/auth-error-log'
+
+function serializeError(v: unknown): unknown {
+  if (v instanceof Error) {
+    const e = v as Error & { code?: string; cause?: unknown }
+    return { name: e.name, message: e.message, code: e.code, stack: e.stack?.split('\n').slice(0, 6).join('\n'), cause: serializeError(e.cause) }
+  }
+  if (v && typeof v === 'object') {
+    return Object.fromEntries(Object.entries(v as Record<string, unknown>).map(([k, val]) => [k, serializeError(val)]))
+  }
+  return v
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   secret: process.env.AUTH_SECRET,
@@ -16,24 +28,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   logger: {
     error(error) {
       recordAuthError('error', error)
-      // AuthError stores real cause as error.cause.err (not error.cause directly)
       const e = error as Error & { cause?: { err?: Error; [k: string]: unknown } }
       const realCause = e?.cause?.err ?? null
+      const rc = realCause as (Error & { code?: string; cause?: unknown }) | null
       const data = JSON.stringify({
         name: e?.name,
         message: e?.message,
-        stack: e?.stack?.split('\n').slice(0, 5).join('\n'),
-        cause_obj: JSON.stringify(e?.cause),
-        cause_name: realCause?.name,
-        cause_message: realCause?.message,
-        cause_stack: realCause?.stack?.split('\n').slice(0, 10).join('\n'),
+        stack: e?.stack?.split('\n').slice(0, 6).join('\n'),
+        cause: serializeError(e?.cause),
+        cause_name: rc?.name,
+        cause_message: rc?.message,
+        cause_code: rc?.code,
+        cause_stack: rc?.stack?.split('\n').slice(0, 12).join('\n'),
+        cause_cause: serializeError(rc?.cause),
       })
       console.error('[next-auth][error]', data)
-      sql`
-        CREATE TABLE IF NOT EXISTS auth_debug_log (
-          id SERIAL PRIMARY KEY, ts TIMESTAMPTZ DEFAULT NOW(), data TEXT
-        )
-      `.then(() => sql`INSERT INTO auth_debug_log (data) VALUES (${data})`).catch(() => {})
+      const writeToDb = async () => {
+        await sql`
+          CREATE TABLE IF NOT EXISTS auth_debug_log (
+            id SERIAL PRIMARY KEY, ts TIMESTAMPTZ DEFAULT NOW(), data TEXT
+          )
+        `.catch(() => {})
+        await sql`INSERT INTO auth_debug_log (data) VALUES (${data})`.catch(() => {})
+      }
+      try { after(writeToDb) } catch { writeToDb().catch(() => {}) }
     },
     warn(code) {
       recordAuthError('warn', { name: 'warn', message: code })
