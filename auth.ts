@@ -14,6 +14,7 @@ import { ensureSchema } from '@/lib/db/ensure-schema'
 process.env.AUTH_URL = ''
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: process.env.AUTH_SECRET,
   trustHost: true,
   debug: true,
   providers: [
