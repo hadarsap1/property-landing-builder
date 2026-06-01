@@ -53,7 +53,7 @@ export default function LocalPreviewPage() {
       >
         <div className="text-5xl mb-4">📭</div>
         <h1 className="text-2xl font-bold text-gray-800 mb-2">אין טיוטה שמורה</h1>
-        <p className="text-gray-500 mb-6">עדיין לא מילאת את הוויזרד.</p>
+        <p className="text-gray-500 mb-6">עדיין לא יצרתם דף נחיתה.</p>
         <Link
           href="/builder"
           className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors"

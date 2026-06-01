@@ -39,7 +39,7 @@ export default async function BuilderPage({
       const ownsIt =
         (agencyId && listing.agency_id === agencyId) ||
         (personalUserId && listing.user_id === personalUserId) ||
-        (!listing.agency_id && !listing.user_id) // anonymous listing
+        (!listing.agency_id && !listing.user_id)
       if (ownsIt) {
         listingId = listing.id
         listingSlug = listing.slug

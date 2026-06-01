@@ -26,7 +26,7 @@ export default function Step1({ project, onChange }: StepProps) {
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          שם/כותרת הנכס
+          שם/כותרת הנכס <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -35,6 +35,9 @@ export default function Step1({ project, onChange }: StepProps) {
           placeholder="לדוגמה: דירת 4 חדרים עם נוף לים"
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
+        {!project.title.trim() && (
+          <p className="text-xs text-amber-600 mt-1">יש להזין כותרת לנכס כדי להמשיך</p>
+        )}
       </div>
 
       {/* Street */}
@@ -79,39 +82,37 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Price */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          מחיר<Required />
-        </label>
-        <div className="space-y-3">
-          <label className="flex items-center gap-3 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              id="priceOnRequest"
-              checked={project.priceOnRequest}
-              onChange={(e) => onChange({ priceOnRequest: e.target.checked, price: e.target.checked ? null : project.price })}
-              className="w-4 h-4 text-blue-600 rounded"
-            />
-            <span className="text-sm text-gray-700">מחיר לפי פנייה (המחיר לא יוצג)</span>
+        <label className="block text-sm font-medium text-gray-700 mb-2">מחיר</label>
+        <div className="flex items-center gap-3 mb-3">
+          <input
+            type="checkbox"
+            id="priceOnRequest"
+            checked={project.priceOnRequest}
+            onChange={(e) => onChange({ priceOnRequest: e.target.checked, price: e.target.checked ? null : project.price })}
+            className="w-4 h-4 text-blue-600 rounded"
+          />
+          <label htmlFor="priceOnRequest" className="text-sm text-gray-700">
+            לא להציג מחיר בדף
           </label>
-          {!project.priceOnRequest && (
-            <div className="relative">
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₪</span>
-              <input
-                type="number"
-                value={project.price ?? ''}
-                onChange={(e) => onChange({ price: e.target.value ? Number(e.target.value) : null })}
-                placeholder="2500000"
-                min={0}
-                className={`w-full border rounded-lg pr-8 pl-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  !project.priceOnRequest && !project.price ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
-                }`}
-              />
-            </div>
-          )}
-          {!project.priceOnRequest && !project.price && (
-            <p className="text-xs text-orange-500">הזן מחיר או סמן "מחיר לפי פנייה"</p>
-          )}
         </div>
+        {!project.priceOnRequest && (
+          <div className="relative">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₪</span>
+            <input
+              type="number"
+              value={project.price ?? ''}
+              onChange={(e) => onChange({ price: e.target.value ? Number(e.target.value) : null })}
+              placeholder="2500000"
+              min={0}
+              className={`w-full border rounded-lg pr-8 pl-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                !project.priceOnRequest && !project.price ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
+              }`}
+            />
+          </div>
+        )}
+        {!project.priceOnRequest && !project.price && (
+          <p className="text-xs text-orange-500">הזן מחיר או סמן "לא להציג מחיר בדף"</p>
+        )}
       </div>
 
       {/* Areas */}

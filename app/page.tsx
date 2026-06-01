@@ -63,8 +63,8 @@ export default function HomePage() {
           <span className="text-blue-600">לנכס שלך</span>
         </h1>
         <p className="text-xl text-gray-500 mb-10 max-w-2xl mx-auto leading-relaxed">
-          ויזרד פשוט, AI שכותב את הסיפור, עיצוב מרשים — בין אם אתה מוכר דירה פרטית
-          או מנהל סוכנות נדל&quot;ן.
+          ממלאים פרטים, בוחרים עיצוב, ה-AI כותב את הסיפור.
+          תוצאה: דף נחיתה מקצועי שתשלחו לכל קונה פוטנציאלי — תוך פחות מ-5 דקות.
         </p>
       </section>
 
@@ -91,7 +91,7 @@ export default function HomePage() {
               href="/builder"
               className="block w-full text-center bg-blue-600 group-hover:bg-blue-700 text-white font-bold px-6 py-3.5 rounded-2xl text-sm transition-colors"
             >
-              צור דף עכשיו — חינם ←
+              צרו דף עכשיו — חינם ←
             </Link>
           </div>
 
@@ -147,18 +147,23 @@ export default function HomePage() {
 
       {/* ── Bottom CTA ──────────────────────────────────────── */}
       <section className="bg-blue-600 py-16 px-6 text-center text-white">
-        <h2 className="text-3xl font-bold mb-3">מוכן להתחיל?</h2>
-        <p className="text-blue-100 mb-8 text-lg">לוקח פחות מ-5 דקות.</p>
+        <h2 className="text-3xl font-bold mb-3">מוכנים להתחיל?</h2>
+        <p className="text-blue-100 mb-8 text-lg">לוקח פחות מ-5 דקות. חינם לחלוטין.</p>
         <Link
           href="/builder"
           className="bg-white text-blue-600 font-bold px-10 py-4 rounded-xl text-lg hover:bg-blue-50 transition-colors shadow-lg"
         >
-          צור דף הנחיתה שלך — חינם ←
+          צרו דף נחיתה עכשיו ←
         </Link>
       </section>
 
-      <footer className="text-center text-sm text-gray-400 py-6">
-        PropBuilder · {new Date().getFullYear()}
+      <footer className="text-center text-sm text-gray-400 py-6 space-y-1">
+        <p>PropBuilder · {new Date().getFullYear()}</p>
+        <p>
+          <Link href="/terms" className="hover:text-gray-600 underline underline-offset-2 transition-colors">
+            תנאי שימוש
+          </Link>
+        </p>
       </footer>
     </div>
   );

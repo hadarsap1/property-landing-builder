@@ -51,7 +51,7 @@ export default function PricingPage() {
         <div className="grid sm:grid-cols-2 gap-6">
 
           {/* Monthly */}
-          <div className="bg-white rounded-3xl border-2 border-gray-200 hover:border-gray-300 p-8 transition-colors">
+          <div className="bg-white rounded-3xl border-2 border-gray-200 hover:border-gray-300 p-8 transition-colors flex flex-col">
             <div className="text-sm font-semibold text-gray-500 mb-3">חיוב חודשי</div>
             <div className="flex items-end gap-1 mb-1">
               <span className="text-5xl font-extrabold text-gray-900">
@@ -59,14 +59,16 @@ export default function PricingPage() {
               </span>
               <span className="text-gray-400 mb-2 text-lg">/ חודש</span>
             </div>
-            <p className="text-sm text-gray-400 mb-8">מתחדש אוטומטית · ביטול בכל עת</p>
+            <div className="min-h-[3.5rem]">
+              <p className="text-sm text-gray-400">מתחדש אוטומטית · ביטול בכל עת</p>
+            </div>
             <Link
               href="/auth/register"
               className="block w-full text-center bg-gray-900 hover:bg-gray-700 text-white font-bold px-6 py-3.5 rounded-2xl text-sm transition-colors mb-8"
             >
               התחל ניסיון חינם ←
             </Link>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex-1">
               {FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
                   <span className="text-green-500 font-bold mt-0.5 shrink-0">✓</span>
@@ -77,7 +79,7 @@ export default function PricingPage() {
           </div>
 
           {/* Yearly — recommended */}
-          <div className="bg-gradient-to-b from-blue-600 to-blue-700 rounded-3xl border-2 border-blue-500 p-8 text-white relative shadow-xl shadow-blue-200">
+          <div className="bg-gradient-to-b from-blue-600 to-blue-700 rounded-3xl border-2 border-blue-500 p-8 text-white relative shadow-xl shadow-blue-200 flex flex-col">
             <div className="absolute -top-3.5 right-6 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1.5 rounded-full shadow">
               חסכון של {yearly.savingPct}%
             </div>
@@ -86,17 +88,19 @@ export default function PricingPage() {
               <span className="text-5xl font-extrabold">₪{yearly.priceIls.toLocaleString('he-IL')}</span>
               <span className="text-blue-200 mb-2 text-lg">/ שנה</span>
             </div>
-            <p className="text-sm text-blue-100 mb-1 font-medium">
-              שווה ל-₪{monthlyFromYearly} לחודש
-            </p>
-            <p className="text-sm text-blue-200 mb-8">תשלום אחד לשנה שלמה</p>
+            <div className="min-h-[3.5rem]">
+              <p className="text-sm text-blue-100 font-medium">
+                שווה ל-₪{monthlyFromYearly} לחודש
+              </p>
+              <p className="text-sm text-blue-200">תשלום אחד לשנה שלמה</p>
+            </div>
             <Link
               href="/auth/register"
               className="block w-full text-center bg-white hover:bg-blue-50 text-blue-700 font-bold px-6 py-3.5 rounded-2xl text-sm transition-colors mb-8"
             >
               התחל ניסיון חינם ←
             </Link>
-            <ul className="space-y-3">
+            <ul className="space-y-3 flex-1">
               {FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-2.5 text-sm text-blue-100">
                   <span className="text-blue-200 font-bold mt-0.5 shrink-0">✓</span>

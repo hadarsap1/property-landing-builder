@@ -49,7 +49,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {([
-              { id: 'name',        label: 'שמך המלא',     type: 'text',     placeholder: 'ישראל ישראלי' },
+              { id: 'name',        label: 'שם מלא',       type: 'text',     placeholder: 'ישראל ישראלי' },
               { id: 'agency_name', label: 'שם הסוכנות',   type: 'text',     placeholder: 'סוכנות נדל״ן מצוינת' },
               { id: 'email',       label: 'כתובת מייל',   type: 'email',    placeholder: 'you@agency.co.il' },
               { id: 'password',    label: 'סיסמה',         type: 'password', placeholder: 'לפחות 8 תווים' },

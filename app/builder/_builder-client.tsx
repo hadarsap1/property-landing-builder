@@ -110,8 +110,14 @@ export default function BuilderClient({
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const activePillRef = useRef<HTMLButtonElement>(null)
 
   // ── Init ────────────────────────────────────────────────────────────────
+
+  // Scroll active pill into view on step change
+  useEffect(() => {
+    activePillRef.current?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' })
+  }, [step])
 
   useEffect(() => {
     if (!sessionStorage.getItem('sessionId')) {
@@ -371,18 +377,30 @@ export default function BuilderClient({
                 style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="flex gap-0.5 mt-2 justify-center">
+            <div
+              className="flex gap-1 mt-2 overflow-x-auto pb-0.5"
+              style={{ scrollbarWidth: 'none' }}
+            >
               {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
                 <button
                   key={s}
+                  ref={s === step ? activePillRef : null}
                   type="button"
                   onClick={() => goToStep(s)}
-                  title={STEP_NAMES[s]}
-                  className="w-6 h-6 flex items-center justify-center"
+                  className={`flex-shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all whitespace-nowrap focus:outline-none ${
+                    s === step
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : s < step
+                      ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
+                  }`}
                 >
-                  <span className={`block w-2 h-2 rounded-full transition-colors ${
-                    s === step ? 'bg-blue-600' : s < step ? 'bg-blue-300' : 'bg-gray-300'
-                  }`} />
+                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none font-bold flex-shrink-0 ${
+                    s === step ? 'bg-white text-blue-600' : s < step ? 'bg-blue-400 text-white' : 'bg-gray-300 text-gray-500'
+                  }`}>
+                    {s}
+                  </span>
+                  {STEP_NAMES[s]}
                 </button>
               ))}
             </div>

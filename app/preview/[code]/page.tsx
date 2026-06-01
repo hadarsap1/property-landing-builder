@@ -33,7 +33,7 @@ export async function generateMetadata({
   const project = await loadProject(code);
   if (!project) return { title: 'נכס לא נמצא' };
   const title = project.aiTitle || project.title || 'נכס למכירה';
-  const city = project.city ? ` — ${project.city}` : '';
+  const city = project.city ? `, ${project.city}` : '';
   const desc = project.aiTagline || `${project.rooms ?? ''} חדרים${city}`;
   return {
     title,
@@ -52,5 +52,5 @@ export default async function PreviewPage({
   const { code } = await params;
   const project = await loadProject(code);
   if (!project) notFound();
-  return <PreviewContent project={project} />;
+  return <PreviewContent project={project} shareCode={code} />;
 }

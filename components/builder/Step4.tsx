@@ -68,11 +68,11 @@ async function uploadImage(file: File): Promise<string> {
 }
 
 const GALLERY_OPTIONS: { value: PropertyProject['galleryType']; label: string }[] = [
-  { value: 'grid', label: 'גלריה (grid)' },
-  { value: 'manual-carousel', label: 'קרוסל ידני' },
-  { value: 'auto-3s', label: 'קרוסל אוטומטי (3 שניות)' },
-  { value: 'auto-5s', label: 'קרוסל אוטומטי (5 שניות)' },
-  { value: 'auto-7s', label: 'קרוסל אוטומטי (7 שניות)' },
+  { value: 'grid', label: 'גלריה' },
+  { value: 'manual-carousel', label: 'קרוסלה ידנית' },
+  { value: 'auto-3s', label: 'קרוסלה אוטומטית (3 שניות)' },
+  { value: 'auto-5s', label: 'קרוסלה אוטומטית (5 שניות)' },
+  { value: 'auto-7s', label: 'קרוסלה אוטומטית (7 שניות)' },
 ]
 
 export default function Step4({ project, onChange }: StepProps) {
@@ -120,6 +120,18 @@ export default function Step4({ project, onChange }: StepProps) {
         }
       })
     )
+  }
+
+  function moveImage(fromIdx: number, toIdx: number) {
+    if (toIdx < 0 || toIdx >= project.images.length) return;
+    const updated = [...project.images];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, moved);
+    let heroIdx = project.heroImageIndex;
+    if (heroIdx === fromIdx) heroIdx = toIdx;
+    else if (fromIdx < heroIdx && toIdx >= heroIdx) heroIdx--;
+    else if (fromIdx > heroIdx && toIdx <= heroIdx) heroIdx++;
+    onChange({ images: updated, heroImageIndex: heroIdx });
   }
 
   function removeImage(id: string) {
@@ -173,7 +185,7 @@ export default function Step4({ project, onChange }: StepProps) {
           <div className="text-4xl mb-2">🖼️</div>
           <p className="text-gray-600 font-medium">גרור תמונות לכאן או לחץ לבחירה</p>
           <p className="text-sm text-gray-400 mt-1">
-            JPG, PNG, WebP — עד 10 תמונות
+            JPG, PNG, WebP | עד 10 תמונות
             {project.images.length > 0 && ` (${project.images.length}/10 נבחרו)`}
           </p>
           <input
@@ -215,27 +227,67 @@ export default function Step4({ project, onChange }: StepProps) {
                   </div>
                 )}
 
+                {/* Hero star — always visible when not uploading */}
                 {project.heroImageIndex === idx && !isUploading && (
-                  <div className="absolute top-1 right-1 bg-yellow-400 rounded-full w-6 h-6 flex items-center justify-center text-sm">⭐</div>
+                  <div className="absolute top-1 right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-xs pointer-events-none">⭐</div>
                 )}
 
                 {!isUploading && (
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onChange({ heroImageIndex: idx })}
-                      className="bg-yellow-400 text-xs text-white px-2 py-1 rounded"
-                    >
-                      ⭐ ראשי
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => removeImage(img.id)}
-                      className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm leading-none"
-                    >
-                      ✕
-                    </button>
-                  </div>
+                  <>
+                    {/* Desktop: hover overlay (drag-and-drop available) */}
+                    <div className="absolute inset-0 bg-black/40 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onChange({ heroImageIndex: idx })}
+                        title="הגדר כתמונה ראשית"
+                        className="bg-yellow-400 text-xs text-white px-2 py-1 rounded"
+                      >
+                        ⭐ ראשי
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(img.id)}
+                        className="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm leading-none"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                    {/* Mobile: always-visible bottom controls */}
+                    <div className="absolute bottom-0 inset-x-0 flex md:hidden items-center justify-between px-1 py-1 bg-gradient-to-t from-black/60 to-transparent">
+                      <div className="flex gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() => moveImage(idx, idx - 1)}
+                          disabled={idx === 0}
+                          className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
+                          aria-label="הזז שמאלה"
+                        >‹</button>
+                        <button
+                          type="button"
+                          onClick={() => moveImage(idx, idx + 1)}
+                          disabled={idx === project.images.length - 1}
+                          className="w-6 h-6 rounded bg-white/80 disabled:opacity-30 flex items-center justify-center text-xs text-gray-800 leading-none"
+                          aria-label="הזז ימינה"
+                        >›</button>
+                      </div>
+                      <div className="flex gap-0.5">
+                        <button
+                          type="button"
+                          onClick={() => onChange({ heroImageIndex: idx })}
+                          className={`w-6 h-6 rounded flex items-center justify-center text-xs leading-none ${
+                            project.heroImageIndex === idx ? 'bg-yellow-400' : 'bg-white/80 text-gray-800'
+                          }`}
+                          aria-label="הגדר כראשי"
+                        >⭐</button>
+                        <button
+                          type="button"
+                          onClick={() => removeImage(img.id)}
+                          className="w-6 h-6 rounded bg-red-500/90 text-white flex items-center justify-center text-xs leading-none"
+                          aria-label="מחק תמונה"
+                        >✕</button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             )
