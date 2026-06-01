@@ -79,11 +79,52 @@ export default function Step4({ project, onChange }: StepProps) {
   const [dragOver, setDragOver] = useState(false)
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set())
+  const [enhancing, setEnhancing] = useState<Record<string, boolean>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
   // Tracks the latest images array so parallel uploads don't clobber each other
   const latestImagesRef = useRef<StoredImage[]>(project.images)
   // Keep ref in sync with prop (parent may update between uploads)
   latestImagesRef.current = project.images
+
+  function applyEnhancement(dataUrl: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const image = new Image()
+      image.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = image.width
+        canvas.height = image.height
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { reject(new Error('canvas unavailable')); return }
+        ctx.filter = 'brightness(1.12) contrast(1.08) saturate(1.22)'
+        ctx.drawImage(image, 0, 0)
+        resolve(canvas.toDataURL('image/jpeg', 0.9))
+      }
+      image.onerror = () => reject(new Error('image load failed'))
+      image.src = dataUrl
+    })
+  }
+
+  async function enhanceImage(img: StoredImage) {
+    setEnhancing((prev) => ({ ...prev, [img.id]: true }))
+    try {
+      const enhancedDataUrl = await applyEnhancement(img.dataUrl)
+      const updated = latestImagesRef.current.map((i) =>
+        i.id === img.id ? { ...i, enhancedDataUrl } : i
+      )
+      onChange({ images: updated })
+    } catch {
+      // silently ignore
+    } finally {
+      setEnhancing((prev) => ({ ...prev, [img.id]: false }))
+    }
+  }
+
+  function revertEnhancement(imgId: string) {
+    const updated = latestImagesRef.current.map((i) =>
+      i.id === imgId ? { ...i, enhancedDataUrl: undefined } : i
+    )
+    onChange({ images: updated })
+  }
 
   async function processFiles(files: FileList | File[]) {
     const arr = Array.from(files).filter((f) =>
@@ -216,7 +257,14 @@ export default function Step4({ project, onChange }: StepProps) {
                 }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={img.dataUrl} alt={img.name} className="w-full h-28 object-cover" />
+                <img src={img.enhancedDataUrl ?? img.dataUrl} alt={img.name} className="w-full h-28 object-cover" />
+
+                {/* Enhanced badge */}
+                {img.enhancedDataUrl && !isUploading && (
+                  <div className="absolute top-1 left-1 bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full leading-none pointer-events-none">
+                    ✨ שופר
+                  </div>
+                )}
 
                 {isUploading && (
                   <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
@@ -235,7 +283,7 @@ export default function Step4({ project, onChange }: StepProps) {
                 {!isUploading && (
                   <>
                     {/* Desktop: hover overlay (drag-and-drop available) */}
-                    <div className="absolute inset-0 bg-black/40 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
+                    <div className="absolute inset-0 bg-black/40 hidden md:flex opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-1.5 flex-wrap p-1">
                       <button
                         type="button"
                         onClick={() => onChange({ heroImageIndex: idx })}
@@ -244,6 +292,26 @@ export default function Step4({ project, onChange }: StepProps) {
                       >
                         ⭐ ראשי
                       </button>
+                      {!img.enhancedDataUrl ? (
+                        <button
+                          type="button"
+                          onClick={() => void enhanceImage(img)}
+                          disabled={enhancing[img.id]}
+                          title="שפר את התמונה"
+                          className="bg-purple-500 text-xs text-white px-2 py-1 rounded disabled:opacity-60"
+                        >
+                          {enhancing[img.id] ? '...' : '✨ שופר'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => revertEnhancement(img.id)}
+                          title="בטל שיפור"
+                          className="bg-gray-500 text-xs text-white px-2 py-1 rounded"
+                        >
+                          ↩ בטל
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => removeImage(img.id)}

@@ -54,12 +54,14 @@ export function listingToProject(listing: Listing): PropertyProject {
         : ''
 
   return {
+    listingType: (listing.listing_type ?? 'sale') as PropertyProject['listingType'],
     title: listing.title ?? '',
     street: listing.street ?? '',
     city: listing.city ?? '',
     neighborhood: listing.neighborhood ?? '',
     price: listing.price ?? null,
     priceOnRequest: listing.price_on_request,
+    furniture: (listing.furniture ?? '') as PropertyProject['furniture'],
     builtArea: listing.built_area ?? null,
     gardenArea: listing.outdoor_area ?? null,
     rooms: listing.rooms ?? null,
@@ -121,6 +123,8 @@ export function projectToListingData(
         : null
 
   return {
+    listing_type: project.listingType,
+    furniture: project.furniture || null,
     title: project.title || null,
     street: project.street || null,
     city: project.city || null,

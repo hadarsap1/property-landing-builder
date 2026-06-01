@@ -16,6 +16,8 @@ function Required() {
 }
 
 export default function Step1({ project, onChange }: StepProps) {
+  const isRent = project.listingType === 'rent';
+
   return (
     <div className="space-y-6">
       <div>
@@ -23,16 +25,44 @@ export default function Step1({ project, onChange }: StepProps) {
         <p className="text-xs text-gray-400 mt-1">שדות המסומנים ב-* הם חובה</p>
       </div>
 
+      {/* Listing type */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">סוג העסקה</label>
+        <div className="grid grid-cols-2 gap-3">
+          {([
+            { value: 'sale', emoji: '🏷️', label: 'למכירה' },
+            { value: 'rent', emoji: '🔑', label: 'להשכרה' },
+          ] as const).map((opt) => {
+            const active = project.listingType === opt.value;
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => onChange({ listingType: opt.value, furniture: '' })}
+                className={`flex flex-col items-center gap-2 py-5 rounded-2xl border-2 transition-all font-semibold text-sm ${
+                  active
+                    ? 'border-blue-500 bg-blue-50 text-blue-600'
+                    : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300'
+                }`}
+              >
+                <span className="text-3xl">{opt.emoji}</span>
+                {opt.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
-          שם/כותרת הנכס <span className="text-red-500">*</span>
+          שם/כותרת הנכס <Required />
         </label>
         <input
           type="text"
           value={project.title}
           onChange={(e) => onChange({ title: e.target.value })}
-          placeholder="לדוגמה: דירת 4 חדרים עם נוף לים"
+          placeholder={isRent ? 'לדוגמה: דירת 3 חדרים מרווחת בלב הצפון' : 'לדוגמה: דירת 4 חדרים עם נוף לים'}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
         {!project.title.trim() && (
@@ -82,7 +112,9 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Price */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">מחיר</label>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          {isRent ? 'מחיר שכירות לחודש' : 'מחיר מכירה'}
+        </label>
         <div className="flex items-center gap-3 mb-3">
           <input
             type="checkbox"
@@ -102,18 +134,51 @@ export default function Step1({ project, onChange }: StepProps) {
               type="number"
               value={project.price ?? ''}
               onChange={(e) => onChange({ price: e.target.value ? Number(e.target.value) : null })}
-              placeholder="2500000"
+              placeholder={isRent ? '5,500' : '2,500,000'}
               min={0}
               className={`w-full border rounded-lg pr-8 pl-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 !project.priceOnRequest && !project.price ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
               }`}
             />
+            {isRent && (
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">לחודש</span>
+            )}
           </div>
         )}
         {!project.priceOnRequest && !project.price && (
-          <p className="text-xs text-orange-500">הזן מחיר או סמן "לא להציג מחיר בדף"</p>
+          <p className="text-xs text-orange-500 mt-1">הזן מחיר או סמן "לא להציג מחיר בדף"</p>
         )}
       </div>
+
+      {/* Furniture — rent only */}
+      {isRent && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">ריהוט</label>
+          <div className="grid grid-cols-3 gap-2">
+            {([
+              { value: 'none', label: 'ללא ריהוט' },
+              { value: 'partial', label: 'ריהוט חלקי' },
+              { value: 'full', label: 'מרוהטת מלאה' },
+            ] as const).map((opt) => {
+              const active = project.furniture === opt.value;
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => onChange({ furniture: opt.value })}
+                  className={`py-2.5 px-2 rounded-lg text-sm font-medium transition-all border ${
+                    active
+                      ? 'border-blue-500 bg-blue-50 text-blue-600'
+                      : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Areas */}
       <div className="grid grid-cols-2 gap-4">

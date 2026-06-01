@@ -69,6 +69,8 @@ export interface Listing {
   slug: string
   status: 'active' | 'paused' | 'sold'
 
+  listing_type: 'sale' | 'rent'
+  furniture: 'none' | 'partial' | 'full' | null
   title: string | null
   street: string | null
   city: string | null

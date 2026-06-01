@@ -51,6 +51,8 @@ CREATE TABLE IF NOT EXISTS listings (
   status              text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'sold')),
 
   -- Step 1: Basic Info
+  listing_type        text NOT NULL DEFAULT 'sale' CHECK (listing_type IN ('sale', 'rent')),
+  furniture           text CHECK (furniture IN ('none', 'partial', 'full')),
   title               text,
   street              text,
   city                text,

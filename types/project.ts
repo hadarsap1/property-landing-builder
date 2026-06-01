@@ -1,11 +1,13 @@
 export interface PropertyProject {
   // Step 1
+  listingType: 'sale' | 'rent';
   title: string;
   street: string;
   city: string;
   neighborhood: string;
   price: number | null;
   priceOnRequest: boolean;
+  furniture: 'none' | 'partial' | 'full' | '';
   builtArea: number | null;
   gardenArea: number | null;
   rooms: number | null;
@@ -61,5 +63,6 @@ export interface PropertyProject {
 export interface StoredImage {
   id: string;
   dataUrl: string; // resized base64
+  enhancedDataUrl?: string; // canvas-brightened version (browser only, not persisted)
   name: string;
 }

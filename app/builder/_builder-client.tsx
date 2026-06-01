@@ -39,12 +39,14 @@ const STEP_NAMES: Record<number, string> = {
 const TOTAL_STEPS = 9
 
 const DEFAULT_PROJECT: PropertyProject = {
+  listingType: 'sale',
   title: '',
   street: '',
   city: '',
   neighborhood: '',
   price: null,
   priceOnRequest: false,
+  furniture: '',
   builtArea: null,
   gardenArea: null,
   rooms: null,
