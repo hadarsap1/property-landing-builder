@@ -75,7 +75,16 @@ const GALLERY_OPTIONS: { value: PropertyProject['galleryType']; label: string }[
   { value: 'auto-7s', label: 'קרוסלה אוטומטית (7 שניות)' },
 ]
 
+const PHOTO_TIPS = [
+  { icon: '☀️', tip: 'צלם ביום עם אור טבעי — פתח וילונות וסגור תאורה מלאכותית' },
+  { icon: '📐', tip: 'הכנס את כל החדר בפריים — עמוד בפינה ותצלם לכיוון האלכסון' },
+  { icon: '🧹', tip: 'פנה וסדר לפני צילום — הוצא פריטים אישיים ועודפי ריהוט' },
+  { icon: '✨', tip: 'לחץ על "שפר" על כל תמונה לשדרוג בהירות ורוויה אוטומטי' },
+  { icon: '⭐', tip: 'בחר כתמונה ראשית את הנוף/חדר הכי מרשים — היא תמשוך קוראים' },
+]
+
 export default function Step4({ project, onChange }: StepProps) {
+  const [tipsOpen, setTipsOpen] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set())
@@ -205,6 +214,28 @@ export default function Step4({ project, onChange }: StepProps) {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-800">תמונות ומדיה</h2>
+
+      {/* Photo tips */}
+      <div className="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setTipsOpen((p) => !p)}
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-amber-800"
+        >
+          <span>💡 טיפים לצילום נכס מקצועי</span>
+          <span className={`transition-transform text-amber-600 ${tipsOpen ? 'rotate-180' : ''}`}>▼</span>
+        </button>
+        {tipsOpen && (
+          <ul className="px-4 pb-4 space-y-2.5">
+            {PHOTO_TIPS.map((t, i) => (
+              <li key={i} className="flex items-start gap-2.5 text-sm text-amber-900">
+                <span className="mt-0.5 shrink-0">{t.icon}</span>
+                <span>{t.tip}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
       {/* Drop zone */}
       {project.images.length >= 10 ? (

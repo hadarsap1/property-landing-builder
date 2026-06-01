@@ -152,11 +152,16 @@ export default function BuilderClient({
 
     // Otherwise load from localStorage (legacy/unauthenticated flow)
     const saved = localStorage.getItem('property-builder-draft')
+    const savedStep = localStorage.getItem('property-builder-step')
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as PropertyProject
         setProject(parsed)
-        if (parsed.title || parsed.street || parsed.city) setStep(1)
+        if (savedStep && Number(savedStep) >= 1) {
+          setStep(Number(savedStep))
+        } else if (parsed.title || parsed.street || parsed.city) {
+          setStep(1)
+        }
         if (!parsed.mapQuery && (parsed.street || parsed.city)) {
           setProject((p) => ({ ...p, mapQuery: `${parsed.street}, ${parsed.city}, ישראל` }))
         }
@@ -268,6 +273,7 @@ export default function BuilderClient({
       void saveToDb(project, listingId)
     }
     setStep(target)
+    localStorage.setItem('property-builder-step', String(target))
     track(`wizard_step_${target}`, target)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }

@@ -304,6 +304,33 @@ export default function Step9({ project, listingUrl }: StepProps) {
         )}
       </div>
 
+      {/* ── Login prompt ─────────────────────────────────────────── */}
+      <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border border-gray-200 p-5">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl shrink-0">🔐</span>
+          <div>
+            <h3 className="font-semibold text-gray-800 mb-1">שמור את הנכס לתמיד</h3>
+            <p className="text-sm text-gray-500 mb-4">
+              הרשמה חינמית מאפשרת לערוך את הנכס בכל עת, לקבל סטטיסטיקות על צפיות וליצור דפים נוספים.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <a
+                href="/auth/login"
+                className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              >
+                כניסה עם Google
+              </a>
+              <a
+                href="/auth/register"
+                className="inline-flex items-center gap-1.5 border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              >
+                הרשמה
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ── Property summary ─────────────────────────────────────── */}
       <details className="group bg-gray-50 rounded-xl border border-gray-200">
         <summary className="px-4 py-3 text-sm font-semibold text-gray-600 cursor-pointer list-none flex items-center justify-between">

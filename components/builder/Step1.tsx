@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
@@ -11,12 +12,145 @@ const ROOM_OPTIONS = [
   1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8, 8.5, 9, 9.5, 10,
 ];
 
+// Top Israeli cities — covers >95% of listings
+const ISRAELI_CITIES = [
+  'אבו גוש','אור יהודה','אור עקיבא','אילת','אלעד','אריאל','אשדוד','אשקלון',
+  'באקה אל-גרביה','בית שאן','בית שמש','בני ברק','בת ים','גבעת שמואל','גבעתיים',
+  'דימונה','הוד השרון','הרצליה','חדרה','חולון','חיפה','טבריה','טירה','טירת כרמל',
+  'יבנה','יהוד','יקנעם','ירושלים','כפר יונה','כפר סבא','כרמיאל','לוד','מודיעין',
+  'מודיעין עילית','מעלה אדומים','מעלות תרשיחא','נהריה','נס ציונה','נצרת','נצרת עילית',
+  'נתיבות','נתניה','עכו','עפולה','ערד','פתח תקווה','צפת','קרית אונו','קרית אתא',
+  'קרית ביאליק','קרית גת','קרית מוצקין','קרית שמונה','ראש העין','ראשון לציון',
+  'רהט','רחובות','רמלה','רמת גן','רמת השרון','רעננה','שדרות','תל אביב',
+];
+
+function useClickOutside(ref: React.RefObject<HTMLElement | null>, cb: () => void) {
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) cb()
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [ref, cb])
+}
+
+interface ComboboxProps {
+  value: string
+  onChange: (val: string) => void
+  options: string[]
+  placeholder?: string
+  disabled?: boolean
+  loading?: boolean
+  inputClassName?: string
+  id?: string
+}
+
+function Combobox({ value, onChange, options, placeholder, disabled, loading, inputClassName, id }: ComboboxProps) {
+  const [open, setOpen] = useState(false)
+  const [query, setQuery] = useState(value)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Keep local query in sync when parent changes value externally
+  useEffect(() => { setQuery(value) }, [value])
+
+  useClickOutside(containerRef, () => setOpen(false))
+
+  const filtered = query.length >= 1
+    ? options.filter((o) => o.includes(query) || o.startsWith(query)).slice(0, 10)
+    : []
+
+  function select(opt: string) {
+    onChange(opt)
+    setQuery(opt)
+    setOpen(false)
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <input
+        ref={inputRef}
+        id={id}
+        type="text"
+        value={query}
+        disabled={disabled}
+        placeholder={placeholder}
+        autoComplete="off"
+        onChange={(e) => {
+          setQuery(e.target.value)
+          onChange(e.target.value)
+          setOpen(true)
+        }}
+        onFocus={() => { if (query.length >= 1) setOpen(true) }}
+        className={inputClassName}
+      />
+      {loading && (
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+        </span>
+      )}
+      {open && filtered.length > 0 && (
+        <ul
+          className="absolute z-50 right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto"
+          dir="rtl"
+        >
+          {filtered.map((opt) => (
+            <li key={opt}>
+              <button
+                type="button"
+                onMouseDown={(e) => { e.preventDefault(); select(opt) }}
+                className="w-full text-right px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors"
+              >
+                {opt}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+function useStreets(city: string, query: string) {
+  const [streets, setStreets] = useState<string[]>([])
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!city || query.length < 2) { setStreets([]); return }
+    const ctrl = new AbortController()
+    const t = setTimeout(async () => {
+      setLoading(true)
+      try {
+        const filters = encodeURIComponent(JSON.stringify({ city_name: city }))
+        const res = await fetch(
+          `/api/location/streets?city=${encodeURIComponent(city)}&q=${encodeURIComponent(query)}`,
+          { signal: ctrl.signal }
+        )
+        if (!res.ok) throw new Error('failed')
+        const data = (await res.json()) as { streets: string[] }
+        setStreets(data.streets)
+      } catch {
+        setStreets([])
+      } finally {
+        setLoading(false)
+      }
+    }, 300)
+    return () => { clearTimeout(t); ctrl.abort() }
+  }, [city, query])
+
+  return { streets, loading }
+}
+
 function Required() {
   return <span className="text-red-400 mr-0.5" title="שדה חובה">*</span>;
 }
 
 export default function Step1({ project, onChange }: StepProps) {
   const isRent = project.listingType === 'rent';
+  const { streets, loading: streetsLoading } = useStreets(project.city, project.street)
 
   return (
     <div className="space-y-6">
@@ -70,44 +204,54 @@ export default function Step1({ project, onChange }: StepProps) {
         )}
       </div>
 
-      {/* Street */}
+      {/* City (required) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">רחוב</label>
-        <input
-          type="text"
-          value={project.street}
-          onChange={(e) => onChange({ street: e.target.value })}
-          placeholder="לדוגמה: הרצל 12"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          עיר <Required />
+        </label>
+        <Combobox
+          id="city"
+          value={project.city}
+          onChange={(v) => onChange({ city: v, street: '' })}
+          options={ISRAELI_CITIES}
+          placeholder="תל אביב"
+          inputClassName={`w-full border rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            !project.city.trim() ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
+          }`}
         />
+        {!project.city.trim() && (
+          <p className="text-xs text-orange-500 mt-1">חובה לבחור עיר כדי להמשיך</p>
+        )}
       </div>
 
-      {/* City + Neighborhood */}
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            עיר<Required />
-          </label>
-          <input
-            type="text"
-            value={project.city}
-            onChange={(e) => onChange({ city: e.target.value })}
-            placeholder="תל אביב"
-            className={`w-full border rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              !project.city.trim() ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
-            }`}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">שכונה</label>
-          <input
-            type="text"
-            value={project.neighborhood}
-            onChange={(e) => onChange({ neighborhood: e.target.value })}
-            placeholder="פלורנטין"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+      {/* Street — enabled after city is set */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">רחוב</label>
+        <Combobox
+          id="street"
+          value={project.street}
+          onChange={(v) => onChange({ street: v })}
+          options={streets}
+          placeholder={project.city ? 'הרצל 12' : 'בחר עיר תחילה'}
+          disabled={!project.city.trim()}
+          loading={streetsLoading}
+          inputClassName={`w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed`}
+        />
+        {project.city && (
+          <p className="text-xs text-gray-400 mt-1">הקלד לפחות 2 אותיות לחיפוש רחוב</p>
+        )}
+      </div>
+
+      {/* Neighborhood */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">שכונה</label>
+        <input
+          type="text"
+          value={project.neighborhood}
+          onChange={(e) => onChange({ neighborhood: e.target.value })}
+          placeholder="פלורנטין"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
       </div>
 
       {/* Price */}

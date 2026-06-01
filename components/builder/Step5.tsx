@@ -8,10 +8,11 @@ interface StepProps {
 }
 
 export default function Step5({ project, onChange }: StepProps) {
-  const mapsKey = process.env.NEXT_PUBLIC_MAPS_KEY;
-  const mapSrc = mapsKey
-    ? `https://www.google.com/maps/embed/v1/place?key=${mapsKey}&q=${encodeURIComponent(project.mapQuery)}`
-    : null;
+  const q = project.mapQuery.trim()
+  // Free embed — no API key required
+  const mapSrc = q
+    ? `https://maps.google.com/maps?q=${encodeURIComponent(q)}&t=m&z=15&output=embed&hl=he`
+    : null
 
   return (
     <div className="space-y-6">
@@ -73,8 +74,8 @@ export default function Step5({ project, onChange }: StepProps) {
               <div className="h-full flex items-center justify-center bg-gray-100 text-gray-500 text-sm text-center p-4">
                 <div>
                   <div className="text-3xl mb-2">🗺️</div>
-                  <p className="font-medium">תצוגת המפה אינה זמינה כרגע</p>
-                  <p className="text-xs text-gray-400 mt-1">המפה תוצג בדף הנכס הסופי לאחר הגדרת המערכת</p>
+                  <p className="font-medium">הזן כתובת להצגת המפה</p>
+                  <p className="text-xs text-gray-400 mt-1">תמלא אוטומטית מהכתובת בשלב 1</p>
                 </div>
               </div>
             )}
