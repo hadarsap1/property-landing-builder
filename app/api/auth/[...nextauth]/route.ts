@@ -1,9 +1,18 @@
 import { handlers } from '@/auth'
+import type { NextRequest } from 'next/server'
 
-// next-auth's reqWithEnvURL() rewrites every request's origin to match AUTH_URL.
-// If AUTH_URL points to the wrong Vercel project domain this breaks OAuth callbacks.
-// Clearing it forces next-auth to use the real incoming host instead.
-// trustHost:true in auth.ts ensures that host is accepted.
-process.env.AUTH_URL = ''
+// next-auth's reqWithEnvURL() rewrites every request's origin to AUTH_URL.
+// If AUTH_URL points to the wrong domain (common in multi-project Vercel setups)
+// every OAuth callback breaks. We clear it on EVERY request so next-auth always
+// uses the real incoming host. trustHost:true in auth.ts accepts that host.
+type H = (req: NextRequest, ctx: unknown) => Response | Promise<Response>
 
-export const { GET, POST } = handlers
+function withClearedAuthUrl(h: H): H {
+  return (req, ctx) => {
+    process.env.AUTH_URL = ''
+    return h(req, ctx)
+  }
+}
+
+export const GET = withClearedAuthUrl(handlers.GET as H)
+export const POST = withClearedAuthUrl(handlers.POST as H)
