@@ -97,6 +97,8 @@ export function listingToProject(listing: Listing): PropertyProject {
     sectionOrder: listing.section_order ?? [...ALL_SECTIONS],
     sectionVisibility,
 
+    specIcons: {},
+
     sellerName: listing.seller_name ?? '',
     phone: listing.seller_phone ?? '',
     whatsapp: listing.seller_whatsapp ?? '',
