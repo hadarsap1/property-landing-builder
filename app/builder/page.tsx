@@ -48,6 +48,8 @@ export default async function BuilderPage({
     }
   }
 
+  const isLoggedIn = !!(agencyId || personalUserId)
+
   return (
     <BuilderClient
       agencyId={agencyId}
@@ -56,6 +58,7 @@ export default async function BuilderPage({
       listingId={listingId}
       listingSlug={listingSlug}
       initialProject={initialProject}
+      isLoggedIn={isLoggedIn}
     />
   )
 }

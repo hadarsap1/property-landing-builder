@@ -7,9 +7,10 @@ import type { PropertyProject } from '@/types/project'
 interface StepProps {
   project: PropertyProject
   listingUrl?: string | null  // set when wizard is backed by a DB listing
+  isLoggedIn?: boolean
 }
 
-export default function Step9({ project, listingUrl }: StepProps) {
+export default function Step9({ project, listingUrl, isLoggedIn = false }: StepProps) {
   const [kvCode, setKvCode] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -304,8 +305,8 @@ export default function Step9({ project, listingUrl }: StepProps) {
         )}
       </div>
 
-      {/* ── Login prompt — only for anonymous users (no DB listing yet) ── */}
-      {!listingUrl && <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border border-gray-200 p-5">
+      {/* ── Login prompt — only for anonymous (not logged-in) users ── */}
+      {!isLoggedIn && <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border border-gray-200 p-5">
         <div className="flex items-start gap-3">
           <span className="text-2xl shrink-0">🔐</span>
           <div>

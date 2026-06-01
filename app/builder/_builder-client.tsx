@@ -22,6 +22,7 @@ interface BuilderClientProps {
   listingId: string | null
   listingSlug: string | null
   initialProject: PropertyProject | null
+  isLoggedIn: boolean
 }
 
 const STEP_NAMES: Record<number, string> = {
@@ -114,6 +115,7 @@ export default function BuilderClient({
   listingId: initialListingId,
   listingSlug: initialListingSlug,
   initialProject,
+  isLoggedIn,
 }: BuilderClientProps) {
   const router = useRouter()
   const [step, setStep] = useState(0)
@@ -441,7 +443,7 @@ export default function BuilderClient({
               {step === 6 && <Step6 project={project} onChange={onChange} />}
               {step === 7 && <Step7 project={project} onChange={onChange} />}
               {step === 8 && <Step8 project={project} onChange={onChange} />}
-              {step === 9 && <Step9 project={project} listingUrl={listingUrl} />}
+              {step === 9 && <Step9 project={project} listingUrl={listingUrl} isLoggedIn={isLoggedIn} />}
             </div>
           </div>
         </div>
