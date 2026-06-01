@@ -326,7 +326,7 @@ export default function BuilderClient({
                 <span className="text-2xl mt-0.5">📋</span>
                 <div>
                   <div className="font-semibold text-gray-900 group-hover:text-blue-700">טען ממודעה קיימת</div>
-                  <div className="text-sm text-gray-500 mt-0.5">העתק מיד2, מדלן, או כל מודעה — הוויזרד ימולא אוטומטית</div>
+                  <div className="text-sm text-gray-500 mt-0.5">העתק מיד2, מדלן, או כל מודעה — הפרטים ימולאו אוטומטית</div>
                 </div>
               </button>
               <button

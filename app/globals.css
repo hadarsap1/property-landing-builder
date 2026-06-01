@@ -1,8 +1,45 @@
 @import "tailwindcss";
 
+/* ── Theme tokens (light default) ─────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --pb-bg:       #f5f3ee;
+  --pb-surface:  #ffffff;
+  --pb-surface2: #eceae4;
+  --pb-border:   rgba(0,0,0,0.09);
+  --pb-text:     #1a1a2e;
+  --pb-text2:    #6b6070;
+  --pb-gold:     #b8861e;
+  --pb-accent:   #2563eb;
+
+  --background: var(--pb-bg);
+  --foreground:  var(--pb-text);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --pb-bg:       #111827;
+    --pb-surface:  #1b2236;
+    --pb-surface2: #141c2e;
+    --pb-border:   rgba(255,255,255,0.08);
+    --pb-text:     #e8e3dc;
+    --pb-text2:    #6e6880;
+    --pb-gold:     #d4a853;
+    --pb-accent:   #3b82f6;
+    --background: #111827;
+    --foreground:  #e8e3dc;
+  }
+}
+[data-theme="dark"] {
+  --pb-bg:       #111827;
+  --pb-surface:  #1b2236;
+  --pb-surface2: #141c2e;
+  --pb-border:   rgba(255,255,255,0.08);
+  --pb-text:     #e8e3dc;
+  --pb-text2:    #6e6880;
+  --pb-gold:     #d4a853;
+  --pb-accent:   #3b82f6;
+  --background: #111827;
+  --foreground:  #e8e3dc;
 }
 
 @theme inline {
@@ -12,15 +49,27 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background: var(--pb-bg);
+  color: var(--pb-text);
+  font-family: Arial, Helvetica, sans-serif;
+  transition: background 0.25s ease, color 0.25s ease;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.font-display { font-family: var(--font-frank, 'Frank Ruhl Libre', Georgia, serif); }
+.font-body    { font-family: var(--font-assistant, 'Assistant', 'Segoe UI', sans-serif); }
+
+@keyframes pb-float {
+  0%, 100% { transform: translateY(0px) rotate(0.4deg); }
+  50%       { transform: translateY(-18px) rotate(-0.4deg); }
 }
+@keyframes pb-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pb-float { animation: pb-float 7s ease-in-out infinite; }
+.pb-s1 { animation: pb-up 0.7s 0.05s ease-out both; }
+.pb-s2 { animation: pb-up 0.7s 0.15s ease-out both; }
+.pb-s3 { animation: pb-up 0.7s 0.25s ease-out both; }
+.pb-s4 { animation: pb-up 0.7s 0.35s ease-out both; }
+.pb-s5 { animation: pb-up 0.7s 0.45s ease-out both; }
