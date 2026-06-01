@@ -15,13 +15,20 @@ export function proxy(request: NextRequest) {
     ? host.slice(0, host.length - rootHost.length - 1)
     : null
 
+  let response: NextResponse
+
   // Agency subdomain — rewrite to /agency/[slug]/...
   if (subdomain && subdomain !== 'www') {
     url.pathname = `/agency/${subdomain}${url.pathname}`
-    return NextResponse.rewrite(url)
+    response = NextResponse.rewrite(url)
+  } else {
+    response = NextResponse.next()
   }
 
-  return NextResponse.next()
+  // Inject current pathname so server layouts can detect the active route
+  response.headers.set('x-pathname', request.nextUrl.pathname)
+
+  return response
 }
 
 export const config = {
@@ -30,3 +37,4 @@ export const config = {
     '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
+
