@@ -5,10 +5,10 @@ import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 import type { Agent } from '@/lib/db/types'
 import { upsertPersonalUser, getPersonalUserById } from '@/lib/db/queries/personal-users'
+import { getAgentByEmail } from '@/lib/db/queries/agents'
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
-    // Google OAuth for personal (private seller) sign-in
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
@@ -47,38 +47,62 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       },
     }),
-
   ],
 
   callbacks: {
     async signIn({ user, account }) {
-      // Google sign-in → upsert personal_users record
       if (account?.provider === 'google' && user.email) {
+        // Check if this Google account belongs to an existing agent (broker)
+        const agent = await getAgentByEmail(user.email).catch(() => null)
+        if (agent) {
+          const u = user as unknown as Record<string, unknown>
+          u.userType = 'commercial'
+          u.agencyId = agent.agency_id
+          u.role = agent.role
+          return true
+        }
+
+        // Otherwise upsert as personal user
         const pu = await upsertPersonalUser({
           email: user.email,
           name: user.name ?? null,
           photo_url: user.image ?? null,
         })
-        // Attach our DB id so jwt callback can use it
         const u = user as unknown as Record<string, unknown>
         u.personalUserId = pu.id
         u.plan = pu.plan
         u.agencyId = pu.agency_id ?? undefined
+        u.userType = 'personal'
       }
       return true
     },
 
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session: updateData }) {
+      // Allow client-side session update (e.g. after broker setup)
+      if (trigger === 'update' && updateData) {
+        const d = updateData as Record<string, unknown>
+        if (d.userType) token.userType = d.userType as string
+        if (d.agencyId) token.agencyId = d.agencyId as string
+        if (d.role) token.role = d.role as string
+        return token
+      }
+
       if (user) {
         if (account?.provider === 'google') {
-          // Personal user signed in via Google
-          token.userType = 'personal'
-          token.personalUserId = (user as Record<string, unknown>).personalUserId as string
-          const plan = (user as Record<string, unknown>).plan as string
-          if (plan === 'commercial') {
-            // Upgraded personal user — treat as commercial
+          const u = user as unknown as Record<string, unknown>
+          if (u.userType === 'commercial') {
+            // Existing agent logging in via Google
             token.userType = 'commercial'
-            token.agencyId = (user as Record<string, unknown>).agencyId as string | undefined
+            token.agencyId = u.agencyId as string | undefined
+            token.role = u.role as string | undefined
+          } else {
+            // Personal user via Google
+            token.userType = 'personal'
+            token.personalUserId = u.personalUserId as string
+            if ((u.plan as string) === 'commercial') {
+              token.userType = 'commercial'
+              token.agencyId = u.agencyId as string | undefined
+            }
           }
         } else {
           // Credentials provider — commercial agent
