@@ -304,8 +304,8 @@ export default function Step9({ project, listingUrl }: StepProps) {
         )}
       </div>
 
-      {/* ── Login prompt ─────────────────────────────────────────── */}
-      <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border border-gray-200 p-5">
+      {/* ── Login prompt — only for anonymous users (no DB listing yet) ── */}
+      {!listingUrl && <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl border border-gray-200 p-5">
         <div className="flex items-start gap-3">
           <span className="text-2xl shrink-0">🔐</span>
           <div>
@@ -329,7 +329,7 @@ export default function Step9({ project, listingUrl }: StepProps) {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* ── Property summary ─────────────────────────────────────── */}
       <details className="group bg-gray-50 rounded-xl border border-gray-200">
