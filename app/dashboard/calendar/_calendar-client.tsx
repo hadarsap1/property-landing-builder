@@ -419,15 +419,19 @@ export function CalendarClient({
       )}
 
       {/* Navigation bar. In RTL the first DOM child renders on the RIGHT.
-          Right button (first child) = previous. Left button (last child) = next.
-          Chevrons ‹/› universally read as prev/next regardless of text direction. */}
+          Right button (first child) = previous, with a right-pointing arrow
+          (pointing "back" toward the past in Hebrew time-flow).
+          Left button (last child) = next, with a left-pointing arrow.
+          SVG icons are used so they don't get auto-mirrored by RTL. */}
       <div className="flex items-center bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm gap-3">
         <button
           onClick={goBack}
           aria-label="הקודם"
-          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors text-lg leading-none"
+          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors flex items-center justify-center"
         >
-          ›
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
         </button>
         <button
           onClick={() => setAnchor(startOfDay(new Date()))}
@@ -439,9 +443,11 @@ export function CalendarClient({
         <button
           onClick={goForward}
           aria-label="הבא"
-          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors text-lg leading-none"
+          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors flex items-center justify-center"
         >
-          ‹
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
         </button>
       </div>
 

@@ -1,6 +1,7 @@
 import { sql } from '@/lib/db'
 import { getAllPersonalUsers } from '@/lib/db/queries/personal-users'
 import Link from 'next/link'
+import { DemoSeedCard } from './_demo-seed-card'
 
 interface AgencyRow { id: string; name: string; slug: string; created_at: Date }
 interface ListingRow { id: string; title: string | null; city: string | null; status: string; agency_id: string | null; user_id: string | null; created_at: Date }
@@ -54,6 +55,9 @@ export default async function AdminOverview() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
+
+        {/* Demo account seeder */}
+        <DemoSeedCard />
 
         {/* Agencies */}
         <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5">
