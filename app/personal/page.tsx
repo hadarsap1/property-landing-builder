@@ -158,7 +158,7 @@ export default async function PersonalDashboard() {
         <div>
           <div className="font-semibold text-gray-900">מתווך או סוכן נדל״ן?</div>
           <div className="text-sm text-gray-600 mt-0.5">
-            שדרג לחשבון מקצועי — ניהול צוות, לידים, אנליטיקס ועוד
+            שדרג לחשבון מקצועי — ניהול צוות, לידים, תובנות חכמות ועוד
           </div>
         </div>
         <Link

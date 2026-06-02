@@ -60,7 +60,7 @@ export default function UpgradePage() {
           <div className="text-4xl mb-3">🏢</div>
           <h1 className="text-2xl font-bold text-gray-900">שדרוג לחשבון מקצועי</h1>
           <p className="text-gray-500 mt-2 text-sm leading-relaxed">
-            צור סוכנות, נהל צוות, קבל לידים ואנליטיקס מלא
+            צור סוכנות, נהל צוות, קבל לידים ותובנות חכמות בזמן אמת
           </p>
         </div>
 

@@ -224,7 +224,7 @@ export default function HomePage() {
             <p className="text-xs font-bold tracking-widest uppercase mb-3" style={{ color: G.muted }}>לסוכנויות נדל&quot;ן</p>
             <h2 className="font-display font-black text-2xl sm:text-3xl mb-3" style={{ color: G.text }}>ניהול מרכזי לכל הנכסים</h2>
             <p className="text-sm leading-relaxed mb-6" style={{ color: G.muted }}>
-              מיתוג הסוכנות על כל הדפים · ניהול צוות סוכנים · מעקב לידים · ניהול יומן ביקורים · אנליטיקס · ניסיון חינם ל-14 ימים.
+              מיתוג הסוכנות על כל הדפים · ניהול צוות סוכנים · מעקב לידים · ניהול יומן ביקורים · תובנות חכמות · ניסיון חינם ל-14 ימים.
             </p>
             <div className="flex gap-3">
               <Link href="/pricing" className="px-5 py-2.5 rounded-xl text-sm font-bold text-white transition-all" style={{ background: G.blue }}>
@@ -236,7 +236,7 @@ export default function HomePage() {
             </div>
           </div>
           <div className="flex flex-wrap gap-3 text-sm">
-            {['🏢 מיתוג מלא', '👥 ניהול צוות', '📬 מעקב לידים', '📅 יומן ביקורים', '📊 אנליטיקס'].map(f => (
+            {['🏢 מיתוג מלא', '👥 ניהול צוות', '📬 מעקב לידים', '📅 יומן ביקורים', '📊 תובנות חכמות'].map(f => (
               <span key={f} className="px-4 py-2 rounded-full font-medium" style={{ background: G.surface2, color: G.text, border: `1px solid ${G.border}` }}>{f}</span>
             ))}
           </div>
