@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { PropertyProject, StoredImage } from '@/types/project';
+import PropertyChat from '@/components/property-chat';
 
 function useTrack(listingId?: string, agencyId?: string) {
   const sessionId = useRef<string>('')
@@ -592,6 +593,11 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
           תנאי שימוש
         </a>
       </footer>
+
+      {/* ── AI Chat widget (public listing pages only) ──────────── */}
+      {listingId && !editHref && (
+        <PropertyChat listingId={listingId} accent={accent} />
+      )}
 
       {/* ── Floating share bar (public /preview/[code] only) ─────── */}
       {shareCode && shareUrl && (
