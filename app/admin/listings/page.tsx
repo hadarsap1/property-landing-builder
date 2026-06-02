@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db'
 import type { Listing } from '@/lib/db/types'
+import { ListingRowActions } from './_row-actions'
 
 interface ListingRow extends Listing {
   agency_name: string | null
@@ -17,18 +18,6 @@ async function getAllListings() {
   return rows
 }
 
-const STATUS_LABELS: Record<Listing['status'], string> = {
-  active: 'פעיל',
-  paused: 'מושהה',
-  sold: 'נמכר',
-}
-
-const STATUS_COLORS: Record<Listing['status'], string> = {
-  active: 'bg-green-900 text-green-300',
-  paused: 'bg-yellow-900 text-yellow-300',
-  sold: 'bg-gray-700 text-gray-400',
-}
-
 export default async function AdminListingsPage() {
   const listings = await getAllListings()
 
@@ -43,10 +32,10 @@ export default async function AdminListingsPage() {
               <th className="text-right px-5 py-3 font-medium">נכס</th>
               <th className="text-right px-5 py-3 font-medium">עיר</th>
               <th className="text-right px-5 py-3 font-medium">מחיר</th>
-              <th className="text-right px-5 py-3 font-medium">סטטוס</th>
               <th className="text-right px-5 py-3 font-medium">סוכנות / משתמש</th>
               <th className="text-right px-5 py-3 font-medium">תאריך</th>
               <th className="text-right px-5 py-3 font-medium">קישור</th>
+              <th className="text-right px-5 py-3 font-medium">פעולות</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
@@ -72,11 +61,6 @@ export default async function AdminListingsPage() {
                     ? `₪${l.price.toLocaleString('he-IL')}`
                     : '—'}
                 </td>
-                <td className="px-5 py-3">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[l.status]}`}>
-                    {STATUS_LABELS[l.status]}
-                  </span>
-                </td>
                 <td className="px-5 py-3 text-gray-400 text-xs">
                   {l.agency_name
                     ? <span className="text-blue-400">{l.agency_name}</span>
@@ -96,6 +80,13 @@ export default async function AdminListingsPage() {
                   >
                     ↗
                   </a>
+                </td>
+                <td className="px-5 py-3">
+                  <ListingRowActions
+                    id={l.id}
+                    status={l.status}
+                    title={l.ai_title || l.title || l.street || 'נכס'}
+                  />
                 </td>
               </tr>
             ))}

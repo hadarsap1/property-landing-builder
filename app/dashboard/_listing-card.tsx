@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
 
@@ -30,8 +31,10 @@ export function ListingCard({
   agencySlug: string
   pendingChanges: number
 }) {
+  const router = useRouter()
   const [status, setStatus] = useState<Listing['status']>(listing.status)
   const [saving, setSaving] = useState(false)
+  const [deleted, setDeleted] = useState(false)
 
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
   const publicUrl = agencySlug ? `/agency/${agencySlug}/${listing.slug}` : null
@@ -49,6 +52,22 @@ export function ListingCard({
     if (res.ok) setStatus(next)
     setSaving(false)
   }
+
+  async function handleDelete() {
+    const label = listing.ai_title || listing.title || 'הנכס'
+    if (!confirm(`למחוק את "${label}"? פעולה זו לא ניתנת לביטול.`)) return
+    setSaving(true)
+    const res = await fetch(`/api/listings/${listing.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setDeleted(true)
+      router.refresh()
+    } else {
+      setSaving(false)
+      alert('שגיאה במחיקת הנכס')
+    }
+  }
+
+  if (deleted) return null
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-4 flex items-center gap-4">
@@ -112,6 +131,13 @@ export function ListingCard({
         >
           עריכה
         </Link>
+        <button
+          onClick={() => void handleDelete()}
+          disabled={saving}
+          className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1.5 font-medium transition-colors disabled:opacity-50"
+        >
+          מחק
+        </button>
       </div>
     </div>
   )

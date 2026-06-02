@@ -6,6 +6,7 @@ const MESSAGES: Record<string, string> = {
   Configuration: 'שגיאת הגדרות שרת. פנה למנהל.',
   AccessDenied: 'אין לך הרשאה לכניסה.',
   Verification: 'קישור הכניסה פג תוקף. בקש קישור חדש.',
+  PersonalUserSetupFailed: 'הכניסה הצליחה אך לא ניתן ליצור את החשבון שלך במערכת. נסה שוב או פנה לתמיכה.',
   Default: 'שגיאה בכניסה. נסה שוב.',
 }
 

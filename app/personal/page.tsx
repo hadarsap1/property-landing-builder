@@ -13,7 +13,11 @@ function statusLabel(s: Listing['status']) {
 
 export default async function PersonalDashboard() {
   const session = await auth()
-  if (!session?.user?.personalUserId) redirect('/auth/login?callbackUrl=/personal')
+  if (!session) redirect('/auth/login?callbackUrl=/personal')
+  if (!session.user?.personalUserId) {
+    // Signed in but DB upsert never completed — surface this instead of looping back to login
+    redirect('/auth/error?error=PersonalUserSetupFailed')
+  }
 
   const listings = await getListingsByUser(session.user.personalUserId)
   const pendingCounts = await getActivePendingCountsByListings(listings.map(l => l.id))
