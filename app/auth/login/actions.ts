@@ -40,34 +40,6 @@ function logToDb(stage: string, payload: unknown) {
 
 export async function googleSignInAction(formData: FormData): Promise<void> {
   const callbackUrl = (formData.get('callbackUrl') as string) || '/personal'
-
   logToDb('googleSignInAction:start', { callbackUrl })
-
-  let returnedUrl: string | undefined
-  try {
-    // Use redirect:false so signIn returns the URL instead of calling redirect()
-    // internally — that way we can SEE what URL it would have redirected to
-    const result = await signIn('google', { redirectTo: callbackUrl, redirect: false })
-    returnedUrl = typeof result === 'string' ? result : undefined
-    logToDb('googleSignInAction:signIn returned', { result, returnedUrl })
-  } catch (err) {
-    const e = err as Error & { code?: string; cause?: unknown }
-    logToDb('googleSignInAction:signIn threw', {
-      name: e?.name,
-      message: e?.message,
-      code: e?.code,
-      stack: e?.stack?.split('\n').slice(0, 8).join('\n'),
-      cause_name: (e?.cause as Error)?.name,
-      cause_message: (e?.cause as Error)?.message,
-    })
-    throw err
-  }
-
-  if (returnedUrl) {
-    // redirect() throws NEXT_REDIRECT — must be called outside try/catch
-    redirect(returnedUrl)
-  }
-
-  logToDb('googleSignInAction:no URL returned, falling back to /auth/error', {})
-  redirect('/auth/error?error=NoRedirectUrl')
+  await signIn('google', { redirectTo: callbackUrl })
 }
