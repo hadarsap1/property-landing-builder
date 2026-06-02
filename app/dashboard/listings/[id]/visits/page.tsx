@@ -335,8 +335,19 @@ function VisitRow({
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="font-semibold text-gray-900">
-          {visit.visitor_name || 'מבקר לא ידוע'}
+        <div className="font-semibold text-gray-900 flex items-center gap-2 flex-wrap">
+          {visit.lead_id ? (
+            <Link href={`/dashboard/leads/${visit.lead_id}`} className="hover:underline">
+              {visit.visitor_name || 'מבקר לא ידוע'}
+            </Link>
+          ) : (
+            visit.visitor_name || 'מבקר לא ידוע'
+          )}
+          {visit.lead_id && (
+            <span className="text-xs font-medium text-blue-600 bg-blue-50 rounded-full px-2 py-0.5">
+              ליד מקושר
+            </span>
+          )}
         </div>
         {visit.visitor_phone && (
           <a href={`tel:${visit.visitor_phone}`} className="text-sm text-blue-600 hover:underline">

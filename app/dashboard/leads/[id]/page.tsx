@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import type { Lead, LeadNote, PropertyVisit } from '@/lib/db/types'
+import type { LeadWithListing } from '@/lib/db/queries/leads'
 
 const VISIT_STATUS_LABELS: Record<PropertyVisit['status'], string> = {
   scheduled: 'מתוכנן',
@@ -31,7 +32,7 @@ const STATUS_OPTIONS: { value: Lead['status']; label: string }[] = [
 
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const [lead, setLead] = useState<Lead | null>(null)
+  const [lead, setLead] = useState<LeadWithListing | null>(null)
   const [notes, setNotes] = useState<LeadNote[]>([])
   const [visits, setVisits] = useState<PropertyVisit[]>([])
   const [loading, setLoading] = useState(true)
@@ -46,7 +47,7 @@ export default function LeadDetailPage() {
         fetch(`/api/leads/${id}/notes`),
         fetch(`/api/leads/${id}/visits`),
       ])
-      if (leadRes.ok) setLead((await leadRes.json() as { lead: Lead }).lead)
+      if (leadRes.ok) setLead((await leadRes.json() as { lead: LeadWithListing }).lead)
       if (notesRes.ok) setNotes((await notesRes.json() as { notes: LeadNote[] }).notes)
       if (visitsRes.ok) setVisits((await visitsRes.json() as { visits: PropertyVisit[] }).visits)
     } catch {
@@ -121,6 +122,25 @@ export default function LeadDetailPage() {
           </p>
         )}
       </div>
+
+      {/* Linked listing (non-candidates) */}
+      {lead.listing_id && lead.listing_title && (
+        <Link
+          href={`/dashboard/listings/${lead.listing_id}/edit`}
+          className="block bg-blue-50 hover:bg-blue-100 rounded-2xl border border-blue-100 p-4 transition-colors group"
+        >
+          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">מתעניין/ת בנכס</p>
+          <div className="flex items-center justify-between gap-3 mt-1.5">
+            <div className="min-w-0">
+              <p className="font-semibold text-gray-900 truncate">🏠 {lead.listing_title}</p>
+              {lead.listing_city && (
+                <p className="text-xs text-gray-500 mt-0.5">{lead.listing_city}</p>
+              )}
+            </div>
+            <span className="shrink-0 text-blue-600 group-hover:text-blue-800 text-sm font-medium">פתח ←</span>
+          </div>
+        </Link>
+      )}
 
       {/* Buyer preferences (candidates only) */}
       {hasPrefs && (

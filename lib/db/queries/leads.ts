@@ -1,6 +1,12 @@
 import { sql, db } from '@/lib/db'
 import type { Lead, LeadNote } from '@/lib/db/types'
 
+export type LeadWithListing = Lead & {
+  listing_title: string | null
+  listing_slug: string | null
+  listing_city: string | null
+}
+
 export async function createLead(data: {
   listing_id?: string | null
   agency_id: string
@@ -35,29 +41,43 @@ export async function createLead(data: {
 export async function getLeadsByAgency(
   agencyId: string,
   filters: { listingId?: string; status?: Lead['status'] } = {}
-): Promise<Lead[]> {
-  const conditions: string[] = ['agency_id = $1']
+): Promise<LeadWithListing[]> {
+  const conditions: string[] = ['l.agency_id = $1']
   const values: (string | null)[] = [agencyId]
 
   if (filters.listingId) {
     values.push(filters.listingId)
-    conditions.push(`listing_id = $${values.length}`)
+    conditions.push(`l.listing_id = $${values.length}`)
   }
   if (filters.status) {
     values.push(filters.status)
-    conditions.push(`status = $${values.length}`)
+    conditions.push(`l.status = $${values.length}`)
   }
 
-  const { rows } = await db.query<Lead>(
-    `SELECT * FROM leads WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC`,
+  const { rows } = await db.query<LeadWithListing>(
+    `SELECT l.*,
+       COALESCE(li.ai_title, li.title) AS listing_title,
+       li.slug AS listing_slug,
+       li.city AS listing_city
+     FROM leads l
+     LEFT JOIN listings li ON li.id = l.listing_id
+     WHERE ${conditions.join(' AND ')}
+     ORDER BY l.created_at DESC`,
     values
   )
   return rows
 }
 
-export async function getLeadById(id: string): Promise<Lead | null> {
-  const { rows } = await sql<Lead>`
-    SELECT * FROM leads WHERE id = ${id} LIMIT 1
+export async function getLeadById(id: string): Promise<LeadWithListing | null> {
+  const { rows } = await sql<LeadWithListing>`
+    SELECT l.*,
+       COALESCE(li.ai_title, li.title) AS listing_title,
+       li.slug AS listing_slug,
+       li.city AS listing_city
+     FROM leads l
+     LEFT JOIN listings li ON li.id = l.listing_id
+     WHERE l.id = ${id}
+     LIMIT 1
   `
   return rows[0] ?? null
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import type { Lead } from '@/lib/db/types'
+import type { LeadWithListing } from '@/lib/db/queries/leads'
 
 const STATUS_LABELS: Record<Lead['status'], string> = {
   new: 'חדש',
@@ -49,7 +50,7 @@ const EMPTY_CANDIDATE: NewCandidate = {
 }
 
 export default function LeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>([])
+  const [leads, setLeads] = useState<LeadWithListing[]>([])
   const [loading, setLoading] = useState(true)
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | ''>('')
   const [showModal, setShowModal] = useState(false)
@@ -62,7 +63,7 @@ export default function LeadsPage() {
     const qs = statusFilter ? `?status=${statusFilter}` : ''
     void fetch(`/api/leads${qs}`)
       .then(r => r.json())
-      .then((d: { leads: Lead[] }) => { setLeads(d.leads); setLoading(false) })
+      .then((d: { leads: LeadWithListing[] }) => { setLeads(d.leads); setLoading(false) })
       .catch(() => setLoading(false))
   }, [statusFilter])
 
@@ -99,7 +100,9 @@ export default function LeadsPage() {
         return
       }
       const { lead } = (await res.json()) as { lead: Lead }
-      setLeads(prev => [lead, ...prev])
+      // Candidates have no listing — pad the listing fields to match LeadWithListing shape
+      const enriched: LeadWithListing = { ...lead, listing_title: null, listing_slug: null, listing_city: null }
+      setLeads(prev => [enriched, ...prev])
       setForm(EMPTY_CANDIDATE)
       setShowModal(false)
     } finally {
@@ -335,39 +338,51 @@ function LeadsSkeleton() {
   )
 }
 
-function LeadRow({ lead }: { lead: Lead }) {
+function LeadRow({ lead }: { lead: LeadWithListing }) {
   const since = new Date(lead.created_at).toLocaleDateString('he-IL')
   const isCandidate = !lead.listing_id
   return (
-    <Link
-      href={`/dashboard/leads/${lead.id}`}
-      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
-    >
-      <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm shrink-0 ${
-        isCandidate ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-      }`}>
-        {lead.name ? lead.name.charAt(0).toUpperCase() : '?'}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium text-gray-900 text-sm">{lead.name || 'אנונימי'}</span>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[lead.status]}`}>
-            {STATUS_LABELS[lead.status]}
-          </span>
-          {isCandidate ? (
-            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-50 text-purple-600">
-              קונה
-            </span>
-          ) : (
-            <span className="text-xs text-gray-400">{SOURCE_LABELS[lead.source]}</span>
-          )}
+    <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+      <Link
+        href={`/dashboard/leads/${lead.id}`}
+        className="flex items-center gap-3 flex-1 min-w-0"
+      >
+        <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm shrink-0 ${
+          isCandidate ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+        }`}>
+          {lead.name ? lead.name.charAt(0).toUpperCase() : '?'}
         </div>
-        <p className="text-xs text-gray-500 truncate">
-          {[lead.phone, lead.email].filter(Boolean).join(' · ') || '—'}
-          {isCandidate && lead.desired_areas && ` · ${lead.desired_areas}`}
-        </p>
-      </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-medium text-gray-900 text-sm">{lead.name || 'אנונימי'}</span>
+            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[lead.status]}`}>
+              {STATUS_LABELS[lead.status]}
+            </span>
+            {isCandidate ? (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-50 text-purple-600">
+                קונה
+              </span>
+            ) : (
+              <span className="text-xs text-gray-400">{SOURCE_LABELS[lead.source]}</span>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 truncate">
+            {[lead.phone, lead.email].filter(Boolean).join(' · ') || '—'}
+            {isCandidate && lead.desired_areas && ` · ${lead.desired_areas}`}
+          </p>
+        </div>
+      </Link>
+      {lead.listing_id && lead.listing_title && (
+        <Link
+          href={`/dashboard/listings/${lead.listing_id}/edit`}
+          className="shrink-0 max-w-[180px] text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg px-2.5 py-1.5 font-medium transition-colors flex items-center gap-1"
+          title={lead.listing_title}
+        >
+          <span>🏠</span>
+          <span className="truncate">{lead.listing_title}</span>
+        </Link>
+      )}
       <span className="text-xs text-gray-400 shrink-0">{since}</span>
-    </Link>
+    </div>
   )
 }
