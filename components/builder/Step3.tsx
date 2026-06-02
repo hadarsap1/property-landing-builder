@@ -184,6 +184,32 @@ export default function Step3({ project, onChange, agencyId }: StepProps) {
         </div>
       )}
 
+      {/* Chat AI extras */}
+      <div className="border-t border-gray-200 pt-6">
+        <div className="flex items-start gap-3 mb-2">
+          <span className="text-2xl shrink-0">🤖</span>
+          <div>
+            <label className="block text-sm font-semibold text-gray-800">
+              מידע נוסף ל-AI Chat
+            </label>
+            <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">
+              הוסף כאן עובדות שמבקרים בדף שואלים — ארנונה, ועד בית, תחבורה ציבורית, בתי ספר באזור, מצב הבניין, ועוד.
+              ה-AI ישתמש במידע הזה כדי לענות במדויק על שאלות בצ&#39;אט הצף.
+            </p>
+          </div>
+        </div>
+        <textarea
+          value={project.chatQA ?? ''}
+          onChange={(e) => onChange({ chatQA: e.target.value })}
+          rows={6}
+          placeholder={`לדוגמה:\n• ארנונה חודשית: ~450 ₪\n• ועד בית: 280 ₪ (כולל ניקיון ולובי)\n• 3 דקות הליכה מתחנת הרכבת הקלה\n• בית ספר יסודי "אחד העם" — 5 דק' הליכה\n• הבניין משנת 1998, עבר חיזוק תמ"א 38\n• מותר חיות מחמד`}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-y text-sm whitespace-pre-line"
+        />
+        <p className="text-xs text-gray-400 mt-1.5">
+          טיפ: כתוב כל עובדה בשורה נפרדת. ככל שתוסיף יותר פרטים, ה-AI יוכל לענות לקונים בצורה מדויקת ובלי שתצטרך לחזור על אותן שאלות.
+        </p>
+      </div>
+
       {/* AI Result section */}
       {hasAIContent && (
         <div className="space-y-4 border-t border-gray-200 pt-6">

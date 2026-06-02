@@ -247,6 +247,8 @@ const SCHEMA_STATEMENTS = [
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS rooms_max     numeric`,
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS desired_areas text`,
 
+  `ALTER TABLE listings ADD COLUMN IF NOT EXISTS chat_qa text`,
+
   `CREATE INDEX IF NOT EXISTS idx_leads_listing_id       ON leads(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_leads_agency_id        ON leads(agency_id)`,
   `CREATE INDEX IF NOT EXISTS idx_leads_status           ON leads(status)`,

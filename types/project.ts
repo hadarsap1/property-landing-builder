@@ -31,6 +31,7 @@ export interface PropertyProject {
   aiTagline: string;
   aiStory: string;
   aiHighlights: string[];
+  chatQA: string;
 
   // Step 4
   images: StoredImage[];

@@ -98,6 +98,7 @@ export interface Listing {
   ai_tagline: string | null
   ai_story: string | null
   ai_highlights: string[] | null
+  chat_qa: string | null
 
   hero_image_url: string | null
   image_urls: string[] | null

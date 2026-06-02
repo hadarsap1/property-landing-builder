@@ -67,6 +67,7 @@ const DEFAULT_PROJECT: PropertyProject = {
   aiTagline: '',
   aiStory: '',
   aiHighlights: [],
+  chatQA: '',
   images: [],
   heroImageIndex: 0,
   galleryType: 'grid',

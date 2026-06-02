@@ -71,8 +71,45 @@ function buildPropertyContext(l: Listing): string {
   if (l.ai_highlights?.length) {
     lines.push(`\nיתרונות בולטים:\n${l.ai_highlights.map(h => `• ${h}`).join('\n')}`)
   }
+  if (l.chat_qa) lines.push(`\nמידע נוסף שהמוכר/הסוכן ציינו (אמין במיוחד — השתמש בו כתשובה כשהשאלה רלוונטית):\n${l.chat_qa}`)
 
   return lines.join('\n')
+}
+
+const DEFAULT_FOLLOWUPS = [
+  'מה הכיוון של הדירה?',
+  'באיזו קומה הדירה?',
+  'האם יש מעלית?',
+]
+
+function extractJson(text: string): { reply: string; followups: string[] } | null {
+  const trimmed = text.trim()
+  const candidates: string[] = []
+  candidates.push(trimmed)
+
+  const fenced = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/)
+  if (fenced) candidates.push(fenced[1].trim())
+
+  const braceStart = trimmed.indexOf('{')
+  const braceEnd = trimmed.lastIndexOf('}')
+  if (braceStart !== -1 && braceEnd > braceStart) {
+    candidates.push(trimmed.slice(braceStart, braceEnd + 1))
+  }
+
+  for (const c of candidates) {
+    try {
+      const obj = JSON.parse(c) as { reply?: unknown; followups?: unknown }
+      if (typeof obj.reply === 'string') {
+        const followups = Array.isArray(obj.followups)
+          ? obj.followups.filter((f): f is string => typeof f === 'string').slice(0, 4)
+          : []
+        return { reply: obj.reply, followups }
+      }
+    } catch {
+      // try next candidate
+    }
+  }
+  return null
 }
 
 async function isIpRateLimited(ip: string): Promise<boolean> {
@@ -117,9 +154,16 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
 
   const propertyContext = buildPropertyContext(listing)
   const systemPrompt = `אתה עוזר AI חכם לדף נכס נדל"ן. תפקידך לענות על שאלות של מבקרים בדף לגבי הנכס.
-ענה בעברית בלבד. היה ידידותי, קצר ומדויק.
-אם אין לך מידע על נושא מסוים (כמו ארנונה מדויקת), אמור זאת בכנות וציין שניתן לפנות לסוכן לפרטים.
-אל תמציא מידע שאינו בפרטי הנכס שניתנו לך.
+
+הנחיות:
+- ענה בעברית בלבד.
+- היה ידידותי, קצר ומדויק (1-3 משפטים).
+- אם אין לך מידע על נושא, אמור זאת בכנות וציין שניתן לפנות לסוכן.
+- אל תמציא מידע שאינו בפרטי הנכס.
+- אחרי כל תשובה, הצע 3 שאלות המשך רלוונטיות שמבקר עשוי לרצות לשאול הבא — שאלות שונות מהשאלה הנוכחית, מבוססות על המידע הזמין על הנכס.
+
+החזר תמיד JSON בלבד בפורמט הבא (ללא טקסט נוסף, ללא code fence):
+{"reply": "התשובה שלך כאן", "followups": ["שאלת המשך 1", "שאלת המשך 2", "שאלת המשך 3"]}
 
 פרטי הנכס:
 ${propertyContext}`
@@ -134,15 +178,30 @@ ${propertyContext}`
 
     const response = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 400,
+      max_tokens: 600,
       system: systemPrompt,
       messages,
     })
 
-    const reply = response.content[0]?.type === 'text' ? response.content[0].text : 'מצטער, לא הצלחתי לענות. נסה שוב.'
+    const raw = response.content[0]?.type === 'text' ? response.content[0].text : ''
+    const parsed = extractJson(raw)
 
-    return NextResponse.json({ reply })
+    if (parsed) {
+      return NextResponse.json({
+        reply: parsed.reply,
+        followups: parsed.followups.length > 0 ? parsed.followups : DEFAULT_FOLLOWUPS,
+      })
+    }
+
+    return NextResponse.json({
+      reply: raw || 'מצטער, לא הצלחתי לענות. נסה שוב.',
+      followups: DEFAULT_FOLLOWUPS,
+    })
   } catch {
-    return NextResponse.json({ error: 'ai_error', reply: 'מצטער, אירעה שגיאה. נסה שוב.' }, { status: 500 })
+    return NextResponse.json({
+      error: 'ai_error',
+      reply: 'מצטער, אירעה שגיאה. נסה שוב.',
+      followups: DEFAULT_FOLLOWUPS,
+    }, { status: 500 })
   }
 }

@@ -25,6 +25,7 @@ interface SampleListing {
   price: number
   built_area: number
   hero_image_url: string
+  chat_qa: string
 }
 
 const SAMPLE_LISTINGS: SampleListing[] = [
@@ -40,6 +41,14 @@ const SAMPLE_LISTINGS: SampleListing[] = [
     price: 4_200_000,
     built_area: 110,
     hero_image_url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1600&q=80',
+    chat_qa: `• ארנונה חודשית: כ-520 ₪
+• ועד בית: 320 ₪ (כולל ניקיון, לובי ותחזוקת מעלית)
+• 4 דקות הליכה לרכבת הקלה — תחנת אלנבי
+• בית ספר יסודי "בלפור" — 6 דק' הליכה
+• הבניין משנת 1995, עבר חיזוק תמ"א 38 ב-2019
+• ממ"ד דירתי, מעלית שבת, חניה תת-קרקעית אחת
+• מותר להחזיק חיות מחמד
+• מרפסת שמש 12 מ"ר עם נוף לרוטשילד`,
   },
   {
     title: 'פנטהאוז עם מרפסת ענקית',
@@ -53,6 +62,15 @@ const SAMPLE_LISTINGS: SampleListing[] = [
     price: 8_900_000,
     built_area: 160,
     hero_image_url: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1600&q=80',
+    chat_qa: `• ארנונה חודשית: כ-1,150 ₪
+• ועד בית: 850 ₪ (כולל קונסיירז' 24/7, חדר כושר, בריכה)
+• המגדל משנת 2018, סטנדרט גבוה במיוחד
+• 2 חניות תת-קרקעיות + מחסן 6 מ"ר
+• מרפסת 80 מ"ר עם ג'קוזי וגריל גז
+• מערכת חכמה — דימר, וילונות חשמליים, אינטרקום וידאו
+• 7 דק' הליכה לתחנת רכבת ההגנה
+• בריכה משותפת על הגג + מועדון דיירים
+• מותר חיות מחמד עד 15 ק"ג`,
   },
   {
     title: 'בית פרטי עם גינה ברעננה',
@@ -66,6 +84,15 @@ const SAMPLE_LISTINGS: SampleListing[] = [
     price: 7_500_000,
     built_area: 220,
     hero_image_url: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1600&q=80',
+    chat_qa: `• ארנונה חודשית: כ-980 ₪
+• אין ועד בית — בית פרטי
+• גינה פרטית 200 מ"ר עם דשא, פינת ישיבה ומתקני ילדים
+• הבית נבנה ב-2005, שופץ ב-2021 (מטבח, אמבטיות, פרקט)
+• 2 חניות בחצר הקדמית + מקום ל-2 רכבים נוספים ברחוב
+• ממ"ד קומתי, מערכת מיזוג מרכזית, דוד שמש
+• בית ספר יסודי "אילן רמון" — 4 דק' נסיעה
+• 5 דק' לפארק רעננה הגדול
+• מותר חיות מחמד — יש כלב ביתי כרגע`,
   },
 ]
 
@@ -141,6 +168,7 @@ async function ensureListings(agencyId: string, agentId: string, baseSlug: strin
         ai_title: s.ai_title,
         ai_tagline: s.ai_tagline,
         ai_story: s.ai_story,
+        chat_qa: s.chat_qa,
         street: s.street,
         city: s.city,
         neighborhood: s.neighborhood,
@@ -160,6 +188,7 @@ async function ensureListings(agencyId: string, agentId: string, baseSlug: strin
         ai_title: s.ai_title,
         ai_tagline: s.ai_tagline,
         ai_story: s.ai_story,
+        chat_qa: s.chat_qa,
         street: s.street,
         city: s.city,
         neighborhood: s.neighborhood,

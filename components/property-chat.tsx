@@ -5,6 +5,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 interface Message {
   role: 'user' | 'assistant'
   content: string
+  followups?: string[]
 }
 
 const QUICK_QUESTIONS = [
@@ -15,7 +16,7 @@ const QUICK_QUESTIONS = [
   'האם יש ממ"ד?',
   'מה שנת הבנייה?',
   'מה הכיוון של הדירה?',
-  'כמה חדרי שירות יש?',
+  'כמה ארנונה?',
 ]
 
 export default function PropertyChat({
@@ -60,14 +61,18 @@ export default function PropertyChat({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           message: trimmed,
-          history: messages.slice(-8),
+          history: messages.slice(-8).map(m => ({ role: m.role, content: m.content })),
         }),
       })
-      const data = await res.json() as { reply?: string; error?: string }
+      const data = await res.json() as { reply?: string; followups?: string[]; error?: string }
       if (res.status === 429) {
         setError('הגעת למגבלת השאלות להיום. נסה מחר.')
       } else if (data.reply) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reply! }])
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: data.reply!,
+          followups: data.followups ?? [],
+        }])
       } else {
         setError('אירעה שגיאה, נסה שוב.')
       }
@@ -157,23 +162,41 @@ export default function PropertyChat({
               </div>
             )}
 
-            {messages.map((msg, i) => (
-              <div
-                key={i}
-                className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}
-              >
-                <div
-                  className={`max-w-[85%] text-sm leading-relaxed px-3 py-2 rounded-2xl ${
-                    msg.role === 'user'
-                      ? 'bg-white border border-gray-200 text-gray-800 rounded-tr-sm'
-                      : 'text-white rounded-tl-sm'
-                  }`}
-                  style={msg.role === 'assistant' ? { backgroundColor: accent } : {}}
-                >
-                  {msg.content}
+            {messages.map((msg, i) => {
+              const isLastAssistant = msg.role === 'assistant'
+                && i === messages.length - 1
+                && !loading
+              return (
+                <div key={i}>
+                  <div className={`flex ${msg.role === 'user' ? 'justify-start' : 'justify-end'}`}>
+                    <div
+                      className={`max-w-[85%] text-sm leading-relaxed px-3 py-2 rounded-2xl whitespace-pre-line ${
+                        msg.role === 'user'
+                          ? 'bg-white border border-gray-200 text-gray-800 rounded-tr-sm'
+                          : 'text-white rounded-tl-sm'
+                      }`}
+                      style={msg.role === 'assistant' ? { backgroundColor: accent } : {}}
+                    >
+                      {msg.content}
+                    </div>
+                  </div>
+                  {isLastAssistant && msg.followups && msg.followups.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5 justify-end">
+                      {msg.followups.map((q, fi) => (
+                        <button
+                          key={fi}
+                          type="button"
+                          onClick={() => void sendMessage(q)}
+                          className="text-xs px-2.5 py-1.5 rounded-full border bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-700 transition-colors"
+                        >
+                          {q}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              )
+            })}
 
             {loading && (
               <div className="flex justify-end">
