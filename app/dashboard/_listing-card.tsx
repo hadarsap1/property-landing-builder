@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
+import { SocialPostModal } from '@/components/social-post-modal'
 
 const STATUS_LABELS: Record<Listing['status'], string> = {
   active: 'פעיל',
@@ -35,6 +36,7 @@ export function ListingCard({
   const [status, setStatus] = useState<Listing['status']>(listing.status)
   const [saving, setSaving] = useState(false)
   const [deleted, setDeleted] = useState(false)
+  const [socialOpen, setSocialOpen] = useState(false)
 
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
   const publicUrl = agencySlug ? `/agency/${agencySlug}/${listing.slug}` : null
@@ -138,6 +140,12 @@ export function ListingCard({
           עריכה
         </Link>
         <button
+          onClick={() => setSocialOpen(true)}
+          className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg px-3 py-1.5 font-medium transition-colors"
+        >
+          ✨ פוסט
+        </button>
+        <button
           onClick={() => void handleDelete()}
           disabled={saving}
           className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1.5 font-medium transition-colors disabled:opacity-50"
@@ -145,6 +153,14 @@ export function ListingCard({
           מחק
         </button>
       </div>
+
+      <SocialPostModal
+        listingId={listing.id}
+        listingUrl={publicUrl ? (typeof window !== 'undefined' ? `${window.location.origin}${publicUrl}` : publicUrl) : null}
+        listingTitle={listing.ai_title || listing.title || 'נכס'}
+        open={socialOpen}
+        onClose={() => setSocialOpen(false)}
+      />
     </div>
   )
 }
