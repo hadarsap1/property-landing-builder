@@ -190,6 +190,26 @@ const SCHEMA_STATEMENTS = [
     created_at timestamp NOT NULL DEFAULT now()
   )`,
 
+  `CREATE TABLE IF NOT EXISTS property_visits (
+    id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    listing_id       uuid NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
+    agency_id        uuid NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+    agent_id         uuid REFERENCES agents(id) ON DELETE SET NULL,
+    visit_at         timestamp NOT NULL,
+    duration_minutes integer NOT NULL DEFAULT 30,
+    visitor_name     text,
+    visitor_phone    text,
+    visitor_email    text,
+    notes            text,
+    status           text NOT NULL DEFAULT 'scheduled'
+                       CHECK (status IN ('scheduled', 'completed', 'cancelled', 'no_show')),
+    created_at       timestamp NOT NULL DEFAULT now()
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_property_visits_listing  ON property_visits(listing_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_property_visits_agency   ON property_visits(agency_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_property_visits_visit_at ON property_visits(visit_at)`,
+
   `CREATE TABLE IF NOT EXISTS discount_codes (
     id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
     code         text UNIQUE NOT NULL,

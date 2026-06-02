@@ -7,6 +7,7 @@ import { headers } from 'next/headers'
 const NAV = [
   { href: '/dashboard',             label: 'נכסים',    icon: '🏠' },
   { href: '/dashboard/leads',       label: 'לידים',    icon: '📬' },
+  { href: '/dashboard/calendar',    label: 'ביקורים',  icon: '📅' },
   { href: '/dashboard/analytics',   label: 'אנליטיקס', icon: '📊' },
   { href: '/dashboard/team',        label: 'צוות',     icon: '👥' },
   { href: '/dashboard/settings',    label: 'הגדרות',   icon: '⚙️' },

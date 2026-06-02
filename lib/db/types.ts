@@ -176,6 +176,21 @@ export interface OpenHouseRegistration {
   created_at: Date
 }
 
+export interface PropertyVisit {
+  id: string
+  listing_id: string
+  agency_id: string
+  agent_id: string | null
+  visit_at: Date
+  duration_minutes: number
+  visitor_name: string | null
+  visitor_phone: string | null
+  visitor_email: string | null
+  notes: string | null
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
+  created_at: Date
+}
+
 export interface AnalyticsEvent {
   id: string
   listing_id: string | null

@@ -126,6 +126,12 @@ export function ListingCard({
           {pendingChanges > 0 ? `${pendingChanges} שינויים` : 'מוכר'}
         </Link>
         <Link
+          href={`/dashboard/listings/${listing.id}/visits`}
+          className="text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg px-3 py-1.5 font-medium transition-colors"
+        >
+          ביקורים
+        </Link>
+        <Link
           href={`/dashboard/listings/${listing.id}/edit`}
           className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg px-3 py-1.5 font-medium transition-colors"
         >
