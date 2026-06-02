@@ -29,9 +29,11 @@ export default function AdminBillingPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    void fetch('/api/admin/subscriptions')
+    fetch('/api/admin/subscriptions')
       .then(r => r.json())
-      .then((d: { subscriptions?: SubRow[] }) => { setSubs(d.subscriptions ?? []); setLoading(false) })
+      .then((d: { subscriptions?: SubRow[] }) => setSubs(d.subscriptions ?? []))
+      .catch(() => setSubs([]))
+      .finally(() => setLoading(false))
   }, [])
 
   async function toggleOverride(agencyId: string, current: boolean) {

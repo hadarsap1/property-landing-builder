@@ -20,12 +20,17 @@ export default function AdminDiscountCodesPage() {
   }, [])
 
   async function loadCodes() {
-    const res = await fetch('/api/admin/discount-codes')
-    if (res.ok) {
-      const d = (await res.json()) as { codes: DiscountCode[] }
-      setCodes(d.codes)
+    try {
+      const res = await fetch('/api/admin/discount-codes')
+      if (res.ok) {
+        const d = (await res.json()) as { codes: DiscountCode[] }
+        setCodes(d.codes)
+      }
+    } catch {
+      // leave codes as-is on network failure
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   async function handleCreate(e: React.FormEvent) {

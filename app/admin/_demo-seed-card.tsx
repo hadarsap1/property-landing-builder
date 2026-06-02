@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 type SeedResult = {
   ok: boolean
-  reset: boolean
+  seeded: { listings: number; leads: number; visits: number }
   credentials: { email: string; password: string }
   login_url: string
 }
@@ -49,8 +49,8 @@ export function DemoSeedCard() {
       {!result && (
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-gray-400">
-            יוצר סוכנות דמו + חשבון מתווך עם סיסמה ידועה + 3 נכסים לדוגמה.
-            ניתן להריץ שוב — אם החשבון קיים, הסיסמה תאופס.
+            יוצר חוויית דמו מלאה: סוכנות + חשבון מתווך, 3 נכסים, לידים וקונים,
+            ביקורים ביומן, ואנליטיקס לחודש אחורה. הרצה חוזרת מאפסת את הנתונים.
           </p>
           <button
             onClick={() => void seed()}
@@ -71,9 +71,7 @@ export function DemoSeedCard() {
       {result && (
         <div className="space-y-3">
           <div className="bg-green-900/30 border border-green-700/50 rounded-xl px-4 py-3 text-sm text-green-300">
-            {result.reset
-              ? 'החשבון כבר היה קיים — הסיסמה אופסה לערך למטה'
-              : 'הסוכנות והחשבון נוצרו בהצלחה'}
+            הדמו מוכן — {result.seeded.listings} נכסים, {result.seeded.leads} לידים, {result.seeded.visits} ביקורים, ואנליטיקס ל-30 יום
           </div>
 
           <div className="grid sm:grid-cols-2 gap-3">
@@ -100,7 +98,7 @@ export function DemoSeedCard() {
             disabled={loading}
             className="text-xs text-gray-400 hover:text-gray-200 underline"
           >
-            {loading ? 'מאפס...' : 'אפס סיסמה שוב'}
+            {loading ? 'מאפס...' : 'אפס נתוני דמו'}
           </button>
         </div>
       )}
