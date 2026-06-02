@@ -1,6 +1,7 @@
 import { sql } from '@/lib/db'
 import Link from 'next/link'
 import type { Agency } from '@/lib/db/types'
+import { getDemoAgencyId } from '@/lib/db/queries/demo'
 import CreateAgencyForm from './_create-form'
 import DeleteAgencyButton from './_delete-button'
 
@@ -44,12 +45,18 @@ const STATUS_LABELS: Record<string, string> = {
 }
 
 export default async function AdminAgenciesPage() {
-  const agencies = await getAgencies()
+  const [agencies, demoAgencyId] = await Promise.all([getAgencies(), getDemoAgencyId()])
+  const realCount = agencies.filter(a => a.id !== demoAgencyId).length
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-white">סוכנויות ({agencies.length})</h1>
+        <h1 className="text-2xl font-bold text-white">
+          סוכנויות ({realCount})
+          {demoAgencyId && agencies.length > realCount && (
+            <span className="text-sm text-gray-500 font-normal mr-2">+ דמו</span>
+          )}
+        </h1>
         <CreateAgencyForm />
       </div>
 
@@ -70,14 +77,19 @@ export default async function AdminAgenciesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
-              {agencies.map((a) => (
-                <tr key={a.id} className="hover:bg-gray-750 text-gray-200">
+              {agencies.map((a) => {
+                const isDemo = a.id === demoAgencyId
+                return (
+                <tr key={a.id} className={`text-gray-200 ${isDemo ? 'bg-purple-950/30' : 'hover:bg-gray-750'}`}>
                   <td className="px-5 py-3 font-medium">
                     <div className="flex items-center gap-2">
                       {a.logo_url && (
                         <img src={a.logo_url} alt="" className="w-6 h-6 rounded object-contain bg-white" />
                       )}
                       {a.name}
+                      {isDemo && (
+                        <span className="text-xs px-1.5 py-0.5 rounded bg-purple-900 text-purple-200 font-medium">דמו</span>
+                      )}
                     </div>
                   </td>
                   <td className="px-5 py-3 text-gray-400 font-mono text-xs">{a.slug}</td>
@@ -117,7 +129,8 @@ export default async function AdminAgenciesPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>

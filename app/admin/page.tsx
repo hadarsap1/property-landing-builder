@@ -1,5 +1,6 @@
 import { sql } from '@/lib/db'
 import { getAllPersonalUsers } from '@/lib/db/queries/personal-users'
+import { getDemoAgencyId } from '@/lib/db/queries/demo'
 import Link from 'next/link'
 import { DemoSeedCard } from './_demo-seed-card'
 
@@ -26,10 +27,17 @@ function isPublished(l: ListingRow): boolean {
   return hasTitle && hasContent
 }
 
-async function getStats() {
+async function getStats(demoAgencyId: string | null) {
   const [recentAgencies, agencyCountRes, personalUsers, listingCountsRes, eventsRes] = await Promise.all([
-    sql<AgencyRow>`SELECT id, name, slug, created_at FROM agencies ORDER BY created_at DESC LIMIT 10`,
-    sql<CountRow>`SELECT COUNT(*)::text AS count FROM agencies`,
+    sql<AgencyRow>`
+      SELECT id, name, slug, created_at FROM agencies
+      WHERE id IS DISTINCT FROM ${demoAgencyId}
+      ORDER BY created_at DESC LIMIT 10
+    `,
+    sql<CountRow>`
+      SELECT COUNT(*)::text AS count FROM agencies
+      WHERE id IS DISTINCT FROM ${demoAgencyId}
+    `,
     getAllPersonalUsers(),
     sql<{ total: string; published: string }>`
       SELECT COUNT(*)::text AS total,
@@ -39,8 +47,13 @@ async function getStats() {
           THEN 1 ELSE 0 END
         )::text AS published
       FROM listings
+      WHERE agency_id IS DISTINCT FROM ${demoAgencyId}
     `,
-    sql<CountRow>`SELECT COUNT(*)::text AS count FROM analytics_events WHERE event_type = 'page_view'`,
+    sql<CountRow>`
+      SELECT COUNT(*)::text AS count FROM analytics_events
+      WHERE event_type = 'page_view'
+        AND agency_id IS DISTINCT FROM ${demoAgencyId}
+    `,
   ])
   const listingCount   = parseInt(listingCountsRes.rows[0]?.total     ?? '0', 10)
   const publishedCount = parseInt(listingCountsRes.rows[0]?.published ?? '0', 10)
@@ -55,21 +68,34 @@ async function getStats() {
   }
 }
 
-async function getRecentListings() {
+async function getRecentListings(demoAgencyId: string | null) {
   const { rows } = await sql<ListingRow>`
     SELECT id, title, ai_title, city, status, agency_id, user_id,
            price, price_on_request, hero_image_url, image_urls, created_at
-    FROM listings ORDER BY created_at DESC LIMIT 30
+    FROM listings
+    WHERE agency_id IS DISTINCT FROM ${demoAgencyId}
+    ORDER BY created_at DESC LIMIT 30
   `
   return rows
 }
 
 export default async function AdminOverview() {
-  const [stats, recentListings] = await Promise.all([getStats(), getRecentListings()])
+  const demoAgencyId = await getDemoAgencyId()
+  const [stats, recentListings] = await Promise.all([
+    getStats(demoAgencyId),
+    getRecentListings(demoAgencyId),
+  ])
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">סקירה כללית</h1>
+      <div className="flex items-center justify-between flex-wrap gap-2 mb-6">
+        <h1 className="text-2xl font-bold text-white">סקירה כללית</h1>
+        {demoAgencyId && (
+          <span className="text-xs text-gray-500 bg-gray-800 border border-gray-700 px-3 py-1 rounded-full">
+            נתוני דמו לא נספרים
+          </span>
+        )}
+      </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">

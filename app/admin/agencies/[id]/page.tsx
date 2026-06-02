@@ -5,6 +5,55 @@ import { getAgentsByAgency } from '@/lib/db/queries/agents'
 import { getListingsByAgency } from '@/lib/db/queries/listings'
 import type { Agency, Subscription } from '@/lib/db/types'
 
+interface ListingStatsRow {
+  listing_id: string
+  views: string
+  whatsapp: string
+  phone: string
+  booking: string
+  leads: string
+}
+
+async function getListingStats(agencyId: string): Promise<Map<string, { views: number; whatsapp: number; phone: number; booking: number; leads: number }>> {
+  const { rows } = await sql<ListingStatsRow>`
+    SELECT l.id AS listing_id,
+      COALESCE(ev.views,    '0') AS views,
+      COALESCE(ev.whatsapp, '0') AS whatsapp,
+      COALESCE(ev.phone,    '0') AS phone,
+      COALESCE(ev.booking,  '0') AS booking,
+      COALESCE(ld.count,    '0') AS leads
+    FROM listings l
+    LEFT JOIN (
+      SELECT listing_id,
+        COUNT(*) FILTER (WHERE event_type = 'page_view')::text      AS views,
+        COUNT(*) FILTER (WHERE event_type = 'whatsapp_click')::text AS whatsapp,
+        COUNT(*) FILTER (WHERE event_type = 'phone_click')::text    AS phone,
+        COUNT(*) FILTER (WHERE event_type = 'booking_click')::text  AS booking
+      FROM analytics_events
+      WHERE agency_id = ${agencyId}
+      GROUP BY listing_id
+    ) ev ON ev.listing_id = l.id
+    LEFT JOIN (
+      SELECT listing_id, COUNT(*)::text AS count
+      FROM leads
+      WHERE agency_id = ${agencyId} AND listing_id IS NOT NULL
+      GROUP BY listing_id
+    ) ld ON ld.listing_id = l.id
+    WHERE l.agency_id = ${agencyId}
+  `
+  const map = new Map<string, { views: number; whatsapp: number; phone: number; booking: number; leads: number }>()
+  for (const r of rows) {
+    map.set(r.listing_id, {
+      views: parseInt(r.views, 10),
+      whatsapp: parseInt(r.whatsapp, 10),
+      phone: parseInt(r.phone, 10),
+      booking: parseInt(r.booking, 10),
+      leads: parseInt(r.leads, 10),
+    })
+  }
+  return map
+}
+
 interface PageProps {
   params: Promise<{ id: string }>
 }
@@ -79,12 +128,13 @@ export default async function AdminAgencyDetailPage({ params }: PageProps) {
   const agency = await getAgency(id)
   if (!agency) notFound()
 
-  const [agents, listings, subscription, traffic, counts] = await Promise.all([
+  const [agents, listings, subscription, traffic, counts, listingStats] = await Promise.all([
     getAgentsByAgency(agency.id),
     getListingsByAgency(agency.id),
     getSubscription(agency.id),
     getTraffic(agency.id),
     getCounts(agency.id),
+    getListingStats(agency.id),
   ])
 
   return (
@@ -142,6 +192,77 @@ export default async function AdminAgencyDetailPage({ params }: PageProps) {
           </div>
         ))}
       </div>
+
+      {/* Per-listing analytics */}
+      {listings.length > 0 && (
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-700 flex items-center justify-between">
+            <h2 className="font-semibold text-white">נכסים — ביצועים</h2>
+            <span className="text-xs text-gray-500">{listings.length} נכסים</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-gray-400 text-xs border-b border-gray-700">
+                  <th className="text-right px-4 py-2.5 font-medium">נכס</th>
+                  <th className="text-right px-3 py-2.5 font-medium">עיר</th>
+                  <th className="text-center px-3 py-2.5 font-medium">👁️ צפיות</th>
+                  <th className="text-center px-3 py-2.5 font-medium">💬 WA</th>
+                  <th className="text-center px-3 py-2.5 font-medium">📞 שיחות</th>
+                  <th className="text-center px-3 py-2.5 font-medium">📅 תיאום</th>
+                  <th className="text-center px-3 py-2.5 font-medium">📬 לידים</th>
+                  <th className="text-right px-3 py-2.5 font-medium">קישור</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-700">
+                {listings.map(l => {
+                  const s = listingStats.get(l.id) ?? { views: 0, whatsapp: 0, phone: 0, booking: 0, leads: 0 }
+                  return (
+                    <tr key={l.id} className="hover:bg-gray-750 text-gray-200">
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
+                          {l.hero_image_url ? (
+                            <img src={l.hero_image_url} alt="" className="w-7 h-7 rounded object-cover shrink-0" />
+                          ) : (
+                            <div className="w-7 h-7 rounded bg-gray-700 flex items-center justify-center text-xs shrink-0">🏠</div>
+                          )}
+                          <span className="truncate max-w-[200px]">{l.ai_title || l.title || l.street || 'ללא שם'}</span>
+                        </div>
+                      </td>
+                      <td className="px-3 py-2.5 text-gray-400 text-xs">{l.city ?? '—'}</td>
+                      <td className={`px-3 py-2.5 text-center font-semibold ${s.views > 0 ? 'text-white' : 'text-gray-600'}`}>
+                        {s.views.toLocaleString('he-IL')}
+                      </td>
+                      <td className={`px-3 py-2.5 text-center font-semibold ${s.whatsapp > 0 ? 'text-green-400' : 'text-gray-600'}`}>
+                        {s.whatsapp.toLocaleString('he-IL')}
+                      </td>
+                      <td className={`px-3 py-2.5 text-center font-semibold ${s.phone > 0 ? 'text-blue-400' : 'text-gray-600'}`}>
+                        {s.phone.toLocaleString('he-IL')}
+                      </td>
+                      <td className={`px-3 py-2.5 text-center font-semibold ${s.booking > 0 ? 'text-purple-400' : 'text-gray-600'}`}>
+                        {s.booking.toLocaleString('he-IL')}
+                      </td>
+                      <td className={`px-3 py-2.5 text-center font-semibold ${s.leads > 0 ? 'text-orange-400' : 'text-gray-600'}`}>
+                        {s.leads.toLocaleString('he-IL')}
+                      </td>
+                      <td className="px-3 py-2.5">
+                        <a
+                          href={`/builder?id=${l.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-400 hover:underline text-xs"
+                        >
+                          פתח ↗
+                        </a>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Subscription */}
@@ -230,31 +351,6 @@ export default async function AdminAgencyDetailPage({ params }: PageProps) {
           )}
         </div>
 
-        {/* Listings */}
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5">
-          <h2 className="font-semibold text-white mb-4">נכסים ({listings.length})</h2>
-          {listings.length === 0 ? (
-            <p className="text-sm text-gray-500">אין נכסים</p>
-          ) : (
-            <div className="space-y-2 max-h-72 overflow-y-auto">
-              {listings.slice(0, 20).map(l => (
-                <div key={l.id} className="flex items-center justify-between text-sm gap-3">
-                  <span className="text-gray-200 truncate">
-                    {l.ai_title || l.title || l.street || 'ללא שם'}
-                  </span>
-                  <a
-                    href={`/builder?id=${l.id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 hover:underline text-xs shrink-0"
-                  >
-                    פתח ↗
-                  </a>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )
