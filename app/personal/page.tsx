@@ -134,8 +134,27 @@ export default async function PersonalDashboard() {
         </div>
       )}
 
+      {/* Help / tutorials */}
+      <div className="mt-8 bg-white border border-gray-200 rounded-2xl p-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="text-3xl">❓</div>
+          <div>
+            <div className="font-semibold text-gray-900">צריך עזרה?</div>
+            <div className="text-sm text-gray-600 mt-0.5">
+              מדריך שימוש, שאלות נפוצות, ו-3 צעדים פשוטים למכירה
+            </div>
+          </div>
+        </div>
+        <Link
+          href="/personal/help"
+          className="shrink-0 bg-gray-900 hover:bg-gray-800 text-white font-semibold px-5 py-2.5 rounded-xl text-sm transition-colors whitespace-nowrap"
+        >
+          למרכז העזרה
+        </Link>
+      </div>
+
       {/* Upgrade CTA */}
-      <div className="mt-8 bg-gradient-to-l from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 flex items-center justify-between gap-4">
+      <div className="mt-4 bg-gradient-to-l from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 flex items-center justify-between gap-4">
         <div>
           <div className="font-semibold text-gray-900">מתווך או סוכן נדל״ן?</div>
           <div className="text-sm text-gray-600 mt-0.5">

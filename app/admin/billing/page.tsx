@@ -80,8 +80,8 @@ export default function AdminBillingPage() {
                       {STATUS_LABELS[s.status] ?? s.status}
                     </span>
                     {s.manual_override && (
-                      <span className="mr-1 text-xs px-2 py-0.5 rounded-full font-medium bg-purple-900 text-purple-300">
-                        override
+                      <span className="mr-1 text-xs px-2 py-0.5 rounded-full font-medium bg-purple-900 text-purple-300" title="גישה מלאה מופעלת ידנית, ללא חיוב">
+                        גישה ידנית
                       </span>
                     )}
                   </td>
@@ -107,7 +107,7 @@ export default function AdminBillingPage() {
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      {s.manual_override ? 'בטל override' : 'הפעל override'}
+                      {s.manual_override ? 'בטל גישה ידנית' : 'פתח גישה ידנית'}
                     </button>
                   </td>
                 </tr>
