@@ -2,6 +2,8 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getListingsByUser } from '@/lib/db/queries/listings'
 import { getActivePendingCountsByListings } from '@/lib/db/queries/pending-changes'
+import { getPersonalUserByEmail, upsertPersonalUser } from '@/lib/db/queries/personal-users'
+import { ensureSchema } from '@/lib/db/ensure-schema'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
 
@@ -14,12 +16,29 @@ function statusLabel(s: Listing['status']) {
 export default async function PersonalDashboard() {
   const session = await auth()
   if (!session) redirect('/auth/login?callbackUrl=/personal')
-  if (!session.user?.personalUserId) {
-    // Signed in but DB upsert never completed — surface this instead of looping back to login
+
+  let personalUserId = session.user?.personalUserId
+
+  // Recovery path: if the session callback didn't manage to set personalUserId
+  // (e.g. DB was unreachable on that request), try once more here before failing.
+  if (!personalUserId && session.user?.email) {
+    await ensureSchema().catch(() => {})
+    let pu = await getPersonalUserByEmail(session.user.email).catch(() => null)
+    if (!pu) {
+      pu = await upsertPersonalUser({
+        email: session.user.email,
+        name: session.user.name ?? null,
+        photo_url: session.user.image ?? null,
+      }).catch(() => null)
+    }
+    personalUserId = pu?.id
+  }
+
+  if (!personalUserId) {
     redirect('/auth/error?error=PersonalUserSetupFailed')
   }
 
-  const listings = await getListingsByUser(session.user.personalUserId)
+  const listings = await getListingsByUser(personalUserId)
   const pendingCounts = await getActivePendingCountsByListings(listings.map(l => l.id))
 
   return (

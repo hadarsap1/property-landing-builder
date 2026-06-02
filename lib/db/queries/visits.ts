@@ -42,6 +42,7 @@ export async function createVisit(data: {
   listing_id: string
   agency_id: string
   agent_id?: string | null
+  lead_id?: string | null
   visit_at: Date
   duration_minutes?: number
   visit_type?: 'buyer' | 'seller'
@@ -52,10 +53,11 @@ export async function createVisit(data: {
 }): Promise<PropertyVisit> {
   const { rows } = await sql<PropertyVisit>`
     INSERT INTO property_visits
-      (listing_id, agency_id, agent_id, visit_at, duration_minutes, visit_type,
+      (listing_id, agency_id, agent_id, lead_id, visit_at, duration_minutes, visit_type,
        visitor_name, visitor_phone, visitor_email, notes)
     VALUES
       (${data.listing_id}, ${data.agency_id}, ${data.agent_id ?? null},
+       ${data.lead_id ?? null},
        ${data.visit_at.toISOString()}, ${data.duration_minutes ?? 30},
        ${data.visit_type ?? 'buyer'},
        ${data.visitor_name ?? null}, ${data.visitor_phone ?? null},
@@ -63,6 +65,14 @@ export async function createVisit(data: {
     RETURNING *
   `
   return rows[0]
+}
+
+export async function getVisitsByLead(leadId: string): Promise<PropertyVisit[]> {
+  const { rows } = await sql<PropertyVisit>`
+    SELECT * FROM property_visits WHERE lead_id = ${leadId}
+    ORDER BY visit_at DESC
+  `
+  return rows
 }
 
 export async function updateVisitStatus(

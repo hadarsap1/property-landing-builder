@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getVisitsByAgency } from '@/lib/db/queries/visits'
 import { getListingsByAgency } from '@/lib/db/queries/listings'
+import { getLeadsByAgency } from '@/lib/db/queries/leads'
 import { ensureSchema } from '@/lib/db/ensure-schema'
 import { CalendarClient } from './_calendar-client'
 
@@ -12,9 +13,10 @@ export default async function CalendarPage() {
 
   await ensureSchema()
 
-  const [visits, listings] = await Promise.all([
+  const [visits, listings, leads] = await Promise.all([
     getVisitsByAgency(agencyId).catch(() => []),
     getListingsByAgency(agencyId).catch(() => []),
+    getLeadsByAgency(agencyId).catch(() => []),
   ])
 
   return (
@@ -26,6 +28,13 @@ export default async function CalendarPage() {
         title: l.title,
         street: l.street,
         city: l.city,
+      }))}
+      leads={leads.map(l => ({
+        id: l.id,
+        name: l.name,
+        phone: l.phone,
+        email: l.email,
+        listing_id: l.listing_id,
       }))}
     />
   )

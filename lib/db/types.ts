@@ -181,6 +181,7 @@ export interface PropertyVisit {
   listing_id: string
   agency_id: string
   agent_id: string | null
+  lead_id: string | null
   visit_at: Date
   duration_minutes: number
   visit_type: 'buyer' | 'seller'

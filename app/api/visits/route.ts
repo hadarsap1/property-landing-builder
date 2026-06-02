@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { createVisit, getVisitsByListing } from '@/lib/db/queries/visits'
 import { getListingById } from '@/lib/db/queries/listings'
+import { createLead } from '@/lib/db/queries/leads'
 import { ensureSchema } from '@/lib/db/ensure-schema'
 
 export async function GET(req: NextRequest) {
@@ -33,6 +34,7 @@ export async function POST(req: NextRequest) {
     visit_at: string
     duration_minutes?: number
     visit_type?: 'buyer' | 'seller'
+    lead_id?: string | null
     visitor_name?: string
     visitor_phone?: string
     visitor_email?: string
@@ -48,12 +50,33 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
+  // Auto-create a lead for buyer visits that don't already have one, when
+  // we have at least a name + phone — so the visitor shows up in the leads list.
+  let leadId = body.lead_id ?? null
+  const visitType = body.visit_type ?? 'buyer'
+  if (!leadId && visitType === 'buyer' && (body.visitor_name || body.visitor_phone)) {
+    try {
+      const lead = await createLead({
+        listing_id: body.listing_id,
+        agency_id: agencyId,
+        name: body.visitor_name ?? null,
+        phone: body.visitor_phone ?? null,
+        email: body.visitor_email ?? null,
+        source: 'booking',
+      })
+      leadId = lead.id
+    } catch {
+      // Non-fatal — visit can still be created without a lead link.
+    }
+  }
+
   const visit = await createVisit({
     listing_id: body.listing_id,
     agency_id: agencyId,
     visit_at: new Date(body.visit_at),
     duration_minutes: body.duration_minutes ?? 30,
-    visit_type: body.visit_type ?? 'buyer',
+    visit_type: visitType,
+    lead_id: leadId,
     visitor_name: body.visitor_name ?? null,
     visitor_phone: body.visitor_phone ?? null,
     visitor_email: body.visitor_email ?? null,

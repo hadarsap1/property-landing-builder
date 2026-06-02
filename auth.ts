@@ -91,6 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async jwt({ token, user, account, trigger, session: updateData }) {
+      try {
       // Client-side session.update() — let the page push new fields
       if (trigger === 'update' && updateData) {
         const d = updateData as Record<string, unknown>
@@ -160,17 +161,69 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
       }
       return token
+      } catch (err) {
+        logAuthEvent('jwt:unhandled', serializeError(err))
+        return token
+      }
     },
 
     async session({ session, token }) {
-      if (session.user) {
-        const u = session.user as unknown as Record<string, unknown>
-        u.userType       = token.userType
-        u.personalUserId = token.personalUserId
-        u.agencyId       = token.agencyId
-        u.role           = token.role
+      if (!session.user) return session
+
+      const u = session.user as unknown as Record<string, unknown>
+      u.userType       = token.userType
+      u.personalUserId = token.personalUserId
+      u.agencyId       = token.agencyId
+      u.role           = token.role
+
+      // Safety net: if jwt() never populated the token, resolve from email
+      // so the session is always usable. Prevents the "back to login" loop
+      // when something in jwt() silently dropped the user-type metadata.
+      if (!u.userType && session.user.email) {
+        try {
+          const agent = await getAgentByEmail(session.user.email)
+          if (agent) {
+            u.userType = 'commercial'
+            u.agencyId = agent.agency_id
+            u.role     = agent.role
+            token.userType = 'commercial'
+            token.agencyId = agent.agency_id
+            token.role     = agent.role
+            return session
+          }
+          let pu = await getPersonalUserByEmail(session.user.email)
+          if (!pu) {
+            pu = await upsertPersonalUser({
+              email: session.user.email,
+              name: session.user.name ?? null,
+              photo_url: session.user.image ?? null,
+            }).catch((err: unknown) => {
+              logAuthEvent('session:upsertPersonalUser:error', serializeError(err))
+              return null
+            })
+          }
+          if (pu) {
+            u.userType       = 'personal'
+            u.personalUserId = pu.id
+            token.userType       = 'personal'
+            token.personalUserId = pu.id
+          }
+        } catch (err) {
+          logAuthEvent('session:resolveByEmail:error', serializeError(err))
+        }
       }
+
       return session
+    },
+
+    async redirect({ url, baseUrl }) {
+      // Allow same-origin redirects; otherwise fall back to baseUrl.
+      try {
+        if (url.startsWith('/')) return `${baseUrl}${url}`
+        const u = new URL(url)
+        if (u.origin === baseUrl) return url
+      } catch {}
+      return baseUrl
     },
   },
 

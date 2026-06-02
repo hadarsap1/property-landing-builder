@@ -2,12 +2,14 @@
 
 import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import type { PropertyVisit, Listing } from '@/lib/db/types'
+import type { PropertyVisit, Listing, Lead } from '@/lib/db/types'
 
 type VisitWithListing = PropertyVisit & {
   listing_title: string | null
   listing_address: string | null
 }
+
+type LeadOption = Pick<Lead, 'id' | 'name' | 'phone' | 'email' | 'listing_id'>
 
 type View = 'day' | 'week' | 'month'
 
@@ -99,6 +101,7 @@ function detectConflicts(visits: VisitWithListing[]): Set<string> {
 
 const EMPTY_FORM = {
   listing_id: '',
+  lead_id: '',
   visit_at: '',
   duration_minutes: '30',
   visit_type: 'buyer' as 'buyer' | 'seller',
@@ -111,9 +114,11 @@ const EMPTY_FORM = {
 export function CalendarClient({
   visits: initialVisits,
   listings,
+  leads,
 }: {
   visits: VisitWithListing[]
   listings: Pick<Listing, 'id' | 'ai_title' | 'title' | 'street' | 'city'>[]
+  leads: LeadOption[]
 }) {
   const [visits, setVisits] = useState(initialVisits)
   const [view, setView] = useState<View>('week')
@@ -178,6 +183,7 @@ export function CalendarClient({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         listing_id: form.listing_id,
+        lead_id: form.lead_id || null,
         visit_at: new Date(form.visit_at).toISOString(),
         duration_minutes: parseInt(form.duration_minutes) || 30,
         visit_type: form.visit_type,
@@ -290,13 +296,45 @@ export function CalendarClient({
                   <label className="block text-sm text-gray-600 mb-1">סוג ביקור</label>
                   <select
                     value={form.visit_type}
-                    onChange={e => setForm(f => ({ ...f, visit_type: e.target.value as 'buyer' | 'seller' }))}
+                    onChange={e => setForm(f => ({ ...f, visit_type: e.target.value as 'buyer' | 'seller', lead_id: '' }))}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                   >
                     <option value="buyer">קונה פוטנציאלי</option>
                     <option value="seller">פגישת מוכר</option>
                   </select>
                 </div>
+
+                {form.visit_type === 'buyer' && (
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm text-gray-600 mb-1">חבר ללליד קיים (אופציונלי)</label>
+                    <select
+                      value={form.lead_id}
+                      onChange={e => {
+                        const leadId = e.target.value
+                        const lead = leads.find(l => l.id === leadId)
+                        setForm(f => ({
+                          ...f,
+                          lead_id: leadId,
+                          visitor_name: lead?.name ?? f.visitor_name,
+                          visitor_phone: lead?.phone ?? f.visitor_phone,
+                          visitor_email: lead?.email ?? f.visitor_email,
+                          listing_id: lead?.listing_id ?? f.listing_id,
+                        }))
+                      }}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                    >
+                      <option value="">— ליד חדש —</option>
+                      {leads.map(l => (
+                        <option key={l.id} value={l.id}>
+                          {l.name || l.phone || l.email || l.id.slice(0, 8)}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-400 mt-1">
+                      אם תשאיר ריק, ייווצר ליד חדש אוטומטית כשתשמור.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm text-gray-600 mb-1">משך</label>
@@ -375,15 +413,16 @@ export function CalendarClient({
         </div>
       )}
 
-      {/* Navigation bar */}
+      {/* Navigation bar. In RTL the first DOM child renders on the RIGHT.
+          Right = previous (arrow points right/into-past).
+          Left  = next     (arrow points left/into-future). */}
       <div className="flex items-center bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm gap-3">
-        {/* In RTL: right side = previous, left side = next */}
         <button
-          onClick={goForward}
+          onClick={goBack}
           className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors"
-          title="הבא"
+          title="הקודם"
         >
-          ←
+          →
         </button>
         <button
           onClick={() => setAnchor(startOfDay(new Date()))}
@@ -393,11 +432,11 @@ export function CalendarClient({
         </button>
         <span className="flex-1 text-center text-sm font-medium text-gray-700">{navLabel()}</span>
         <button
-          onClick={goBack}
+          onClick={goForward}
           className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors"
-          title="הקודם"
+          title="הבא"
         >
-          →
+          ←
         </button>
       </div>
 

@@ -195,6 +195,7 @@ const SCHEMA_STATEMENTS = [
     listing_id       uuid NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
     agency_id        uuid NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
     agent_id         uuid REFERENCES agents(id) ON DELETE SET NULL,
+    lead_id          uuid REFERENCES leads(id) ON DELETE SET NULL,
     visit_at         timestamp NOT NULL,
     duration_minutes integer NOT NULL DEFAULT 30,
     visit_type       text NOT NULL DEFAULT 'buyer'
@@ -209,6 +210,8 @@ const SCHEMA_STATEMENTS = [
   )`,
 
   `ALTER TABLE property_visits ADD COLUMN IF NOT EXISTS visit_type text NOT NULL DEFAULT 'buyer' CHECK (visit_type IN ('buyer', 'seller'))`,
+  `ALTER TABLE property_visits ADD COLUMN IF NOT EXISTS lead_id uuid REFERENCES leads(id) ON DELETE SET NULL`,
+  `CREATE INDEX IF NOT EXISTS idx_property_visits_lead ON property_visits(lead_id)`,
 
   `CREATE INDEX IF NOT EXISTS idx_property_visits_listing  ON property_visits(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_property_visits_agency   ON property_visits(agency_id)`,
