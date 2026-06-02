@@ -197,6 +197,8 @@ const SCHEMA_STATEMENTS = [
     agent_id         uuid REFERENCES agents(id) ON DELETE SET NULL,
     visit_at         timestamp NOT NULL,
     duration_minutes integer NOT NULL DEFAULT 30,
+    visit_type       text NOT NULL DEFAULT 'buyer'
+                       CHECK (visit_type IN ('buyer', 'seller')),
     visitor_name     text,
     visitor_phone    text,
     visitor_email    text,
@@ -205,6 +207,8 @@ const SCHEMA_STATEMENTS = [
                        CHECK (status IN ('scheduled', 'completed', 'cancelled', 'no_show')),
     created_at       timestamp NOT NULL DEFAULT now()
   )`,
+
+  `ALTER TABLE property_visits ADD COLUMN IF NOT EXISTS visit_type text NOT NULL DEFAULT 'buyer' CHECK (visit_type IN ('buyer', 'seller'))`,
 
   `CREATE INDEX IF NOT EXISTS idx_property_visits_listing  ON property_visits(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_property_visits_agency   ON property_visits(agency_id)`,

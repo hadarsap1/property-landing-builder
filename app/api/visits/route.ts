@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
     listing_id: string
     visit_at: string
     duration_minutes?: number
+    visit_type?: 'buyer' | 'seller'
     visitor_name?: string
     visitor_phone?: string
     visitor_email?: string
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
     agency_id: agencyId,
     visit_at: new Date(body.visit_at),
     duration_minutes: body.duration_minutes ?? 30,
+    visit_type: body.visit_type ?? 'buyer',
     visitor_name: body.visitor_name ?? null,
     visitor_phone: body.visitor_phone ?? null,
     visitor_email: body.visitor_email ?? null,

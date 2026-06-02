@@ -44,6 +44,7 @@ export async function createVisit(data: {
   agent_id?: string | null
   visit_at: Date
   duration_minutes?: number
+  visit_type?: 'buyer' | 'seller'
   visitor_name?: string | null
   visitor_phone?: string | null
   visitor_email?: string | null
@@ -51,11 +52,12 @@ export async function createVisit(data: {
 }): Promise<PropertyVisit> {
   const { rows } = await sql<PropertyVisit>`
     INSERT INTO property_visits
-      (listing_id, agency_id, agent_id, visit_at, duration_minutes,
+      (listing_id, agency_id, agent_id, visit_at, duration_minutes, visit_type,
        visitor_name, visitor_phone, visitor_email, notes)
     VALUES
       (${data.listing_id}, ${data.agency_id}, ${data.agent_id ?? null},
        ${data.visit_at.toISOString()}, ${data.duration_minutes ?? 30},
+       ${data.visit_type ?? 'buyer'},
        ${data.visitor_name ?? null}, ${data.visitor_phone ?? null},
        ${data.visitor_email ?? null}, ${data.notes ?? null})
     RETURNING *

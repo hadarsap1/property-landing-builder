@@ -28,8 +28,9 @@ const assistant = Assistant({
 });
 
 export const metadata: Metadata = {
-  title: "Property Landing Builder",
+  title: "PropBuilder",
   description: "Build beautiful real estate landing pages",
+  icons: { icon: '/icon.svg', shortcut: '/icon.svg' },
 };
 
 export default function RootLayout({

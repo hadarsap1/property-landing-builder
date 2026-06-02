@@ -6,12 +6,21 @@ export async function upsertPersonalUser(data: {
   name?: string | null
   photo_url?: string | null
 }): Promise<PersonalUser> {
+  // Avoid ON CONFLICT in case the UNIQUE constraint doesn't exist yet on older DBs.
+  const existing = await getPersonalUserByEmail(data.email)
+  if (existing) {
+    const { rows } = await sql<PersonalUser>`
+      UPDATE personal_users
+      SET name      = COALESCE(${data.name ?? null}, name),
+          photo_url = COALESCE(${data.photo_url ?? null}, photo_url)
+      WHERE email = ${data.email}
+      RETURNING *
+    `
+    return rows[0] ?? existing
+  }
   const { rows } = await sql<PersonalUser>`
     INSERT INTO personal_users (email, name, photo_url)
     VALUES (${data.email}, ${data.name ?? null}, ${data.photo_url ?? null})
-    ON CONFLICT (email) DO UPDATE SET
-      name      = COALESCE(EXCLUDED.name, personal_users.name),
-      photo_url = COALESCE(EXCLUDED.photo_url, personal_users.photo_url)
     RETURNING *
   `
   return rows[0]

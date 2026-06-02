@@ -38,6 +38,7 @@ function toLocalDatetimeValue(d: Date): string {
 const EMPTY_FORM = {
   visit_at: '',
   duration_minutes: '30',
+  visit_type: 'buyer' as 'buyer' | 'seller',
   visitor_name: '',
   visitor_phone: '',
   visitor_email: '',
@@ -94,6 +95,7 @@ export default function ListingVisitsPage() {
         listing_id: listingId,
         visit_at: new Date(form.visit_at).toISOString(),
         duration_minutes: parseInt(form.duration_minutes) || 30,
+        visit_type: form.visit_type,
         visitor_name: form.visitor_name || null,
         visitor_phone: form.visitor_phone || null,
         visitor_email: form.visitor_email || null,
@@ -169,6 +171,17 @@ export default function ListingVisitsPage() {
                   onChange={e => setForm(f => ({ ...f, visit_at: e.target.value }))}
                   className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
                 />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-600 mb-1">סוג ביקור</label>
+                <select
+                  value={form.visit_type}
+                  onChange={e => setForm(f => ({ ...f, visit_type: e.target.value as 'buyer' | 'seller' }))}
+                  className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
+                >
+                  <option value="buyer">קונה פוטנציאלי</option>
+                  <option value="seller">פגישת מוכר</option>
+                </select>
               </div>
               <div>
                 <label className="block text-sm text-gray-600 mb-1">משך (דקות)</label>

@@ -183,6 +183,7 @@ export interface PropertyVisit {
   agent_id: string | null
   visit_at: Date
   duration_minutes: number
+  visit_type: 'buyer' | 'seller'
   visitor_name: string | null
   visitor_phone: string | null
   visitor_email: string | null
