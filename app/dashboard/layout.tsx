@@ -12,6 +12,7 @@ const NAV = [
   { href: '/dashboard/team',        label: 'צוות',     icon: '👥' },
   { href: '/dashboard/settings',    label: 'הגדרות',   icon: '⚙️' },
   { href: '/dashboard/billing',     label: 'חיוב',     icon: '💳' },
+  { href: '/dashboard/help',        label: 'עזרה',     icon: '❓' },
 ]
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
