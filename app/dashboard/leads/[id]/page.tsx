@@ -40,15 +40,20 @@ export default function LeadDetailPage() {
   const [savingNote, setSavingNote] = useState(false)
 
   const load = useCallback(async () => {
-    const [leadRes, notesRes, visitsRes] = await Promise.all([
-      fetch(`/api/leads/${id}`),
-      fetch(`/api/leads/${id}/notes`),
-      fetch(`/api/leads/${id}/visits`),
-    ])
-    if (leadRes.ok) setLead((await leadRes.json() as { lead: Lead }).lead)
-    if (notesRes.ok) setNotes((await notesRes.json() as { notes: LeadNote[] }).notes)
-    if (visitsRes.ok) setVisits((await visitsRes.json() as { visits: PropertyVisit[] }).visits)
-    setLoading(false)
+    try {
+      const [leadRes, notesRes, visitsRes] = await Promise.all([
+        fetch(`/api/leads/${id}`),
+        fetch(`/api/leads/${id}/notes`),
+        fetch(`/api/leads/${id}/visits`),
+      ])
+      if (leadRes.ok) setLead((await leadRes.json() as { lead: Lead }).lead)
+      if (notesRes.ok) setNotes((await notesRes.json() as { notes: LeadNote[] }).notes)
+      if (visitsRes.ok) setVisits((await visitsRes.json() as { visits: PropertyVisit[] }).visits)
+    } catch {
+      // network failure — show what we have
+    } finally {
+      setLoading(false)
+    }
   }, [id])
 
   useEffect(() => { void load() }, [load])

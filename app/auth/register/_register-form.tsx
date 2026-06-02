@@ -66,18 +66,20 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {([
-              { id: 'name',        label: 'שם מלא',       type: 'text',     placeholder: 'ישראל ישראלי' },
-              { id: 'agency_name', label: 'שם הסוכנות',   type: 'text',     placeholder: 'סוכנות נדל״ן מצוינת' },
-              { id: 'email',       label: 'כתובת מייל',   type: 'email',    placeholder: 'you@agency.co.il' },
-              { id: 'password',    label: 'סיסמה',         type: 'password', placeholder: 'לפחות 8 תווים' },
-              { id: 'confirm',     label: 'אימות סיסמה',  type: 'password', placeholder: 'הקלד שוב' },
-            ] as const).map(({ id, label, type, placeholder }) => (
+              { id: 'name',        label: 'שם מלא',       type: 'text',     placeholder: 'ישראל ישראלי',         ac: 'name',         ltr: false },
+              { id: 'agency_name', label: 'שם הסוכנות',   type: 'text',     placeholder: 'סוכנות נדל״ן מצוינת', ac: 'organization', ltr: false },
+              { id: 'email',       label: 'כתובת מייל',   type: 'email',    placeholder: 'you@agency.co.il',     ac: 'email',        ltr: true  },
+              { id: 'password',    label: 'סיסמה',         type: 'password', placeholder: 'לפחות 8 תווים',       ac: 'new-password', ltr: true  },
+              { id: 'confirm',     label: 'אימות סיסמה',  type: 'password', placeholder: 'הקלד שוב',             ac: 'new-password', ltr: true  },
+            ] as const).map(({ id, label, type, placeholder, ac, ltr }) => (
               <div key={id} className="space-y-1">
                 <label htmlFor={id} className="text-sm font-medium text-gray-700">{label}</label>
                 <input
                   id={id}
                   type={type}
                   required
+                  dir={ltr ? 'ltr' : undefined}
+                  autoComplete={ac}
                   value={form[id]}
                   onChange={set(id)}
                   placeholder={placeholder}

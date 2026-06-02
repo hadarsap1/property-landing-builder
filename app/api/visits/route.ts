@@ -4,6 +4,7 @@ import { createVisit, getVisitsByListing } from '@/lib/db/queries/visits'
 import { getListingById } from '@/lib/db/queries/listings'
 import { createLead } from '@/lib/db/queries/leads'
 import { ensureSchema } from '@/lib/db/ensure-schema'
+import { db } from '@/lib/db'
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -50,12 +51,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 })
   }
 
-  // Auto-create a lead for buyer visits that don't already have one, when
-  // we have at least a name + phone — so the visitor shows up in the leads list.
-  let leadId = body.lead_id ?? null
   const visitType = body.visit_type ?? 'buyer'
-  if (!leadId && visitType === 'buyer' && (body.visitor_name || body.visitor_phone)) {
-    try {
+  const shouldAutoLead =
+    !body.lead_id &&
+    visitType === 'buyer' &&
+    (body.visitor_name || body.visitor_phone)
+
+  // Use a transaction so we don't end up with an orphan lead if createVisit fails.
+  const client = await db.connect()
+  try {
+    await client.query('BEGIN')
+
+    let leadId = body.lead_id ?? null
+    if (shouldAutoLead) {
       const lead = await createLead({
         listing_id: body.listing_id,
         agency_id: agencyId,
@@ -65,23 +73,27 @@ export async function POST(req: NextRequest) {
         source: 'booking',
       })
       leadId = lead.id
-    } catch {
-      // Non-fatal — visit can still be created without a lead link.
     }
+
+    const visit = await createVisit({
+      listing_id: body.listing_id,
+      agency_id: agencyId,
+      visit_at: new Date(body.visit_at),
+      duration_minutes: body.duration_minutes ?? 30,
+      visit_type: visitType,
+      lead_id: leadId,
+      visitor_name: body.visitor_name ?? null,
+      visitor_phone: body.visitor_phone ?? null,
+      visitor_email: body.visitor_email ?? null,
+      notes: body.notes ?? null,
+    })
+
+    await client.query('COMMIT')
+    return NextResponse.json({ visit }, { status: 201 })
+  } catch (err) {
+    await client.query('ROLLBACK')
+    throw err
+  } finally {
+    client.release()
   }
-
-  const visit = await createVisit({
-    listing_id: body.listing_id,
-    agency_id: agencyId,
-    visit_at: new Date(body.visit_at),
-    duration_minutes: body.duration_minutes ?? 30,
-    visit_type: visitType,
-    lead_id: leadId,
-    visitor_name: body.visitor_name ?? null,
-    visitor_phone: body.visitor_phone ?? null,
-    visitor_email: body.visitor_email ?? null,
-    notes: body.notes ?? null,
-  })
-
-  return NextResponse.json({ visit }, { status: 201 })
 }

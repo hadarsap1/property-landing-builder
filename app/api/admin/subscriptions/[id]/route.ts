@@ -8,7 +8,7 @@ import type { Session } from 'next-auth'
 type RouteContext = { params: Promise<{ id: string }> }
 
 function isAdmin(session: Session | null): boolean {
-  return session?.user?.email === process.env.SUPER_ADMIN_EMAIL
+  return !!process.env.SUPER_ADMIN_EMAIL && session?.user?.email === process.env.SUPER_ADMIN_EMAIL
 }
 
 export async function PATCH(req: NextRequest, { params }: RouteContext): Promise<NextResponse> {

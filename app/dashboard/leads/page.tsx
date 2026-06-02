@@ -63,6 +63,7 @@ export default function LeadsPage() {
     void fetch(`/api/leads${qs}`)
       .then(r => r.json())
       .then((d: { leads: Lead[] }) => { setLeads(d.leads); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [statusFilter])
 
   function setField(field: keyof NewCandidate) {
@@ -190,7 +191,7 @@ export default function LeadsPage() {
           className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4"
           onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}
         >
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5" dir="rtl">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5 overflow-y-auto max-h-[calc(100vh-2rem)]" dir="rtl">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold text-gray-900">קונה פוטנציאלי חדש</h2>
               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>

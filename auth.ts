@@ -106,6 +106,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user && account) {
         if (account.provider === 'agent-credentials') {
           const u = user as unknown as Record<string, unknown>
+          token.id       = user.id
           token.userType = 'commercial'
           token.agencyId = u.agencyId as string | undefined
           token.role     = u.role as string | undefined
@@ -121,6 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           })
 
           if (agent) {
+            token.id       = agent.id
             token.userType = 'commercial'
             token.agencyId = agent.agency_id
             token.role     = agent.role
@@ -142,6 +144,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             if (existing) personalUserId = existing.id
           }
 
+          token.id             = personalUserId
           token.userType       = 'personal'
           token.personalUserId = personalUserId
 
@@ -171,6 +174,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (!session.user) return session
 
       const u = session.user as unknown as Record<string, unknown>
+      u.id             = token.id
       u.userType       = token.userType
       u.personalUserId = token.personalUserId
       u.agencyId       = token.agencyId
@@ -216,11 +220,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
 
     async redirect({ url, baseUrl }) {
-      // Allow same-origin redirects; otherwise fall back to baseUrl.
+      // Allow same-origin redirects; reject protocol-relative (//evil.com) and external URLs.
       try {
-        if (url.startsWith('/')) return `${baseUrl}${url}`
+        if (url.startsWith('/') && !url.startsWith('//')) return `${baseUrl}${url}`
         const u = new URL(url)
-        if (u.origin === baseUrl) return url
+        if (u.origin === new URL(baseUrl).origin) return url
       } catch {}
       return baseUrl
     },

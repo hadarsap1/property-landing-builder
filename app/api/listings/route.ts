@@ -62,19 +62,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ listing }, { status: 201 })
   }
 
-  // Anonymous users: rate-limit by IP (5 listings/IP/day) to prevent DB spam
-  if (process.env.KV_URL) {
-    try {
-      const { kv } = await import('@vercel/kv')
-      const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-      const today = new Date().toISOString().slice(0, 10)
-      const key = `rl:anon_listings:${ip}:${today}`
-      const count = await kv.incr(key)
-      if (count === 1) await kv.expire(key, 86_400)
-      if (count > 5) {
-        return NextResponse.json({ error: 'יותר מדי נכסים — נסה מחר' }, { status: 429 })
-      }
-    } catch { /* KV down — allow through */ }
+  // Anonymous listing creation requires KV for rate-limiting. Without KV,
+  // refuse to prevent DB spam (fail-closed).
+  if (!process.env.KV_URL) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+  try {
+    const { kv } = await import('@vercel/kv')
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    const today = new Date().toISOString().slice(0, 10)
+    const key = `rl:anon_listings:${ip}:${today}`
+    const count = await kv.incr(key)
+    if (count === 1) await kv.expire(key, 86_400)
+    if (count > 5) {
+      return NextResponse.json({ error: 'יותר מדי נכסים — נסה מחר' }, { status: 429 })
+    }
+  } catch {
+    // KV error — fail closed for anonymous users
+    return NextResponse.json({ error: 'Service unavailable' }, { status: 503 })
   }
 
   const slug = `listing-${Date.now()}`

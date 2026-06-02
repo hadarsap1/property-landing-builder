@@ -265,8 +265,16 @@ export async function ensureSchema(): Promise<void> {
     for (const stmt of SCHEMA_STATEMENTS) {
       try {
         await client.query(stmt)
-      } catch {
-        // Ignore individual statement errors (e.g. already exists)
+      } catch (e) {
+        // Log unexpected errors but continue — most are benign "already exists"
+        const msg = e instanceof Error ? e.message : String(e)
+        const isExpected =
+          msg.includes('already exists') ||
+          msg.includes('does not exist') ||
+          msg.includes('duplicate')
+        if (!isExpected) {
+          console.warn('[ensure-schema] statement failed:', msg, '\nSQL:', stmt.slice(0, 120))
+        }
       }
     }
     schemaReady = true

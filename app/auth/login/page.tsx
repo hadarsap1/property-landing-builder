@@ -95,7 +95,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
             <div className="space-y-1">
               <label htmlFor="email" className="text-sm font-medium text-gray-700">כתובת מייל</label>
               <input
-                id="email" name="email" type="email" autoComplete="email" required
+                id="email" name="email" type="email" autoComplete="email" required dir="ltr"
                 className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="agent@agency.co.il"
               />
@@ -104,7 +104,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
             <div className="space-y-1">
               <label htmlFor="password" className="text-sm font-medium text-gray-700">סיסמה</label>
               <input
-                id="password" name="password" type="password" autoComplete="current-password" required
+                id="password" name="password" type="password" autoComplete="current-password" required dir="ltr"
                 className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>

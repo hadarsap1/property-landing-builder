@@ -121,7 +121,10 @@ export function CalendarClient({
   leads: LeadOption[]
 }) {
   const [visits, setVisits] = useState(initialVisits)
-  const [view, setView] = useState<View>('week')
+  // Default to day view on mobile (≤640px) for readability; week on desktop
+  const [view, setView] = useState<View>(
+    typeof window !== 'undefined' && window.innerWidth < 640 ? 'day' : 'week'
+  )
   const [anchor, setAnchor] = useState(() => startOfDay(new Date()))
   const [selectedVisit, setSelectedVisit] = useState<VisitWithListing | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
@@ -271,7 +274,7 @@ export function CalendarClient({
           <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-lg" onClick={e => e.stopPropagation()} dir="rtl">
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-bold text-gray-900 text-lg">ביקור חדש</h2>
-              <button onClick={() => setShowAddForm(false)} className="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
+              <button onClick={() => setShowAddForm(false)} aria-label="סגור" className="text-gray-400 hover:text-gray-700 text-2xl leading-none">×</button>
             </div>
             <form onSubmit={e => void handleSubmit(e)} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -356,6 +359,7 @@ export function CalendarClient({
                   <input
                     type="datetime-local"
                     required
+                    dir="ltr"
                     value={form.visit_at}
                     onChange={e => setForm(f => ({ ...f, visit_at: e.target.value }))}
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200"
@@ -377,6 +381,7 @@ export function CalendarClient({
                   <label className="block text-sm text-gray-600 mb-1">טלפון</label>
                   <input
                     type="tel"
+                    dir="ltr"
                     value={form.visitor_phone}
                     onChange={e => setForm(f => ({ ...f, visitor_phone: e.target.value }))}
                     placeholder="050-0000000"
@@ -414,15 +419,15 @@ export function CalendarClient({
       )}
 
       {/* Navigation bar. In RTL the first DOM child renders on the RIGHT.
-          Right = previous (arrow points right/into-past).
-          Left  = next     (arrow points left/into-future). */}
+          Right button (first child) = previous. Left button (last child) = next.
+          Chevrons ‹/› universally read as prev/next regardless of text direction. */}
       <div className="flex items-center bg-white rounded-2xl border border-gray-100 px-4 py-3 shadow-sm gap-3">
         <button
           onClick={goBack}
-          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors"
-          title="הקודם"
+          aria-label="הקודם"
+          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors text-lg leading-none"
         >
-          →
+          ›
         </button>
         <button
           onClick={() => setAnchor(startOfDay(new Date()))}
@@ -433,10 +438,10 @@ export function CalendarClient({
         <span className="flex-1 text-center text-sm font-medium text-gray-700">{navLabel()}</span>
         <button
           onClick={goForward}
-          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors"
-          title="הבא"
+          aria-label="הבא"
+          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg p-1.5 transition-colors text-lg leading-none"
         >
-          ←
+          ‹
         </button>
       </div>
 
@@ -505,7 +510,7 @@ export function CalendarClient({
               <div key={d} className="text-center text-xs text-gray-400 font-medium py-2">{d}</div>
             ))}
           </div>
-          <div className="grid grid-cols-7 divide-x divide-y divide-gray-100" style={{ direction: 'ltr' }}>
+          <div className="grid grid-cols-7 divide-x divide-y divide-gray-100">
             {monthDays.map((day, i) => {
               if (!day) return <div key={i} className="bg-gray-50 min-h-[80px]" />
               const dayVisits = getVisitsForDay(day)
@@ -515,7 +520,6 @@ export function CalendarClient({
                   key={i}
                   className={`min-h-[80px] p-1 cursor-pointer hover:bg-gray-50 transition-colors ${isToday ? 'bg-blue-50' : ''}`}
                   onClick={() => { setView('day'); setAnchor(startOfDay(day)) }}
-                  style={{ direction: 'rtl' }}
                 >
                   <div className={`text-xs font-medium mb-1 inline-flex w-6 h-6 items-center justify-center rounded-full ${isToday ? 'bg-blue-600 text-white' : 'text-gray-600'}`}>
                     {day.getDate()}
@@ -547,7 +551,7 @@ export function CalendarClient({
           <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm space-y-3" dir="rtl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h2 className="font-bold text-gray-900 text-lg">פרטי ביקור</h2>
-              <button onClick={() => setSelectedVisit(null)} className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
+              <button onClick={() => setSelectedVisit(null)} aria-label="סגור" className="text-gray-400 hover:text-gray-700 text-xl leading-none">×</button>
             </div>
             <div className="space-y-2 text-sm">
               <Row label="תאריך">
@@ -584,12 +588,14 @@ export function CalendarClient({
                 </div>
               )}
             </div>
-            <Link
-              href={`/dashboard/listings/${selectedVisit.listing_id}/visits`}
-              className="block text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
-            >
-              ניהול ביקורים לנכס זה
-            </Link>
+            {selectedVisit.listing_id && (
+              <Link
+                href={`/dashboard/listings/${selectedVisit.listing_id}/visits`}
+                className="block text-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+              >
+                ניהול ביקורים לנכס זה
+              </Link>
+            )}
           </div>
         </div>
       )}

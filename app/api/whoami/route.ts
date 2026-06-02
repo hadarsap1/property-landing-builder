@@ -5,9 +5,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   const session = await auth()
-  return NextResponse.json({
-    signedIn: !!session,
-    user: session?.user ?? null,
-    expires: session?.expires ?? null,
-  })
+  if (!session?.user) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+  return NextResponse.json({ session })
 }

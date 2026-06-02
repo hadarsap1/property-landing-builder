@@ -238,7 +238,7 @@ export default function BrokerHelpPage() {
               href={link.href}
               className="flex items-center gap-2 text-blue-600 hover:underline"
             >
-              <span className="text-gray-400">→</span>
+              <span className="text-gray-400">←</span>
               {link.label}
             </Link>
           ))}
