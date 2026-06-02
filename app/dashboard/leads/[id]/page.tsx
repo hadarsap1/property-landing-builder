@@ -97,17 +97,48 @@ export default function LeadDetailPage() {
   if (loading) return <p className="text-gray-400 text-sm">טוען...</p>
   if (!lead) return <p className="text-gray-500 text-sm">ליד לא נמצא</p>
 
+  const isCandidate = !lead.listing_id
+  const hasPrefs = isCandidate && (lead.budget || lead.rooms_min || lead.rooms_max || lead.desired_areas)
+
   return (
     <div className="max-w-xl space-y-6">
       <div>
-        <Link href="/dashboard/leads" className="text-sm text-gray-400 hover:text-gray-600">← לידים</Link>
-        <h1 className="text-xl font-bold text-gray-900 mt-1">{lead.name || 'אנונימי'}</h1>
+        <Link href="/dashboard/leads" className="text-sm text-gray-400 hover:text-gray-600">← לידים וקונים</Link>
+        <div className="flex items-center gap-2 mt-1">
+          <h1 className="text-xl font-bold text-gray-900">{lead.name || 'אנונימי'}</h1>
+          {isCandidate && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700">קונה</span>
+          )}
+        </div>
         {(lead.phone || lead.email) && (
           <p className="text-sm text-gray-500 mt-0.5">
             {[lead.phone, lead.email].filter(Boolean).join(' · ')}
           </p>
         )}
       </div>
+
+      {/* Buyer preferences (candidates only) */}
+      {hasPrefs && (
+        <div className="bg-purple-50 rounded-2xl border border-purple-100 p-4 space-y-2">
+          <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide">מה הקונה מחפש</p>
+          <div className="flex flex-wrap gap-3 text-sm text-gray-700">
+            {lead.budget && (
+              <span>תקציב: <strong>{lead.budget.toLocaleString('he-IL')} ₪</strong></span>
+            )}
+            {(lead.rooms_min || lead.rooms_max) && (
+              <span>
+                חדרים: <strong>
+                  {lead.rooms_min ?? '?'}
+                  {lead.rooms_max && lead.rooms_max !== lead.rooms_min ? `–${lead.rooms_max}` : ''}
+                </strong>
+              </span>
+            )}
+            {lead.desired_areas && (
+              <span>אזורים: <strong>{lead.desired_areas}</strong></span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Status selector */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
@@ -146,7 +177,7 @@ export default function LeadDetailPage() {
             {visits.map(v => (
               <Link
                 key={v.id}
-                href={`/dashboard/listings/${v.listing_id}/visits`}
+                href={v.listing_id ? `/dashboard/listings/${v.listing_id}/visits` : '/dashboard/calendar'}
                 className="block bg-white rounded-xl border border-gray-200 p-3 hover:border-blue-200 transition-colors"
               >
                 <div className="flex items-center justify-between gap-2">

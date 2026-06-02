@@ -176,10 +176,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       u.agencyId       = token.agencyId
       u.role           = token.role
 
-      // Safety net: if jwt() never populated the token, resolve from email
-      // so the session is always usable. Prevents the "back to login" loop
-      // when something in jwt() silently dropped the user-type metadata.
-      if (!u.userType && session.user.email) {
+      // Safety net: if jwt() never populated the token (or populated userType but not
+      // personalUserId for personal users), resolve from email so the session is always usable.
+      if ((!u.userType || (u.userType === 'personal' && !u.personalUserId)) && session.user.email) {
         try {
           const agent = await getAgentByEmail(session.user.email)
           if (agent) {

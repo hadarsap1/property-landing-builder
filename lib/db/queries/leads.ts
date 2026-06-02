@@ -2,22 +2,30 @@ import { sql, db } from '@/lib/db'
 import type { Lead, LeadNote } from '@/lib/db/types'
 
 export async function createLead(data: {
-  listing_id: string
+  listing_id?: string | null
   agency_id: string
   name?: string | null
   phone?: string | null
   email?: string | null
   source: Lead['source']
+  budget?: number | null
+  rooms_min?: number | null
+  rooms_max?: number | null
+  desired_areas?: string | null
 }): Promise<Lead> {
   const { rows } = await sql<Lead>`
-    INSERT INTO leads (listing_id, agency_id, name, phone, email, source)
+    INSERT INTO leads (listing_id, agency_id, name, phone, email, source, budget, rooms_min, rooms_max, desired_areas)
     VALUES (
-      ${data.listing_id},
+      ${data.listing_id ?? null},
       ${data.agency_id},
       ${data.name ?? null},
       ${data.phone ?? null},
       ${data.email ?? null},
-      ${data.source}
+      ${data.source},
+      ${data.budget ?? null},
+      ${data.rooms_min ?? null},
+      ${data.rooms_max ?? null},
+      ${data.desired_areas ?? null}
     )
     RETURNING *
   `

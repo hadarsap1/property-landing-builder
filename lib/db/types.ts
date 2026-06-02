@@ -147,13 +147,17 @@ export interface PendingChange {
 
 export interface Lead {
   id: string
-  listing_id: string
+  listing_id: string | null
   agency_id: string
   name: string | null
   phone: string | null
   email: string | null
   source: 'booking' | 'open_house' | 'whatsapp' | 'direct'
   status: 'new' | 'contacted' | 'visited' | 'serious' | 'irrelevant' | 'offer_made' | 'closed'
+  budget: number | null
+  rooms_min: number | null
+  rooms_max: number | null
+  desired_areas: string | null
   created_at: Date
   last_interaction: Date | null
 }

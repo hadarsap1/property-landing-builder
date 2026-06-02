@@ -241,6 +241,12 @@ const SCHEMA_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_seller_tokens_expires  ON seller_tokens(expires_at)`,
   `CREATE INDEX IF NOT EXISTS idx_pending_changes_listing ON pending_changes(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_pending_changes_status  ON pending_changes(status)`,
+  `ALTER TABLE leads ALTER COLUMN listing_id DROP NOT NULL`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget        integer`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS rooms_min     numeric`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS rooms_max     numeric`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS desired_areas text`,
+
   `CREATE INDEX IF NOT EXISTS idx_leads_listing_id       ON leads(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_leads_agency_id        ON leads(agency_id)`,
   `CREATE INDEX IF NOT EXISTS idx_leads_status           ON leads(status)`,
