@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { ContactForm } from '@/components/contact-form'
 
 type Item = { q: string; a: string }
 
@@ -180,12 +180,10 @@ export default function PersonalHelpPage() {
       </div>
 
       {/* Contact */}
-      <div className="text-center text-sm text-gray-500 pb-4">
-        לא מצאת את התשובה?{' '}
-        <a href="mailto:support@propbuilder.co.il" className="text-blue-600 hover:underline font-medium">
-          כתוב לנו
-        </a>
-        {' '}ונחזור אליך בהקדם.
+      <div className="text-center text-sm text-gray-500 pb-4 flex flex-wrap items-center justify-center gap-1">
+        <span>לא מצאת את התשובה?</span>
+        <ContactForm source="personal-help" />
+        <span>ונחזור אליך בהקדם.</span>
       </div>
     </div>
   )

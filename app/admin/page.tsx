@@ -4,30 +4,62 @@ import Link from 'next/link'
 import { DemoSeedCard } from './_demo-seed-card'
 
 interface AgencyRow { id: string; name: string; slug: string; created_at: Date }
-interface ListingRow { id: string; title: string | null; city: string | null; status: string; agency_id: string | null; user_id: string | null; created_at: Date }
+interface ListingRow {
+  id: string
+  title: string | null
+  ai_title: string | null
+  city: string | null
+  status: string
+  agency_id: string | null
+  user_id: string | null
+  price: number | null
+  price_on_request: boolean
+  hero_image_url: string | null
+  image_urls: string[] | null
+  created_at: Date
+}
 interface CountRow { count: string }
 
+function isPublished(l: ListingRow): boolean {
+  const hasTitle = !!(l.ai_title || l.title)
+  const hasContent = !!(l.price || l.price_on_request || l.hero_image_url || (l.image_urls && l.image_urls.length > 0))
+  return hasTitle && hasContent
+}
+
 async function getStats() {
-  const [recentAgencies, agencyCountRes, personalUsers, listingsRes, eventsRes] = await Promise.all([
+  const [recentAgencies, agencyCountRes, personalUsers, listingCountsRes, eventsRes] = await Promise.all([
     sql<AgencyRow>`SELECT id, name, slug, created_at FROM agencies ORDER BY created_at DESC LIMIT 10`,
     sql<CountRow>`SELECT COUNT(*)::text AS count FROM agencies`,
     getAllPersonalUsers(),
-    sql<CountRow>`SELECT COUNT(*)::text AS count FROM listings`,
+    sql<{ total: string; published: string }>`
+      SELECT COUNT(*)::text AS total,
+        SUM(CASE
+          WHEN COALESCE(ai_title, title) IS NOT NULL
+           AND (price IS NOT NULL OR price_on_request OR hero_image_url IS NOT NULL OR array_length(image_urls, 1) > 0)
+          THEN 1 ELSE 0 END
+        )::text AS published
+      FROM listings
+    `,
     sql<CountRow>`SELECT COUNT(*)::text AS count FROM analytics_events WHERE event_type = 'page_view'`,
   ])
+  const listingCount   = parseInt(listingCountsRes.rows[0]?.total     ?? '0', 10)
+  const publishedCount = parseInt(listingCountsRes.rows[0]?.published ?? '0', 10)
   return {
     agencies: recentAgencies.rows,
     agencyCount: parseInt(agencyCountRes.rows[0]?.count ?? '0', 10),
     personalUsers,
-    listingCount: parseInt(listingsRes.rows[0]?.count ?? '0', 10),
+    listingCount,
+    publishedCount,
+    draftCount: listingCount - publishedCount,
     pageViews: parseInt(eventsRes.rows[0]?.count ?? '0', 10),
   }
 }
 
 async function getRecentListings() {
   const { rows } = await sql<ListingRow>`
-    SELECT id, title, city, status, agency_id, user_id, created_at
-    FROM listings ORDER BY created_at DESC LIMIT 20
+    SELECT id, title, ai_title, city, status, agency_id, user_id,
+           price, price_on_request, hero_image_url, image_urls, created_at
+    FROM listings ORDER BY created_at DESC LIMIT 30
   `
   return rows
 }
@@ -44,12 +76,19 @@ export default async function AdminOverview() {
         {[
           { label: 'סוכנויות', value: stats.agencyCount },
           { label: 'משתמשים פרטיים', value: stats.personalUsers.length },
-          { label: 'נכסים', value: stats.listingCount },
+          {
+            label: 'נכסים',
+            value: stats.listingCount,
+            sub: `${stats.publishedCount} פורסמו · ${stats.draftCount} טיוטות`,
+          },
           { label: 'צפיות (סה"כ)', value: stats.pageViews.toLocaleString('he-IL') },
         ].map((kpi) => (
           <div key={kpi.label} className="bg-gray-800 rounded-2xl p-5 border border-gray-700">
             <div className="text-2xl font-bold text-white">{kpi.value}</div>
             <div className="text-sm text-gray-400 mt-1">{kpi.label}</div>
+            {'sub' in kpi && kpi.sub && (
+              <div className="text-xs text-gray-500 mt-1">{kpi.sub}</div>
+            )}
           </div>
         ))}
       </div>
@@ -119,8 +158,8 @@ export default async function AdminOverview() {
               <thead>
                 <tr className="text-gray-500 text-xs border-b border-gray-700">
                   <th className="text-right pb-2 font-medium">כותרת</th>
+                  <th className="text-right pb-2 font-medium">מצב</th>
                   <th className="text-right pb-2 font-medium">עיר</th>
-                  <th className="text-right pb-2 font-medium">סטטוס</th>
                   <th className="text-right pb-2 font-medium">סוג</th>
                   <th className="text-right pb-2 font-medium">קישור</th>
                 </tr>
@@ -128,17 +167,15 @@ export default async function AdminOverview() {
               <tbody className="divide-y divide-gray-700">
                 {recentListings.map((l) => (
                   <tr key={l.id} className="hover:bg-gray-750">
-                    <td className="py-2 text-gray-200">{l.title ?? '—'}</td>
-                    <td className="py-2 text-gray-400">{l.city ?? '—'}</td>
+                    <td className="py-2 text-gray-200">{l.ai_title ?? l.title ?? <span className="text-gray-500">ללא שם</span>}</td>
                     <td className="py-2">
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        l.status === 'active' ? 'bg-green-900 text-green-300' :
-                        l.status === 'paused' ? 'bg-yellow-900 text-yellow-300' :
-                        'bg-gray-700 text-gray-400'
-                      }`}>
-                        {l.status === 'active' ? 'פעיל' : l.status === 'paused' ? 'מושהה' : 'נמכר'}
-                      </span>
+                      {isPublished(l) ? (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-green-900 text-green-300 font-medium">פורסם</span>
+                      ) : (
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-900 text-yellow-300 font-medium">טיוטה</span>
+                      )}
                     </td>
+                    <td className="py-2 text-gray-400">{l.city ?? '—'}</td>
                     <td className="py-2 text-gray-400 text-xs">
                       {l.agency_id ? 'מסחרי' : l.user_id ? 'פרטי' : 'אנונימי'}
                     </td>

@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { ContactForm } from '@/components/contact-form'
 
 type Section = {
   id: string
@@ -147,12 +148,10 @@ export default function BrokerHelpPage() {
         <h1 className="text-xl font-bold text-gray-900">מרכז עזרה — סוכנים</h1>
         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">עברית</span>
       </div>
-      <p className="text-sm text-gray-500">
-        מצאת בעיה? לא מצאת תשובה?{' '}
-        <a href="mailto:support@propbuilder.co.il" className="text-blue-600 hover:underline">
-          כתוב לנו
-        </a>
-      </p>
+      <div className="text-sm text-gray-500 flex items-center gap-1 flex-wrap">
+        <span>מצאת בעיה? לא מצאת תשובה?</span>
+        <ContactForm source="broker-help" />
+      </div>
 
       {/* Quick links */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -212,12 +211,9 @@ export default function BrokerHelpPage() {
           <p className="text-sm text-gray-500 mt-0.5">
             סרטוני וידאו קצרים להדרכה יתווספו בקרוב. בינתיים צור איתנו קשר לעזרה אישית.
           </p>
-          <a
-            href="mailto:support@propbuilder.co.il"
-            className="inline-block mt-2 text-sm text-blue-600 font-medium hover:underline"
-          >
-            קבע שיחת הדרכה ←
-          </a>
+          <div className="mt-2">
+            <ContactForm source="broker-help-tutorial" label="קבע שיחת הדרכה" />
+          </div>
         </div>
       </div>
 
