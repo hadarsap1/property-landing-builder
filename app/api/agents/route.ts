@@ -17,8 +17,8 @@ export async function GET(): Promise<NextResponse> {
       COUNT(DISTINCT l.id)::text AS listing_count,
       COUNT(DISTINCT ld.id)::text AS lead_count
     FROM agents a
-    LEFT JOIN listings  l  ON l.agent_id  = a.id AND l.status != 'sold'
-    LEFT JOIN leads     ld ON ld.agent_id = a.id
+    LEFT JOIN listings  l  ON l.agent_id   = a.id AND l.status != 'sold'
+    LEFT JOIN leads     ld ON ld.listing_id = l.id
     WHERE a.agency_id = ${session.user.agencyId}
     GROUP BY a.id
   `

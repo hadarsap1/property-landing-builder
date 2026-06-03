@@ -6,7 +6,10 @@ import type { Agent } from '@/lib/db/types'
 import crypto from 'crypto'
 
 async function isRateLimited(ip: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
+  if (!process.env.KV_URL) {
+    console.warn('[forgot-password] KV_URL not configured — password-reset rate limiting is disabled')
+    return false
+  }
   try {
     const { kv } = await import('@vercel/kv')
     const key = `pwd_reset_rl:${ip}`
