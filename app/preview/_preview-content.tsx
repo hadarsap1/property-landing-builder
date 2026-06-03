@@ -729,6 +729,7 @@ function LeadCaptureForm({
       <input
         type="text"
         placeholder="שם מלא"
+        aria-label="שם מלא"
         value={form.name}
         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
         className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-sm placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -737,6 +738,7 @@ function LeadCaptureForm({
       <input
         type="tel"
         placeholder="טלפון"
+        aria-label="מספר טלפון"
         value={form.phone}
         onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
         className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-sm placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -746,6 +748,7 @@ function LeadCaptureForm({
       <input
         type="email"
         placeholder="מייל (אופציונלי)"
+        aria-label="כתובת מייל (אופציונלי)"
         value={form.email}
         onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
         className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-sm placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
