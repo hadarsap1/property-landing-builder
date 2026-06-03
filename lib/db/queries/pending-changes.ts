@@ -78,7 +78,10 @@ async function applyChange(change: PendingChange): Promise<void> {
     await updateListing(change.listing_id, { price, price_on_request })
   } else if (change.change_type === 'description') {
     const raw_description = typeof data.description === 'string' ? data.description : null
-    await updateListing(change.listing_id, { raw_description })
+    await updateListing(change.listing_id, {
+      raw_description,
+      ...(raw_description ? { ai_story: raw_description } : {}),
+    })
   } else if (change.change_type === 'images') {
     const image_urls = Array.isArray(data.image_urls) ? (data.image_urls as string[]) : null
     const hero_image_url = typeof data.hero_image_url === 'string' ? data.hero_image_url : undefined

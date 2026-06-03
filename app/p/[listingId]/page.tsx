@@ -33,7 +33,7 @@ export default async function PersonalListingPage({ params }: Props) {
   const { listingId } = await params
 
   const listing = await getListingById(listingId)
-  if (!listing || listing.status === 'paused') notFound()
+  if (!listing || listing.status === 'paused' || listing.status === 'sold') notFound()
 
   const project = listingToProject(listing)
 

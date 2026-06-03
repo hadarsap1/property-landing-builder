@@ -34,9 +34,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   })
 
   const agency = await getAgencyById(session.user.agencyId)
-  const origin = req.headers.get('origin') ?? req.headers.get('x-forwarded-proto')
-    ? `${req.headers.get('x-forwarded-proto')}://${req.headers.get('host')}`
-    : 'https://localhost:3000'
+  const origin = (process.env.NEXTAUTH_URL ?? 'https://app.propbuilder.co.il').replace(/\/$/, '')
   const inviteUrl = `${origin}/auth/set-password?token=${agent.raw_token}`
 
   await sendInviteEmail({

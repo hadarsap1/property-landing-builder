@@ -151,7 +151,7 @@ export default function SettingsPage() {
             <input type="tel" value={form.contact_phone}
               onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
               className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="03-1234567" />
+              placeholder="03-1234567" dir="ltr" />
           </div>
         </div>
 

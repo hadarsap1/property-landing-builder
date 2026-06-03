@@ -39,7 +39,7 @@ export function ListingCard({
   const [socialOpen, setSocialOpen] = useState(false)
 
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
-  const publicUrl = agencySlug ? `/agency/${agencySlug}/${listing.slug}` : null
+  const publicUrl = agencySlug ? `/agency/${agencySlug}/listings/${listing.slug}` : null
 
   async function changeStatus(next: Listing['status']) {
     if (next === status) return

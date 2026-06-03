@@ -92,34 +92,33 @@ export default function PropertyChat({
 
   return (
     <>
-      {/* Floating bubble */}
-      <button
-        type="button"
-        onClick={() => setOpen(o => !o)}
-        aria-label="שאל שאלה על הנכס"
-        className="fixed bottom-6 left-6 z-50 flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-transform hover:scale-110 active:scale-95"
-        style={{ backgroundColor: accent }}
-      >
-        {open ? (
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        ) : (
-          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        )}
-      </button>
-
-      {/* Tooltip on hover when closed */}
-      {!open && (
-        <div
-          className="fixed bottom-[5.5rem] left-6 z-50 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 whitespace-nowrap"
-          style={{ transform: 'translateX(-50%)', left: '5rem' }}
+      {/* Floating bubble + tooltip wrapper */}
+      <div className="group fixed bottom-6 left-6 z-50">
+        <button
+          type="button"
+          onClick={() => setOpen(o => !o)}
+          aria-label="שאל שאלה על הנכס"
+          className="flex items-center justify-center w-14 h-14 rounded-full shadow-xl transition-transform hover:scale-110 active:scale-95"
+          style={{ backgroundColor: accent }}
         >
-          שאל שאלה על הנכס
-        </div>
-      )}
+          {open ? (
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          )}
+        </button>
+
+        {/* Tooltip on hover when closed */}
+        {!open && (
+          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-1.5 rounded-lg shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
+            שאל שאלה על הנכס
+          </div>
+        )}
+      </div>
 
       {/* Chat panel */}
       {open && (
@@ -136,9 +135,9 @@ export default function PropertyChat({
             <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-lg shrink-0">
               🤖
             </div>
-            <div className="text-white">
+            <div className="text-white flex-1 min-w-0">
               <p className="text-sm font-semibold leading-tight">שאל על הנכס</p>
-              <p className="text-xs opacity-75 leading-tight">עוזר AI — כאן לענות על שאלותיך</p>
+              <p className="text-xs opacity-75 leading-tight">עוזר AI — עשוי לטעות, לא תחליף לייעוץ מקצועי</p>
             </div>
           </div>
 

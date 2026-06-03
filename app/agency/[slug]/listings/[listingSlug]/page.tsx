@@ -39,7 +39,7 @@ export default async function ListingPage({ params }: Props) {
   if (!agency) notFound()
 
   const listing = await getListingBySlug(agency.id, listingSlug)
-  if (!listing || listing.status === 'paused') notFound()
+  if (!listing || listing.status === 'paused' || listing.status === 'sold') notFound()
 
   const project = listingToProject(listing)
 

@@ -592,6 +592,10 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
         <a href="/terms" className="hover:underline" style={{ color: theme.mutedText }}>
           תנאי שימוש
         </a>
+        {' · '}
+        <a href="/privacy" className="hover:underline" style={{ color: theme.mutedText }}>
+          פרטיות
+        </a>
       </footer>
 
       {/* ── AI Chat widget (public listing pages only) ──────────── */}
@@ -768,6 +772,11 @@ function LeadCaptureForm({
       >
         {saving ? 'שולח...' : 'שלח פרטים'}
       </button>
+      <p className="text-xs opacity-60 text-center leading-relaxed" style={{ color: heroText }}>
+        בשליחת הטופס אתה מסכים לאיסוף פרטיך לצורך חזרה אליך בנוגע לנכס זה, בהתאם ל
+        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">מדיניות הפרטיות</a>
+        .
+      </p>
     </form>
   );
 }

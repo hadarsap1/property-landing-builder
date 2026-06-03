@@ -211,6 +211,7 @@ export default function ListingVisitsPage() {
                 <label className="block text-sm text-gray-600 mb-1">טלפון</label>
                 <input
                   type="tel"
+                  dir="ltr"
                   value={form.visitor_phone}
                   onChange={e => setForm(f => ({ ...f, visitor_phone: e.target.value }))}
                   placeholder="050-0000000"

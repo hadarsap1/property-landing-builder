@@ -10,7 +10,7 @@ import { setManualOverride, upsertSubscription } from '@/lib/billing/access'
 import type { Listing } from '@/lib/db/types'
 
 const DEMO_EMAIL = 'demo@propbuilder.dev'
-const DEMO_PASSWORD = 'DemoPass2026!'
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'DemoPass2026!'
 const DEMO_AGENCY_NAME = 'נדל"ן דמו'
 
 interface SampleListing {

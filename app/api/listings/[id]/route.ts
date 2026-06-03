@@ -60,6 +60,22 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
     Object.entries(raw).filter(([k]) => WRITABLE_FIELDS.has(k))
   ) as Record<string, string | number | boolean | string[] | null>
 
+  // Validate that URL fields use https: scheme only
+  const URL_FIELDS = ['hero_image_url', 'video_url'] as const
+  for (const field of URL_FIELDS) {
+    const val = data[field]
+    if (typeof val === 'string' && val && !val.startsWith('https://')) {
+      return NextResponse.json({ error: `${field} must use https://` }, { status: 400 })
+    }
+  }
+  if (Array.isArray(data.image_urls)) {
+    for (const url of data.image_urls as string[]) {
+      if (url && !url.startsWith('https://')) {
+        return NextResponse.json({ error: 'image_urls must use https://' }, { status: 400 })
+      }
+    }
+  }
+
   const updated = await updateListing(id, data)
   return NextResponse.json({ listing: updated })
 }
