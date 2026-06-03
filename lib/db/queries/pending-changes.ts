@@ -69,6 +69,11 @@ export async function reviewChange(
   return change
 }
 
+function isHttpsUrl(val: unknown): val is string {
+  if (typeof val !== 'string' || !val) return false
+  try { return new URL(val).protocol === 'https:' } catch { return false }
+}
+
 async function applyChange(change: PendingChange): Promise<void> {
   const data = change.change_data as Record<string, unknown>
 
@@ -83,8 +88,10 @@ async function applyChange(change: PendingChange): Promise<void> {
       ...(raw_description ? { ai_story: raw_description } : {}),
     })
   } else if (change.change_type === 'images') {
-    const image_urls = Array.isArray(data.image_urls) ? (data.image_urls as string[]) : null
-    const hero_image_url = typeof data.hero_image_url === 'string' ? data.hero_image_url : undefined
+    const raw_urls = Array.isArray(data.image_urls) ? (data.image_urls as unknown[]) : null
+    const image_urls = raw_urls ? raw_urls.filter(isHttpsUrl) : null
+    const hero_candidate = data.hero_image_url
+    const hero_image_url = isHttpsUrl(hero_candidate) ? hero_candidate : undefined
     await updateListing(change.listing_id, {
       ...(image_urls !== null ? { image_urls } : {}),
       ...(hero_image_url !== undefined ? { hero_image_url } : {}),

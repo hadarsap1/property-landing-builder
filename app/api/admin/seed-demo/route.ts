@@ -10,8 +10,13 @@ import { setManualOverride, upsertSubscription } from '@/lib/billing/access'
 import type { Listing } from '@/lib/db/types'
 
 const DEMO_EMAIL = 'demo@propbuilder.dev'
-const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? 'DemoPass2026!'
 const DEMO_AGENCY_NAME = 'נדל"ן דמו'
+
+function getDemoPassword(): string {
+  const pw = process.env.DEMO_PASSWORD
+  if (!pw) throw new Error('DEMO_PASSWORD env var is required')
+  return pw
+}
 
 interface SampleListing {
   title: string
@@ -311,6 +316,13 @@ export async function POST() {
   const session = await auth()
   if (!process.env.SUPER_ADMIN_EMAIL || session?.user?.email !== process.env.SUPER_ADMIN_EMAIL) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  let DEMO_PASSWORD: string
+  try {
+    DEMO_PASSWORD = getDemoPassword()
+  } catch {
+    return NextResponse.json({ error: 'DEMO_PASSWORD env var not set' }, { status: 500 })
   }
 
   await ensureSchema()

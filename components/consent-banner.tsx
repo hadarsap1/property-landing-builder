@@ -18,6 +18,10 @@ export default function ConsentBanner() {
 
   function accept() {
     try { localStorage.setItem(CONSENT_KEY, 'accepted') } catch { /* ignore */ }
+    try {
+      const maxAge = 60 * 60 * 24 * 365 // 1 year
+      document.cookie = `${CONSENT_KEY}=accepted; max-age=${maxAge}; SameSite=Lax; Secure; path=/`
+    } catch { /* ignore */ }
     setVisible(false)
   }
 

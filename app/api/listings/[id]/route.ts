@@ -53,25 +53,48 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
     'hero_image_url', 'image_urls', 'video_url', 'gallery_type', 'carousel_speed',
     'show_map', 'map_query_override', 'template_id', 'accent_color', 'font_style',
     'section_order', 'hidden_sections', 'seller_name', 'seller_phone', 'seller_whatsapp',
-    'open_house_date', 'open_house_end', 'status', 'slug',
+    'open_house_date', 'open_house_end', 'status',
+    // 'slug' intentionally omitted — slugs are server-generated and must not be client-writable
   ])
   const raw = (await req.json()) as Record<string, unknown>
   const data = Object.fromEntries(
     Object.entries(raw).filter(([k]) => WRITABLE_FIELDS.has(k))
   ) as Record<string, string | number | boolean | string[] | null>
 
-  // Validate that URL fields use https: scheme only
-  const URL_FIELDS = ['hero_image_url', 'video_url'] as const
-  for (const field of URL_FIELDS) {
-    const val = data[field]
-    if (typeof val === 'string' && val && !val.startsWith('https://')) {
-      return NextResponse.json({ error: `${field} must use https://` }, { status: 400 })
+  // Validate status against known enum
+  const VALID_STATUSES = new Set(['active', 'paused', 'sold'])
+  if (data.status !== undefined && !VALID_STATUSES.has(data.status as string)) {
+    return NextResponse.json({ error: 'Invalid status value' }, { status: 400 })
+  }
+
+  // Cap free-text fields to prevent unbounded token spend in AI features
+  const TEXT_CAPS: Record<string, number> = {
+    chat_qa: 5000,
+    ai_story: 10000,
+    raw_description: 10000,
+    ai_title: 200,
+    ai_tagline: 300,
+  }
+  for (const [field, cap] of Object.entries(TEXT_CAPS)) {
+    if (typeof data[field] === 'string' && (data[field] as string).length > cap) {
+      return NextResponse.json({ error: `${field} exceeds ${cap} character limit` }, { status: 400 })
+    }
+  }
+
+  // Validate that URL fields use https: scheme only (use URL parser for well-formedness)
+  function isHttpsUrl(val: unknown): boolean {
+    if (typeof val !== 'string' || !val) return true // null/empty are fine
+    try { return new URL(val).protocol === 'https:' } catch { return false }
+  }
+  for (const field of ['hero_image_url', 'video_url'] as const) {
+    if (!isHttpsUrl(data[field])) {
+      return NextResponse.json({ error: `${field} must be a valid https:// URL` }, { status: 400 })
     }
   }
   if (Array.isArray(data.image_urls)) {
     for (const url of data.image_urls as string[]) {
-      if (url && !url.startsWith('https://')) {
-        return NextResponse.json({ error: 'image_urls must use https://' }, { status: 400 })
+      if (!isHttpsUrl(url)) {
+        return NextResponse.json({ error: 'image_urls must be valid https:// URLs' }, { status: 400 })
       }
     }
   }
