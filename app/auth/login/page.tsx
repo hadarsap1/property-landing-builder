@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { loginAction } from './actions'
 import { GoogleSignInButton } from '../_google-button'
 
-type SP = { callbackUrl?: string; error?: string; mode?: string; upgraded?: string; registered?: string }
+type SP = { callbackUrl?: string; error?: string; mode?: string; upgraded?: string; registered?: string; reset?: string }
 
 export default function LoginPage({
   searchParams,
@@ -22,7 +22,7 @@ export default function LoginPage({
 }
 
 async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
-  const { callbackUrl, error, mode, upgraded, registered } = await searchParams
+  const { callbackUrl, error, mode, upgraded, registered, reset } = await searchParams
   const isCommercial = mode === 'commercial'
 
   return (
@@ -31,6 +31,12 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
       {registered && (
         <div className="bg-green-50 text-green-700 text-sm rounded-xl px-4 py-3 border border-green-200">
           החשבון נוצר בהצלחה! התחבר כדי להתחיל.
+        </div>
+      )}
+
+      {reset && (
+        <div className="bg-green-50 text-green-700 text-sm rounded-xl px-4 py-3 border border-green-200">
+          הסיסמה עודכנה בהצלחה! התחבר עם הסיסמה החדשה.
         </div>
       )}
 
@@ -114,7 +120,10 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
               כניסה
             </button>
 
-            <p className="text-center text-xs text-gray-400">שכחת סיסמה? פנה למנהל הסוכנות.</p>
+            <p className="text-center text-xs text-gray-400">
+              שכחת סיסמה?{' '}
+              <Link href="/auth/forgot-password" className="text-blue-600 hover:underline">איפוס סיסמה</Link>
+            </p>
             <p className="text-center text-xs text-gray-400">
               אין לך חשבון?{' '}
               <Link href="/auth/register" className="text-blue-600 hover:underline">הרשמה חינם</Link>

@@ -22,8 +22,19 @@ async function isRateLimited(ip: string): Promise<boolean> {
   }
 }
 
+function isAllowedOrigin(req: NextRequest): boolean {
+  const origin = req.headers.get('origin')
+  if (!origin) return true // same-origin requests (SSR, direct) omit Origin header
+  const expected = (process.env.NEXTAUTH_URL ?? '').replace(/\/$/, '')
+  return !expected || origin === expected
+}
+
 // Public: called from listing page contact form
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const body = (await req.json()) as {
     listing_id?: string
     agency_id?: string
