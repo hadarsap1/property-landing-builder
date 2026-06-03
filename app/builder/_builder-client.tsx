@@ -284,12 +284,14 @@ export default function BuilderClient({
   function isNextDisabled() {
     if (step === 1 && !project.city.trim()) return true
     if (step === 3 && !project.rawStory.trim()) return true
+    if (step === 8 && !project.phone.trim()) return true
     return false
   }
 
   function nextButtonTitle() {
     if (step === 1 && !project.city.trim()) return 'יש למלא עיר לפני המשך'
     if (step === 3 && !project.rawStory.trim()) return 'יש לכתוב משהו על הנכס לפני המשך'
+    if (step === 8 && !project.phone.trim()) return 'יש להזין טלפון לפני המשך'
     return undefined
   }
 
