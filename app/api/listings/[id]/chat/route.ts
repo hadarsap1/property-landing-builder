@@ -153,12 +153,17 @@ export async function POST(req: NextRequest, { params }: RouteContext) {
   const history: ChatMessage[] = Array.isArray(body.history) ? body.history.slice(-8) : []
 
   const propertyContext = buildPropertyContext(listing)
+  const isBroker = !!listing.agency_id
+  const fallbackContact = isBroker
+    ? 'אני ממליץ לפנות למתווכ.ת'
+    : 'אני ממליץ לפנות לבעלי הנכס'
+
   const systemPrompt = `אתה עוזר AI חכם לדף נכס נדל"ן. תפקידך לענות על שאלות של מבקרים בדף לגבי הנכס.
 
 הנחיות:
 - ענה בעברית בלבד.
 - היה ידידותי, קצר ומדויק (1-3 משפטים).
-- אם אין לך מידע על נושא, אמור זאת בכנות וציין שניתן לפנות לסוכן.
+- אם אין לך מידע על נושא, אל תמציא — אמור בכנות שאין לך את המידע, וסיים את התשובה במשפט הבא בדיוק: "${fallbackContact}".
 - אל תמציא מידע שאינו בפרטי הנכס.
 - אחרי כל תשובה, הצע 3 שאלות המשך רלוונטיות שמבקר עשוי לרצות לשאול הבא — שאלות שונות מהשאלה הנוכחית, מבוססות על המידע הזמין על הנכס.
 
