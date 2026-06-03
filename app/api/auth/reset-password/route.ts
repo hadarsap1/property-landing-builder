@@ -2,14 +2,25 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
 
-interface ResetTokenRow {
-  id: string
-  agent_id: string
-  used: boolean
-  expires_at: Date
+async function isRateLimited(ip: string): Promise<boolean> {
+  if (!process.env.KV_URL) return false
+  try {
+    const { kv } = await import('@vercel/kv')
+    const key = `pwd_consume_rl:${ip}`
+    const count = await kv.incr(key)
+    if (count === 1) await kv.expire(key, 3600)
+    return count > 10 // 10 attempts per IP per hour
+  } catch {
+    return false
+  }
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  if (await isRateLimited(ip)) {
+    return NextResponse.json({ error: 'יותר מדי ניסיונות. נסה שוב מאוחר יותר' }, { status: 429 })
+  }
+
   const body = (await req.json()) as { token?: string; password?: string }
   const { token, password } = body
 

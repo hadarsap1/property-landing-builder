@@ -5,8 +5,12 @@ import { sendAdminNotificationEmail } from '@/lib/email'
 function isAllowedOrigin(req: NextRequest): boolean {
   const origin = req.headers.get('origin')
   if (!origin) return true
-  const expected = (process.env.NEXTAUTH_URL ?? '').replace(/\/$/, '')
-  return !expected || origin === expected
+  if (!process.env.NEXTAUTH_URL) {
+    console.warn('[contact] NEXTAUTH_URL not configured — origin check disabled')
+    return true
+  }
+  const expected = process.env.NEXTAUTH_URL.replace(/\/$/, '')
+  return origin === expected
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
