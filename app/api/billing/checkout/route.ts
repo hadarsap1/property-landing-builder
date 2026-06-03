@@ -3,7 +3,7 @@ import { auth } from '@/auth'
 import { getStripe } from '@/lib/billing/stripe'
 import { PLANS, type PlanKey } from '@/lib/billing/config'
 import { getSubscription } from '@/lib/billing/access'
-import { validateDiscountCode, incrementDiscountUsage } from '@/lib/billing/discount-codes'
+import { validateDiscountCode } from '@/lib/billing/discount-codes'
 import { getAgencyById } from '@/lib/db/queries/agencies'
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
@@ -76,11 +76,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       metadata: { agencyId, plan: planKey },
     },
   })
-
-  // Increment discount usage now (Stripe won't tell us at webhook time which DB code was used)
-  if (discountCodeRecord) {
-    await incrementDiscountUsage(discountCodeRecord.id)
-  }
 
   return NextResponse.json({ url: checkoutSession.url })
 }
