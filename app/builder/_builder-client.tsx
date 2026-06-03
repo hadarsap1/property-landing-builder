@@ -127,6 +127,7 @@ export default function BuilderClient({
   const [listingId, setListingId] = useState<string | null>(initialListingId)
   const [listingSlug, setListingSlug] = useState<string | null>(initialListingSlug)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveError, setSaveError] = useState<string | null>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activePillRef = useRef<HTMLButtonElement>(null)
@@ -216,13 +217,26 @@ export default function BuilderClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error('save failed')
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`
+        try {
+          const errBody = (await res.json()) as { error?: string }
+          if (errBody.error) msg = errBody.error
+        } catch { /* response wasn't JSON */ }
+        console.error('[builder] save failed:', msg)
+        setSaveError(msg)
+        setSaveStatus('error')
+        return
+      }
       // Update slug if the server returned a new one
       const body = (await res.json()) as { listing?: { slug?: string } }
       if (body.listing?.slug) setListingSlug(body.listing.slug)
+      setSaveError(null)
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus('idle'), 2000)
-    } catch {
+    } catch (err) {
+      console.error('[builder] save threw:', err)
+      setSaveError(err instanceof Error ? err.message : 'שגיאת רשת')
       setSaveStatus('error')
     }
   }, [])
@@ -397,7 +411,9 @@ export default function BuilderClient({
                   <><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />נשמר</>
                 )}
                 {saveStatus === 'error' && (
-                  <span className="text-red-500 font-medium">⚠ שגיאה בשמירה</span>
+                  <span className="text-red-500 font-medium" title={saveError ?? ''}>
+                    ⚠ שגיאה בשמירה{saveError ? `: ${saveError}` : ''}
+                  </span>
                 )}
                 {(saveStatus === 'idle' || saveStatus === 'pending') && (
                   <span>{Math.round(progress)}%</span>
