@@ -211,7 +211,7 @@ function buildSpecs(p: PropertyProject): SpecItem[] {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function PreviewContent({ project, editHref, listingId, agencyId, agencyLogoUrl, agencyName, shareCode }: {
+export default function PreviewContent({ project, editHref, listingId, agencyId, agencyLogoUrl, agencyName, shareCode, calendlyUrl }: {
   project: PropertyProject;
   editHref?: string;
   listingId?: string;
@@ -219,6 +219,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
   agencyLogoUrl?: string | null;
   agencyName?: string | null;
   shareCode?: string;
+  calendlyUrl?: string | null;
 }) {
   const theme = THEMES[project.template] ?? THEMES['modern-blue'];
   const fontFamily = FONT_FAMILY[project.fontStyle] ?? FONT_FAMILY['sans-serif'];
@@ -560,6 +561,17 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                       className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
                     >
                       💬 WhatsApp
+                    </a>
+                  )}
+                  {calendlyUrl && (
+                    <a
+                      href={calendlyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => track('booking_click')}
+                      className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
+                    >
+                      📅 קבע פגישה
                     </a>
                   )}
                 </div>
