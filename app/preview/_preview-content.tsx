@@ -612,7 +612,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
 
       {/* ── AI Chat widget (public listing pages only) ──────────── */}
       {listingId && !editHref && (
-        <PropertyChat listingId={listingId} accent={accent} />
+        <PropertyChat listingId={listingId} accent={accent} hasShareBar={!!(shareCode && shareUrl)} />
       )}
 
       {/* ── Floating share bar (public /preview/[code] only) ─────── */}
