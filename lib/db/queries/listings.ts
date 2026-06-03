@@ -3,6 +3,24 @@ import type { Listing } from '@/lib/db/types'
 
 type PgValue = string | number | boolean | string[] | null
 
+// Transliterate Hebrew characters so slugs remain readable even for Hebrew city/street names.
+const HE_MAP: Record<string, string> = {
+  'א':'a','ב':'b','ג':'g','ד':'d','ה':'h','ו':'v','ז':'z','ח':'ch','ט':'t',
+  'י':'y','כ':'k','ך':'k','ל':'l','מ':'m','ם':'m','נ':'n','ן':'n','ס':'s',
+  'ע':'a','פ':'p','ף':'p','צ':'ts','ץ':'ts','ק':'k','ר':'r','ש':'sh','ת':'t',
+}
+
+function slugify(raw: string): string {
+  const transliterated = raw.split('').map(c => HE_MAP[c] ?? c).join('')
+  return transliterated
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 60)
+}
+
 function buildInsert(table: string, data: Record<string, PgValue>) {
   const entries = Object.entries(data).filter(([, v]) => v !== undefined)
   const cols = entries.map(([k]) => k).join(', ')
@@ -64,13 +82,8 @@ export async function slugExistsForUser(userId: string, slug: string): Promise<b
 }
 
 export async function generateUniqueSlugForUser(userId: string, base: string): Promise<string> {
-  const clean = base
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .slice(0, 60)
-  let slug = clean || 'listing'
+  const clean = slugify(base) || 'listing'
+  let slug = clean
   let n = 1
   while (await slugExistsForUser(userId, slug)) {
     slug = `${clean}-${n++}`
@@ -112,13 +125,8 @@ export async function slugExists(agencyId: string, slug: string): Promise<boolea
 }
 
 export async function generateUniqueSlug(agencyId: string, base: string): Promise<string> {
-  const clean = base
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-    .replace(/-+/g, '-')
-    .slice(0, 60)
-  let slug = clean || 'listing'
+  const clean = slugify(base) || 'listing'
+  let slug = clean
   let n = 1
   while (await slugExists(agencyId, slug)) {
     slug = `${clean}-${n++}`
