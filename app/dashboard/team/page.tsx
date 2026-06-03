@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react'
 import type { Agent } from '@/lib/db/types'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
-type SafeAgent = Omit<Agent, 'password_hash' | 'invitation_token'>
+type SafeAgent = Omit<Agent, 'password_hash' | 'invitation_token'> & {
+  listing_count?: number
+  lead_count?: number
+}
 
 const ROLE_LABELS = { admin: 'מנהל', agent: 'נציג' }
 const ROLE_DESC = {
@@ -17,7 +20,7 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
   const [inviteLink, setInviteLink] = useState<string | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; listing_count: number; lead_count: number } | null>(null)
 
   async function loadAgents() {
     const res = await fetch('/api/agents')
@@ -97,13 +100,22 @@ export default function TeamPage() {
       ) : (
         <div className="divide-y divide-gray-100 bg-white rounded-2xl border border-gray-200 overflow-hidden">
           {agents.map((agent) => (
-            <AgentRow key={agent.id} agent={agent} onDelete={(id, name) => setDeleteTarget({ id, name })} />
+            <AgentRow key={agent.id} agent={agent} onDelete={(id, name, lc, ld) => setDeleteTarget({ id, name, listing_count: lc, lead_count: ld })} />
           ))}
         </div>
       )}
     <ConfirmDialog
       open={deleteTarget !== null}
-      message={`למחוק את ${deleteTarget?.name ?? ''}? פעולה זו לא ניתנת לביטול.`}
+      message={(() => {
+        if (!deleteTarget) return ''
+        const parts = [`למחוק את ${deleteTarget.name}?`]
+        const items = []
+        if (deleteTarget.listing_count > 0) items.push(`${deleteTarget.listing_count} נכסים פעילים`)
+        if (deleteTarget.lead_count > 0) items.push(`${deleteTarget.lead_count} לידים`)
+        if (items.length > 0) parts.push(`לנציג זה ${items.join(' ו-')} — הם יישארו במערכת אך ללא נציג משויך.`)
+        parts.push('פעולה זו לא ניתנת לביטול.')
+        return parts.join(' ')
+      })()}
       confirmLabel="מחק"
       danger
       onConfirm={() => { if (deleteTarget) void confirmDelete(deleteTarget.id) }}
@@ -118,7 +130,7 @@ function AgentRow({
   onDelete,
 }: {
   agent: SafeAgent
-  onDelete: (id: string, name: string) => void
+  onDelete: (id: string, name: string, listingCount: number, leadCount: number) => void
 }) {
   const isPending = !!agent.invitation_expires_at
   return (
@@ -145,7 +157,7 @@ function AgentRow({
         <p className="text-xs text-gray-500 truncate">{agent.email}</p>
       </div>
       <button
-        onClick={() => onDelete(agent.id, agent.name)}
+        onClick={() => onDelete(agent.id, agent.name, agent.listing_count ?? 0, agent.lead_count ?? 0)}
         className="shrink-0 text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded transition-colors"
       >
         הסר
