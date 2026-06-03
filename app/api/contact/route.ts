@@ -2,7 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { sendAdminNotificationEmail } from '@/lib/email'
 
+function isAllowedOrigin(req: NextRequest): boolean {
+  const origin = req.headers.get('origin')
+  if (!origin) return true
+  const expected = (process.env.NEXTAUTH_URL ?? '').replace(/\/$/, '')
+  return !expected || origin === expected
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  if (!isAllowedOrigin(req)) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const body = (await req.json()) as {
     message?: string
     name?: string

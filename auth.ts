@@ -92,13 +92,25 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
     async jwt({ token, user, account, trigger, session: updateData }) {
       try {
-      // Client-side session.update() — let the page push new fields
+      // Client-side session.update() — re-fetch from DB; never trust client-supplied agencyId/role
       if (trigger === 'update' && updateData) {
-        const d = updateData as Record<string, unknown>
-        if (d.userType)         token.userType         = d.userType as string
-        if (d.agencyId)         token.agencyId         = d.agencyId as string
-        if (d.role)             token.role             = d.role as string
-        if (d.personalUserId)   token.personalUserId   = d.personalUserId as string
+        if (token.userType === 'personal' && token.personalUserId) {
+          const pu = await getPersonalUserById(token.personalUserId as string).catch(() => null)
+          if (pu?.plan === 'commercial' && pu.agency_id) {
+            token.userType = 'commercial'
+            token.agencyId = pu.agency_id
+            if (typeof token.email === 'string') {
+              const agent = await getAgentByEmail(token.email).catch(() => null)
+              if (agent) token.role = agent.role
+            }
+          }
+        } else if (token.userType === 'commercial' && typeof token.email === 'string') {
+          const agent = await getAgentByEmail(token.email).catch(() => null)
+          if (agent) {
+            token.role = agent.role
+            token.agencyId = agent.agency_id
+          }
+        }
         return token
       }
 

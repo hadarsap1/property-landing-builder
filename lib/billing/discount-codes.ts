@@ -15,10 +15,18 @@ export async function validateDiscountCode(
   return rows[0] ?? null
 }
 
-export async function incrementDiscountUsage(id: string): Promise<void> {
-  await sql`
-    UPDATE discount_codes SET uses_count = uses_count + 1 WHERE id = ${id}
+export async function incrementDiscountUsage(id: string): Promise<boolean> {
+  // Atomic conditional increment — only succeeds if the code is still within max_uses.
+  // Returns false if max_uses was already reached (concurrent request won the race).
+  const { rows } = await sql<{ id: string }>`
+    UPDATE discount_codes
+    SET uses_count = uses_count + 1
+    WHERE id = ${id}
+      AND active = true
+      AND (max_uses IS NULL OR uses_count < max_uses)
+    RETURNING id
   `
+  return rows.length > 0
 }
 
 export async function createDiscountCode(data: {

@@ -116,7 +116,15 @@ export default function ReviewPage() {
       )}
 
       {loading ? (
-        <p className="text-gray-400 text-sm">טוען...</p>
+        <div className="space-y-3 animate-pulse">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
+              <div className="h-4 w-32 bg-gray-200 rounded" />
+              <div className="h-3 bg-gray-100 rounded w-full" />
+              <div className="h-3 bg-gray-100 rounded w-3/4" />
+            </div>
+          ))}
+        </div>
       ) : changes.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <div className="text-3xl mb-3">📬</div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
 import { getStripe } from '@/lib/billing/stripe'
 import { upsertSubscription } from '@/lib/billing/access'
+import { incrementDiscountUsage } from '@/lib/billing/discount-codes'
 import { sql } from '@/lib/db'
 
 export const runtime = 'nodejs'
@@ -71,6 +72,11 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         status: 'active',
         trialEndsAt: null,
       })
+      // Increment discount code usage only after payment is confirmed.
+      // The atomic UPDATE handles concurrent checkouts for the same code.
+      if (cs.metadata?.discountCodeId) {
+        await incrementDiscountUsage(cs.metadata.discountCodeId)
+      }
       break
     }
 

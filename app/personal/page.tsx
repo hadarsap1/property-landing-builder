@@ -6,6 +6,7 @@ import { getPersonalUserByEmail, upsertPersonalUser } from '@/lib/db/queries/per
 import { ensureSchema } from '@/lib/db/ensure-schema'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
+import { DeleteAccountButton } from './_delete-account-button'
 
 function statusLabel(s: Listing['status']) {
   if (s === 'active') return { text: 'פעיל', cls: 'bg-green-100 text-green-700' }
@@ -134,8 +135,13 @@ export default async function PersonalDashboard() {
         </div>
       )}
 
+      {/* Danger zone — account deletion */}
+      <div className="mt-6 text-center">
+        <DeleteAccountButton />
+      </div>
+
       {/* Help / tutorials */}
-      <div className="mt-8 bg-white border border-gray-200 rounded-2xl p-6 flex items-center justify-between gap-4">
+      <div className="mt-6 bg-white border border-gray-200 rounded-2xl p-6 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="text-3xl">❓</div>
           <div>

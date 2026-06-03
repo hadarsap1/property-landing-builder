@@ -109,6 +109,38 @@ export async function sendSellerMagicLinkEmail({
   })
 }
 
+export async function sendPasswordResetEmail({
+  to,
+  resetUrl,
+}: {
+  to: string
+  resetUrl: string
+}): Promise<void> {
+  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
+    console.info(`\n[reset-password] Send this link to ${to}:\n${resetUrl}\n`)
+    return
+  }
+
+  const transport = nodemailer.createTransport(process.env.EMAIL_SERVER)
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: 'איפוס סיסמה — PropBuilder',
+    text: `שלום,\n\nקיבלנו בקשה לאיפוס הסיסמה שלך.\n\nלחץ על הקישור לאיפוס:\n${resetUrl}\n\nהקישור תקף לשעה אחת. אם לא ביקשת איפוס, התעלם מהודעה זו.`,
+    html: `
+      <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#1e3a5f">איפוס סיסמה</h2>
+        <p>שלום,<br>קיבלנו בקשה לאיפוס הסיסמה שלך ב-PropBuilder.</p>
+        <a href="${resetUrl}"
+           style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+          אפס סיסמה
+        </a>
+        <p style="color:#6b7280;font-size:13px">הקישור תקף לשעה אחת.<br>אם לא ביקשת איפוס, התעלם מהודעה זו.</p>
+      </div>
+    `,
+  })
+}
+
 interface InviteEmailOptions {
   to: string
   agencyName: string

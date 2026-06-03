@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
 import { SocialPostModal } from '@/components/social-post-modal'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 const STATUS_LABELS: Record<Listing['status'], string> = {
   active: 'פעיל',
@@ -37,14 +38,15 @@ export function ListingCard({
   const [saving, setSaving] = useState(false)
   const [deleted, setDeleted] = useState(false)
   const [socialOpen, setSocialOpen] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState<Listing['status'] | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState(false)
 
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
-  const publicUrl = agencySlug ? `/agency/${agencySlug}/${listing.slug}` : null
+  const publicUrl = agencySlug ? `/agency/${agencySlug}/listings/${listing.slug}` : null
 
-  async function changeStatus(next: Listing['status']) {
-    if (next === status) return
-    const LABELS: Record<Listing['status'], string> = { active: 'פעיל', paused: 'מושהה', sold: 'נמכר' }
-    if (!confirm(`לשנות סטטוס ל"${LABELS[next]}"?`)) return
+  async function confirmStatusChange(next: Listing['status']) {
+    setPendingStatus(null)
     setSaving(true)
     const res = await fetch(`/api/listings/${listing.id}`, {
       method: 'PATCH',
@@ -55,9 +57,8 @@ export function ListingCard({
     setSaving(false)
   }
 
-  async function handleDelete() {
-    const label = listing.ai_title || listing.title || 'הנכס'
-    if (!confirm(`למחוק את "${label}"? פעולה זו לא ניתנת לביטול.`)) return
+  async function confirmDelete() {
+    setDeleteOpen(false)
     setSaving(true)
     const res = await fetch(`/api/listings/${listing.id}`, { method: 'DELETE' })
     if (res.ok) {
@@ -65,7 +66,7 @@ export function ListingCard({
       router.refresh()
     } else {
       setSaving(false)
-      alert('שגיאה במחיקת הנכס')
+      setDeleteError(true)
     }
   }
 
@@ -93,7 +94,10 @@ export function ListingCard({
           <select
             value={status}
             disabled={saving}
-            onChange={e => void changeStatus(e.target.value as Listing['status'])}
+            onChange={e => {
+              const next = e.target.value as Listing['status']
+              if (next !== status) setPendingStatus(next)
+            }}
             className={`text-xs px-2 py-0.5 rounded-full font-medium border cursor-pointer focus:outline-none disabled:opacity-60 ${STATUS_SELECT_COLORS[status]}`}
           >
             {(Object.keys(STATUS_LABELS) as Listing['status'][]).map(s => (
@@ -146,7 +150,7 @@ export function ListingCard({
           ✨ פוסט
         </button>
         <button
-          onClick={() => void handleDelete()}
+          onClick={() => setDeleteOpen(true)}
           disabled={saving}
           className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1.5 font-medium transition-colors disabled:opacity-50"
         >
@@ -154,12 +158,34 @@ export function ListingCard({
         </button>
       </div>
 
+      {deleteError && (
+        <p className="text-xs text-red-500 text-left mt-1">שגיאה במחיקת הנכס</p>
+      )}
+
       <SocialPostModal
         listingId={listing.id}
         listingUrl={publicUrl ? (typeof window !== 'undefined' ? `${window.location.origin}${publicUrl}` : publicUrl) : null}
         listingTitle={listing.ai_title || listing.title || 'נכס'}
         open={socialOpen}
         onClose={() => setSocialOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={pendingStatus !== null}
+        message={`לשנות סטטוס ל"${pendingStatus ? STATUS_LABELS[pendingStatus] : ''}"?`}
+        confirmLabel="שנה"
+        onConfirm={() => { if (pendingStatus) void confirmStatusChange(pendingStatus) }}
+        onCancel={() => setPendingStatus(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        message={`למחוק את "${listing.ai_title || listing.title || 'הנכס'}"? פעולה זו לא ניתנת לביטול.`}
+        confirmLabel="מחק"
+        cancelLabel="ביטול"
+        danger
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteOpen(false)}
       />
     </div>
   )

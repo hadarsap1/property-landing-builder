@@ -258,6 +258,15 @@ const SCHEMA_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_analytics_listing      ON analytics_events(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_analytics_agency       ON analytics_events(agency_id)`,
   `CREATE INDEX IF NOT EXISTS idx_analytics_created      ON analytics_events(created_at)`,
+
+  `CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    agent_id   uuid NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    token      text NOT NULL UNIQUE,
+    expires_at timestamp NOT NULL DEFAULT (now() + interval '1 hour'),
+    used       boolean NOT NULL DEFAULT false,
+    created_at timestamp NOT NULL DEFAULT now()
+  )`,
 ]
 
 export async function ensureSchema(): Promise<void> {

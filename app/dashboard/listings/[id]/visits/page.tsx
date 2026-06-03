@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import type { PropertyVisit } from '@/lib/db/types'
 
 const STATUS_LABELS: Record<PropertyVisit['status'], string> = {
@@ -51,6 +52,7 @@ export default function ListingVisitsPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [deleteVisitId, setDeleteVisitId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [listingTitle, setListingTitle] = useState<string>('')
 
@@ -120,7 +122,7 @@ export default function ListingVisitsPage() {
   }
 
   async function handleDelete(visitId: string) {
-    if (!confirm('למחוק את הביקור?')) return
+    setDeleteVisitId(null)
     await fetch(`/api/visits/${visitId}`, { method: 'DELETE' })
     await load()
   }
@@ -211,6 +213,7 @@ export default function ListingVisitsPage() {
                 <label className="block text-sm text-gray-600 mb-1">טלפון</label>
                 <input
                   type="tel"
+                  dir="ltr"
                   value={form.visitor_phone}
                   onChange={e => setForm(f => ({ ...f, visitor_phone: e.target.value }))}
                   placeholder="050-0000000"
@@ -278,7 +281,7 @@ export default function ListingVisitsPage() {
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">קרובים</h2>
               <div className="space-y-3">
                 {upcoming.map(v => (
-                  <VisitRow key={v.id} visit={v} onStatus={handleStatus} onDelete={handleDelete} />
+                  <VisitRow key={v.id} visit={v} onStatus={handleStatus} onDelete={setDeleteVisitId} />
                 ))}
               </div>
             </section>
@@ -288,13 +291,21 @@ export default function ListingVisitsPage() {
               <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">עבר</h2>
               <div className="space-y-3">
                 {past.map(v => (
-                  <VisitRow key={v.id} visit={v} onStatus={handleStatus} onDelete={handleDelete} />
+                  <VisitRow key={v.id} visit={v} onStatus={handleStatus} onDelete={setDeleteVisitId} />
                 ))}
               </div>
             </section>
           )}
         </div>
       )}
+    <ConfirmDialog
+      open={deleteVisitId !== null}
+      message="למחוק את הביקור? פעולה זו לא ניתנת לביטול."
+      confirmLabel="מחק"
+      danger
+      onConfirm={() => { if (deleteVisitId) void handleDelete(deleteVisitId) }}
+      onCancel={() => setDeleteVisitId(null)}
+    />
     </div>
   )
 }
@@ -306,7 +317,7 @@ function VisitRow({
 }: {
   visit: PropertyVisit
   onStatus: (id: string, status: PropertyVisit['status']) => Promise<void>
-  onDelete: (id: string) => Promise<void>
+  onDelete: (id: string) => void
 }) {
   const [busy, setBusy] = useState(false)
 
@@ -316,10 +327,8 @@ function VisitRow({
     setBusy(false)
   }
 
-  async function del() {
-    setBusy(true)
-    await onDelete(visit.id)
-    setBusy(false)
+  function del() {
+    onDelete(visit.id)
   }
 
   return (

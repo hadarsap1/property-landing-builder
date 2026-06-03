@@ -100,7 +100,15 @@ export default function LeadDetailPage() {
     }
   }
 
-  if (loading) return <p className="text-gray-400 text-sm">טוען...</p>
+  if (loading) return (
+    <div className="max-w-xl space-y-6 animate-pulse">
+      <div className="h-4 w-24 bg-gray-200 rounded" />
+      <div className="h-7 w-48 bg-gray-200 rounded" />
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+        {[...Array(4)].map((_, i) => <div key={i} className="h-4 bg-gray-100 rounded w-3/4" />)}
+      </div>
+    </div>
+  )
   if (!lead) return <p className="text-gray-500 text-sm">ליד לא נמצא</p>
 
   const isCandidate = !lead.listing_id

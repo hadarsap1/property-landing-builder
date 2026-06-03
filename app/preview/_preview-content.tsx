@@ -211,7 +211,7 @@ function buildSpecs(p: PropertyProject): SpecItem[] {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function PreviewContent({ project, editHref, listingId, agencyId, agencyLogoUrl, agencyName, shareCode }: {
+export default function PreviewContent({ project, editHref, listingId, agencyId, agencyLogoUrl, agencyName, shareCode, calendlyUrl }: {
   project: PropertyProject;
   editHref?: string;
   listingId?: string;
@@ -219,6 +219,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
   agencyLogoUrl?: string | null;
   agencyName?: string | null;
   shareCode?: string;
+  calendlyUrl?: string | null;
 }) {
   const theme = THEMES[project.template] ?? THEMES['modern-blue'];
   const fontFamily = FONT_FAMILY[project.fontStyle] ?? FONT_FAMILY['sans-serif'];
@@ -562,6 +563,17 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                       💬 WhatsApp
                     </a>
                   )}
+                  {calendlyUrl && (
+                    <a
+                      href={calendlyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => track('booking_click')}
+                      className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
+                    >
+                      📅 קבע פגישה
+                    </a>
+                  )}
                 </div>
                 {listingId && agencyId && (
                   <LeadCaptureForm
@@ -592,11 +604,15 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
         <a href="/terms" className="hover:underline" style={{ color: theme.mutedText }}>
           תנאי שימוש
         </a>
+        {' · '}
+        <a href="/privacy" className="hover:underline" style={{ color: theme.mutedText }}>
+          פרטיות
+        </a>
       </footer>
 
       {/* ── AI Chat widget (public listing pages only) ──────────── */}
       {listingId && !editHref && (
-        <PropertyChat listingId={listingId} accent={accent} />
+        <PropertyChat listingId={listingId} accent={accent} hasShareBar={!!(shareCode && shareUrl)} />
       )}
 
       {/* ── Floating share bar (public /preview/[code] only) ─────── */}
@@ -725,6 +741,7 @@ function LeadCaptureForm({
       <input
         type="text"
         placeholder="שם מלא"
+        aria-label="שם מלא"
         value={form.name}
         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
         className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-sm placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -733,6 +750,7 @@ function LeadCaptureForm({
       <input
         type="tel"
         placeholder="טלפון"
+        aria-label="מספר טלפון"
         value={form.phone}
         onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
         className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-sm placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -742,6 +760,7 @@ function LeadCaptureForm({
       <input
         type="email"
         placeholder="מייל (אופציונלי)"
+        aria-label="כתובת מייל (אופציונלי)"
         value={form.email}
         onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
         className="w-full bg-white/20 border border-white/30 rounded-xl px-4 py-2.5 text-sm placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -768,6 +787,11 @@ function LeadCaptureForm({
       >
         {saving ? 'שולח...' : 'שלח פרטים'}
       </button>
+      <p className="text-xs opacity-60 text-center leading-relaxed" style={{ color: heroText }}>
+        בשליחת הטופס אתה מסכים לאיסוף פרטיך לצורך חזרה אליך בנוגע לנכס זה, בהתאם ל
+        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline">מדיניות הפרטיות</a>
+        .
+      </p>
     </form>
   );
 }

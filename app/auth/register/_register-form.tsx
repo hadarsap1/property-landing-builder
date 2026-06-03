@@ -9,6 +9,7 @@ import { GoogleSignInButton } from '../_google-button'
 export default function RegisterForm({ trialDays }: { trialDays: number }) {
   const router = useRouter()
   const [form, setForm] = useState({ name: '', agency_name: '', email: '', password: '', confirm: '' })
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -23,6 +24,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
     if (form.password !== form.confirm) { setError('הסיסמאות אינן תואמות'); return }
     if (form.password.length < 8) { setError('הסיסמה חייבת להכיל לפחות 8 תווים'); return }
 
+    if (!agreedToTerms) { setError('יש לאשר את תנאי השימוש ומדיניות הפרטיות'); return }
     setLoading(true)
     try {
       const res = await fetch('/api/auth/register', {
@@ -88,9 +90,24 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
               </div>
             ))}
 
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={e => setAgreedToTerms(e.target.checked)}
+                className="mt-0.5 shrink-0 accent-blue-600"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                קראתי ואני מסכים/ה ל
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mx-1">תנאי השימוש</a>
+                ול
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mr-1">מדיניות הפרטיות</a>
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
             >
               {loading ? 'יוצר חשבון...' : 'צור חשבון'}

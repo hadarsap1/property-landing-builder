@@ -26,9 +26,10 @@ async function isAgencyRateLimited(agencyId: string): Promise<boolean> {
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
-  // Must be a logged-in agent — no public access to AI endpoints
+  // Must be a logged-in user — no public access to AI endpoints
   const session = await auth();
-  if (!session?.user?.agencyId) {
+  const userId = session?.user?.agencyId ?? session?.user?.personalUserId
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -40,8 +41,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const { project } = body;
-  // Always use the session's agency — never trust client-supplied agencyId for rate limiting
-  const agencyId = session.user.agencyId;
+  // Always use the session identity — never trust client-supplied agencyId for rate limiting
+  const agencyId = userId;
 
   if (!project || typeof project !== 'object') {
     return NextResponse.json({ error: 'Missing project data' }, { status: 400 });
