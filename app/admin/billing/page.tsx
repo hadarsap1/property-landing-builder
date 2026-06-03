@@ -54,7 +54,15 @@ export default function AdminBillingPage() {
       <h1 className="text-2xl font-bold text-white mb-6">ניהול מנויים</h1>
 
       {loading ? (
-        <p className="text-gray-400">טוען...</p>
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex gap-4 px-5 py-4 border-b border-gray-700 last:border-0">
+              <div className="h-4 w-32 bg-gray-700 rounded" />
+              <div className="h-4 w-16 bg-gray-700 rounded" />
+              <div className="h-4 w-20 bg-gray-700 rounded" />
+            </div>
+          ))}
+        </div>
       ) : subs.length === 0 ? (
         <p className="text-gray-400">אין מנויים עדיין</p>
       ) : (

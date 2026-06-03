@@ -152,7 +152,15 @@ export default function AdminDiscountCodesPage() {
 
       {/* Codes list */}
       {loading ? (
-        <p className="text-gray-400">טוען...</p>
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 animate-pulse">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex gap-4 px-5 py-4 border-b border-gray-700 last:border-0">
+              <div className="h-4 w-24 bg-gray-700 rounded" />
+              <div className="h-4 w-12 bg-gray-700 rounded" />
+              <div className="h-4 w-16 bg-gray-700 rounded" />
+            </div>
+          ))}
+        </div>
       ) : codes.length === 0 ? (
         <p className="text-gray-400">אין קודי הנחה עדיין</p>
       ) : (
