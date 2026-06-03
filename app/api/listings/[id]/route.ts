@@ -67,36 +67,36 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
     return NextResponse.json({ error: 'Invalid status value' }, { status: 400 })
   }
 
-  // Cap free-text fields to prevent unbounded token spend in AI features
+  // Cap free-text fields to prevent unbounded token spend in AI features.
+  // Truncate rather than reject — existing listings may have pre-cap content,
+  // and the builder autosaves the whole project on every keystroke, so a hard
+  // 400 here would lock the user out of editing entirely.
   const TEXT_CAPS: Record<string, number> = {
     chat_qa: 5000,
     ai_story: 10000,
     raw_description: 10000,
-    ai_title: 200,
-    ai_tagline: 300,
+    ai_title: 500,
+    ai_tagline: 600,
   }
   for (const [field, cap] of Object.entries(TEXT_CAPS)) {
-    if (typeof data[field] === 'string' && (data[field] as string).length > cap) {
-      return NextResponse.json({ error: `${field} exceeds ${cap} character limit` }, { status: 400 })
+    const val = data[field]
+    if (typeof val === 'string' && val.length > cap) {
+      data[field] = val.slice(0, cap)
     }
   }
 
-  // Validate that URL fields use https: scheme only (use URL parser for well-formedness)
+  // Validate URL fields use https:. Skip the field instead of rejecting —
+  // this is autosave; we don't want a single malformed URL to block all saves.
   function isHttpsUrl(val: unknown): boolean {
     if (typeof val !== 'string' || !val) return true // null/empty are fine
     try { return new URL(val).protocol === 'https:' } catch { return false }
   }
   for (const field of ['hero_image_url', 'video_url'] as const) {
-    if (!isHttpsUrl(data[field])) {
-      return NextResponse.json({ error: `${field} must be a valid https:// URL` }, { status: 400 })
-    }
+    if (!isHttpsUrl(data[field])) delete data[field]
   }
   if (Array.isArray(data.image_urls)) {
-    for (const url of data.image_urls as string[]) {
-      if (!isHttpsUrl(url)) {
-        return NextResponse.json({ error: 'image_urls must be valid https:// URLs' }, { status: 400 })
-      }
-    }
+    const filtered = (data.image_urls as string[]).filter(isHttpsUrl)
+    if (filtered.length !== data.image_urls.length) data.image_urls = filtered
   }
 
   const updated = await updateListing(id, data)
