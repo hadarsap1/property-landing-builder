@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import type { PropertyVisit, Listing, Lead } from '@/lib/db/types'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 type VisitWithListing = PropertyVisit & {
   listing_title: string | null
@@ -130,6 +131,8 @@ export function CalendarClient({
   const [showAddForm, setShowAddForm] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
+  const [deleteVisitId, setDeleteVisitId] = useState<string | null>(null)
+  const [actionSaving, setActionSaving] = useState(false)
 
   const today = useMemo(() => startOfDay(new Date()), [])
   const conflicted = useMemo(() => detectConflicts(visits), [visits])
@@ -209,6 +212,31 @@ export function CalendarClient({
       setForm(EMPTY_FORM)
     }
     setSaving(false)
+  }
+
+  async function handleDeleteVisit(id: string) {
+    setDeleteVisitId(null)
+    setActionSaving(true)
+    const res = await fetch(`/api/visits/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setVisits(vs => vs.filter(v => v.id !== id))
+      if (selectedVisit?.id === id) setSelectedVisit(null)
+    }
+    setActionSaving(false)
+  }
+
+  async function handleStatusChange(id: string, status: PropertyVisit['status']) {
+    setActionSaving(true)
+    const res = await fetch(`/api/visits/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
+    if (res.ok) {
+      setVisits(vs => vs.map(v => v.id === id ? { ...v, status } : v))
+      setSelectedVisit(sv => sv?.id === id ? { ...sv, status } : sv)
+    }
+    setActionSaving(false)
   }
 
   // Views
@@ -594,6 +622,40 @@ export function CalendarClient({
                 </div>
               )}
             </div>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {selectedVisit.status === 'scheduled' && (
+                <>
+                  <button
+                    disabled={actionSaving}
+                    onClick={() => void handleStatusChange(selectedVisit.id, 'completed')}
+                    className="flex-1 text-sm bg-green-50 hover:bg-green-100 text-green-700 font-medium px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    הושלם
+                  </button>
+                  <button
+                    disabled={actionSaving}
+                    onClick={() => void handleStatusChange(selectedVisit.id, 'cancelled')}
+                    className="flex-1 text-sm bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    בטל ביקור
+                  </button>
+                  <button
+                    disabled={actionSaving}
+                    onClick={() => void handleStatusChange(selectedVisit.id, 'no_show')}
+                    className="flex-1 text-sm bg-yellow-50 hover:bg-yellow-100 text-yellow-700 font-medium px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
+                  >
+                    לא הגיע
+                  </button>
+                </>
+              )}
+              <button
+                disabled={actionSaving}
+                onClick={() => setDeleteVisitId(selectedVisit.id)}
+                className="text-sm text-red-500 hover:text-red-700 hover:bg-red-50 font-medium px-3 py-2 rounded-xl transition-colors disabled:opacity-50"
+              >
+                מחק
+              </button>
+            </div>
             {selectedVisit.listing_id && (
               <Link
                 href={`/dashboard/listings/${selectedVisit.listing_id}/visits`}
@@ -605,6 +667,15 @@ export function CalendarClient({
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={deleteVisitId !== null}
+        message="למחוק את הביקור? פעולה זו לא ניתנת לביטול."
+        confirmLabel="מחק"
+        danger
+        onConfirm={() => { if (deleteVisitId) void handleDeleteVisit(deleteVisitId) }}
+        onCancel={() => setDeleteVisitId(null)}
+      />
     </div>
   )
 }
