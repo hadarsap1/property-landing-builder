@@ -45,6 +45,7 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
   // Allowlist: only known listing columns may be written — prevents column-name injection
   // into the buildUpdate SQL string interpolation
   const WRITABLE_FIELDS = new Set([
+    'listing_type', 'furniture',
     'title', 'street', 'city', 'neighborhood', 'price', 'price_on_request',
     'built_area', 'outdoor_area', 'rooms', 'floor', 'total_floors',
     'parking_spots', 'parking_covered', 'has_storage', 'has_saferoom',
