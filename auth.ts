@@ -109,6 +109,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (agent) {
             token.role = agent.role
             token.agencyId = agent.agency_id
+          } else {
+            // Agent deleted from DB — strip commercial privileges so next route redirects to login
+            token.agencyId = undefined
+            token.role = undefined
           }
         }
         return token

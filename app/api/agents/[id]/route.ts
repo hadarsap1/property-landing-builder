@@ -19,6 +19,17 @@ export async function PATCH(req: NextRequest, { params }: Ctx): Promise<NextResp
   if (!isSelf && !isAdmin) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const body = (await req.json()) as Record<string, string>
+
+  // Validate calendly_url to block javascript: XSS — React does not sanitize href
+  if (body.calendly_url) {
+    try {
+      const u = new URL(body.calendly_url)
+      if (u.protocol !== 'https:') throw new Error('non-https')
+    } catch {
+      return NextResponse.json({ error: 'Invalid calendly URL — must be https' }, { status: 400 })
+    }
+  }
+
   const updated = await updateAgent(id, {
     name: body.name,
     phone: body.phone ?? undefined,
