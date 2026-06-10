@@ -106,7 +106,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl
   const listingId = searchParams.get('listingId') ?? undefined
   const status = (searchParams.get('status') ?? undefined) as Lead['status'] | undefined
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '100', 10) || 100, 200)
+  const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10) || 0, 0)
 
-  const leads = await getLeadsByAgency(session.user.agencyId, { listingId, status })
+  const leads = await getLeadsByAgency(session.user.agencyId, { listingId, status, limit, offset })
   return NextResponse.json({ leads })
 }

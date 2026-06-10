@@ -15,19 +15,22 @@ export default function SettingsPage() {
   const logoInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    void fetch('/api/agency').then(r => r.json()).then((d: { agency?: Agency }) => {
-      if (d.agency) {
-        setAgency(d.agency)
-        setForm({
-          name: d.agency.name ?? '',
-          primary_color: d.agency.primary_color ?? '#2563eb',
-          secondary_color: d.agency.secondary_color ?? '#1e3a5f',
-          contact_email: d.agency.contact_email ?? '',
-          contact_phone: d.agency.contact_phone ?? '',
-          logo_url: d.agency.logo_url ?? '',
-        })
-      }
-    })
+    void fetch('/api/agency')
+      .then(r => r.json())
+      .then((d: { agency?: Agency }) => {
+        if (d.agency) {
+          setAgency(d.agency)
+          setForm({
+            name: d.agency.name ?? '',
+            primary_color: d.agency.primary_color ?? '#2563eb',
+            secondary_color: d.agency.secondary_color ?? '#1e3a5f',
+            contact_email: d.agency.contact_email ?? '',
+            contact_phone: d.agency.contact_phone ?? '',
+            logo_url: d.agency.logo_url ?? '',
+          })
+        }
+      })
+      .catch((err: unknown) => console.error('[settings] Failed to load agency:', err))
   }, [])
 
   async function uploadLogo(file: File) {

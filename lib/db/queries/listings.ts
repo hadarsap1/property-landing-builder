@@ -5,7 +5,7 @@ type PgValue = string | number | boolean | string[] | null
 
 // Exhaustive list of columns that may be written to the listings table.
 // Every caller of buildInsert/buildUpdate for listings must pass only these keys.
-const LISTING_COLUMNS = new Set([
+export const LISTING_COLUMNS = new Set([
   'agency_id', 'user_id', 'agent_id', 'slug', 'status', 'listing_type', 'furniture',
   'title', 'street', 'city', 'neighborhood', 'price', 'price_on_request',
   'built_area', 'outdoor_area', 'rooms', 'floor', 'total_floors',
@@ -18,7 +18,7 @@ const LISTING_COLUMNS = new Set([
   'open_house_date', 'open_house_end',
 ])
 
-function assertListingColumns(data: Record<string, unknown>): void {
+export function assertListingColumns(data: Record<string, unknown>): void {
   for (const key of Object.keys(data)) {
     if (!LISTING_COLUMNS.has(key)) throw new Error(`Invalid listing column: ${key}`)
   }
@@ -42,9 +42,15 @@ function buildUpdate(table: string, id: string, data: Record<string, PgValue>) {
   }
 }
 
-export async function getListingsByAgency(agencyId: string): Promise<Listing[]> {
+export async function getListingsByAgency(
+  agencyId: string,
+  opts: { limit?: number; offset?: number } = {}
+): Promise<Listing[]> {
+  const limit = opts.limit ?? 100
+  const offset = opts.offset ?? 0
   const { rows } = await sql<Listing>`
-    SELECT * FROM listings WHERE agency_id = ${agencyId} ORDER BY created_at DESC
+    SELECT * FROM listings WHERE agency_id = ${agencyId}
+    ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
   `
   return rows
 }
@@ -63,9 +69,15 @@ export async function getListingBySlug(agencyId: string, slug: string): Promise<
   return rows[0] ?? null
 }
 
-export async function getListingsByUser(userId: string): Promise<Listing[]> {
+export async function getListingsByUser(
+  userId: string,
+  opts: { limit?: number; offset?: number } = {}
+): Promise<Listing[]> {
+  const limit = opts.limit ?? 100
+  const offset = opts.offset ?? 0
   const { rows } = await sql<Listing>`
-    SELECT * FROM listings WHERE user_id = ${userId} ORDER BY created_at DESC
+    SELECT * FROM listings WHERE user_id = ${userId}
+    ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
   `
   return rows
 }

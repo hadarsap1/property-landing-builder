@@ -82,6 +82,7 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState(value)
   const containerRef = useRef<HTMLDivElement>(null)
+  const listboxId = id ? `${id}-listbox` : undefined
 
   // Keep local query in sync when parent resets the value (e.g. city change resets street)
   useEffect(() => { setQuery(value) }, [value])
@@ -91,6 +92,8 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
   const filtered = query.length >= 1
     ? options.filter((o) => o.includes(query)).slice(0, 10)
     : []
+
+  const isOpen = open && query.length >= 1
 
   function select(opt: string) {
     onChange(opt)
@@ -102,11 +105,16 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
     <div ref={containerRef} className="relative">
       <input
         id={id}
+        role="combobox"
         type="text"
         value={query}
         disabled={disabled}
         placeholder={placeholder}
         autoComplete="off"
+        aria-expanded={isOpen && filtered.length > 0}
+        aria-haspopup="listbox"
+        aria-controls={listboxId}
+        aria-autocomplete="list"
         onChange={(e) => {
           setQuery(e.target.value)
           onChange(e.target.value)
@@ -116,20 +124,22 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
         className={inputClassName}
       />
       {loading && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true">
           <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
           </svg>
         </span>
       )}
-      {open && filtered.length > 0 && (
+      {isOpen && filtered.length > 0 && (
         <ul
+          id={listboxId}
+          role="listbox"
           className="absolute z-50 right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto"
           dir="rtl"
         >
           {filtered.map((opt) => (
-            <li key={opt}>
+            <li key={opt} role="option" aria-selected={opt === value}>
               <button
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); select(opt) }}
@@ -140,6 +150,14 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
             </li>
           ))}
         </ul>
+      )}
+      {isOpen && !loading && filtered.length === 0 && (
+        <div
+          className="absolute z-50 right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-400 text-right"
+          dir="rtl"
+        >
+          לא נמצאו תוצאות
+        </div>
       )}
     </div>
   )
@@ -219,10 +237,11 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
           שם/כותרת הנכס <Required />
         </label>
         <input
+          id="title"
           type="text"
           value={project.title}
           onChange={(e) => onChange({ title: e.target.value })}
@@ -236,7 +255,7 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* City (required) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
           עיר <Required />
         </label>
         <Combobox
@@ -256,7 +275,7 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Street — enabled after city is set */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">רחוב</label>
+        <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-1">רחוב</label>
         <Combobox
           id="street"
           value={project.street}
@@ -274,8 +293,9 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Neighborhood */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">שכונה</label>
+        <label htmlFor="neighborhood" className="block text-sm font-medium text-gray-700 mb-1">שכונה</label>
         <input
+          id="neighborhood"
           type="text"
           value={project.neighborhood}
           onChange={(e) => onChange({ neighborhood: e.target.value })}
@@ -286,7 +306,7 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Price */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
           {isRent ? 'מחיר שכירות לחודש' : 'מחיר מכירה'}
         </label>
         <div className="flex items-center gap-3 mb-3">
@@ -305,6 +325,7 @@ export default function Step1({ project, onChange }: StepProps) {
           <div className="relative">
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₪</span>
             <input
+              id="price"
               type="number"
               value={project.price ?? ''}
               onChange={(e) => onChange({ price: e.target.value ? Number(e.target.value) : null })}
@@ -357,10 +378,11 @@ export default function Step1({ project, onChange }: StepProps) {
       {/* Areas */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="built-area" className="block text-sm font-medium text-gray-700 mb-1">
             שטח בנוי <span className="text-gray-400 font-normal">מ״ר</span>
           </label>
           <input
+            id="built-area"
             type="number"
             value={project.builtArea ?? ''}
             onChange={(e) => onChange({ builtArea: e.target.value ? Number(e.target.value) : null })}
@@ -370,11 +392,12 @@ export default function Step1({ project, onChange }: StepProps) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="garden-area" className="block text-sm font-medium text-gray-700 mb-1">
             גינה/מרפסת{' '}
             <span className="text-gray-400 font-normal">מ״ר</span>
           </label>
           <input
+            id="garden-area"
             type="number"
             value={project.gardenArea ?? ''}
             onChange={(e) => onChange({ gardenArea: e.target.value ? Number(e.target.value) : null })}
@@ -387,8 +410,9 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Rooms */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">מספר חדרים</label>
+        <label htmlFor="rooms" className="block text-sm font-medium text-gray-700 mb-1">מספר חדרים</label>
         <select
+          id="rooms"
           value={project.rooms ?? ''}
           onChange={(e) => onChange({ rooms: e.target.value ? Number(e.target.value) : null })}
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"

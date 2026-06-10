@@ -26,10 +26,10 @@ export async function createLead(data: {
 
 export async function getLeadsByAgency(
   agencyId: string,
-  filters: { listingId?: string; status?: Lead['status'] } = {}
+  filters: { listingId?: string; status?: Lead['status']; limit?: number; offset?: number } = {}
 ): Promise<Lead[]> {
   const conditions: string[] = ['agency_id = $1']
-  const values: (string | null)[] = [agencyId]
+  const values: (string | number | null)[] = [agencyId]
 
   if (filters.listingId) {
     values.push(filters.listingId)
@@ -40,8 +40,14 @@ export async function getLeadsByAgency(
     conditions.push(`status = $${values.length}`)
   }
 
+  const limit = filters.limit ?? 100
+  const offset = filters.offset ?? 0
+  values.push(limit, offset)
+  const limitIdx = values.length - 1
+  const offsetIdx = values.length
+
   const { rows } = await db.query<Lead>(
-    `SELECT * FROM leads WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC`,
+    `SELECT * FROM leads WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
     values
   )
   return rows

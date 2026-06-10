@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
 import ConfirmDialog from '@/components/ui/ConfirmDialog'
@@ -75,9 +76,11 @@ export function ListingCard({
     )}
     <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-2">
       {listing.hero_image_url ? (
-        <img
+        <Image
           src={listing.hero_image_url}
           alt={listing.title ?? ''}
+          width={64}
+          height={64}
           className="w-16 h-16 rounded-xl object-cover shrink-0"
         />
       ) : (

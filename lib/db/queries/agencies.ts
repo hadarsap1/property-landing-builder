@@ -35,7 +35,7 @@ export async function getAgencyById(id: string): Promise<Agency | null> {
   return rows[0] ?? null
 }
 
-const AGENCY_WRITABLE_COLUMNS = new Set([
+export const AGENCY_WRITABLE_COLUMNS = new Set([
   'name', 'logo_url', 'primary_color', 'secondary_color', 'contact_email', 'contact_phone',
 ])
 

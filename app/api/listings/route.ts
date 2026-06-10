@@ -8,16 +8,19 @@ import {
   generateUniqueSlugForUser,
 } from '@/lib/db/queries/listings'
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(req: NextRequest): Promise<NextResponse> {
   const session = await auth()
+  const { searchParams } = req.nextUrl
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '100', 10) || 100, 200)
+  const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10) || 0, 0)
 
   if (session?.user?.agencyId) {
-    const listings = await getListingsByAgency(session.user.agencyId)
+    const listings = await getListingsByAgency(session.user.agencyId, { limit, offset })
     return NextResponse.json({ listings })
   }
 
   if (session?.user?.personalUserId) {
-    const listings = await getListingsByUser(session.user.personalUserId)
+    const listings = await getListingsByUser(session.user.personalUserId, { limit, offset })
     return NextResponse.json({ listings })
   }
 

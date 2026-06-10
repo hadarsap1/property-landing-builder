@@ -82,7 +82,7 @@ export async function acceptInvitation(
   return rows[0] ?? null
 }
 
-const AGENT_WRITABLE_COLUMNS = new Set(['name', 'phone', 'photo_url', 'calendly_url', 'role'])
+export const AGENT_WRITABLE_COLUMNS = new Set(['name', 'phone', 'photo_url', 'calendly_url', 'role'])
 
 export async function updateAgent(
   id: string,

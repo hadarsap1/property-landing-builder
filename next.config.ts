@@ -32,6 +32,13 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
 
+  images: {
+    remotePatterns: [
+      // Vercel Blob storage (public blobs from @vercel/blob)
+      { protocol: 'https', hostname: '*.public.blob.vercel-storage.com' },
+    ],
+  },
+
   async headers() {
     return [
       {
