@@ -3,6 +3,8 @@
 import { signIn } from '@/auth'
 import { AuthError } from 'next-auth'
 import { redirect } from 'next/navigation'
+import { sql } from '@/lib/db'
+import { after } from 'next/server'
 
 export async function loginAction(formData: FormData): Promise<void> {
   const email = formData.get('email') as string
@@ -19,12 +21,25 @@ export async function loginAction(formData: FormData): Promise<void> {
     if (err instanceof AuthError) {
       redirect(`/auth/login?error=${err.type}&callbackUrl=${encodeURIComponent(callbackUrl)}`)
     }
-    // NEXT_REDIRECT — let Next.js handle it
     throw err
   }
 }
 
+function logToDb(stage: string, payload: unknown) {
+  const data = JSON.stringify({ stage, payload, ts: new Date().toISOString() })
+  const write = async () => {
+    await sql`
+      CREATE TABLE IF NOT EXISTS auth_debug_log (
+        id SERIAL PRIMARY KEY, ts TIMESTAMPTZ DEFAULT NOW(), data TEXT
+      )
+    `.catch(() => {})
+    await sql`INSERT INTO auth_debug_log (data) VALUES (${data})`.catch(() => {})
+  }
+  try { after(write) } catch { write().catch(() => {}) }
+}
+
 export async function googleSignInAction(formData: FormData): Promise<void> {
   const callbackUrl = (formData.get('callbackUrl') as string) || '/personal'
+  logToDb('googleSignInAction:start', { callbackUrl })
   await signIn('google', { redirectTo: callbackUrl })
 }

@@ -37,7 +37,7 @@ describe('assertListingColumns', () => {
   })
 
   it('throws on unknown column', () => {
-    expect(() => assertListingColumns({ __proto__: 'x' })).toThrow('Invalid listing column')
+    expect(() => assertListingColumns({ ['__proto__']: 'x' })).toThrow('Invalid listing column')
     expect(() => assertListingColumns({ id: '123' })).toThrow('Invalid listing column')
     expect(() => assertListingColumns({ unknown_col: 1 })).toThrow('Invalid listing column')
   })

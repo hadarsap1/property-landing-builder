@@ -3,7 +3,22 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
-import type { Lead, LeadNote } from '@/lib/db/types'
+import type { Lead, LeadNote, PropertyVisit } from '@/lib/db/types'
+import type { LeadWithListing } from '@/lib/db/queries/leads'
+
+const VISIT_STATUS_LABELS: Record<PropertyVisit['status'], string> = {
+  scheduled: 'מתוכנן',
+  completed: 'הושלם',
+  cancelled: 'בוטל',
+  no_show: 'לא הגיע',
+}
+
+const VISIT_STATUS_COLORS: Record<PropertyVisit['status'], string> = {
+  scheduled: 'bg-blue-100 text-blue-700',
+  completed: 'bg-green-100 text-green-700',
+  cancelled: 'bg-gray-100 text-gray-500',
+  no_show: 'bg-red-100 text-red-600',
+}
 
 const STATUS_OPTIONS: { value: Lead['status']; label: string }[] = [
   { value: 'new',        label: 'חדש' },
@@ -17,21 +32,29 @@ const STATUS_OPTIONS: { value: Lead['status']; label: string }[] = [
 
 export default function LeadDetailPage() {
   const { id } = useParams<{ id: string }>()
-  const [lead, setLead] = useState<Lead | null>(null)
+  const [lead, setLead] = useState<LeadWithListing | null>(null)
   const [notes, setNotes] = useState<LeadNote[]>([])
+  const [visits, setVisits] = useState<PropertyVisit[]>([])
   const [loading, setLoading] = useState(true)
   const [noteText, setNoteText] = useState('')
   const [followUpDate, setFollowUpDate] = useState('')
   const [savingNote, setSavingNote] = useState(false)
 
   const load = useCallback(async () => {
-    const [leadRes, notesRes] = await Promise.all([
-      fetch(`/api/leads/${id}`),
-      fetch(`/api/leads/${id}/notes`),
-    ])
-    if (leadRes.ok) setLead((await leadRes.json() as { lead: Lead }).lead)
-    if (notesRes.ok) setNotes((await notesRes.json() as { notes: LeadNote[] }).notes)
-    setLoading(false)
+    try {
+      const [leadRes, notesRes, visitsRes] = await Promise.all([
+        fetch(`/api/leads/${id}`),
+        fetch(`/api/leads/${id}/notes`),
+        fetch(`/api/leads/${id}/visits`),
+      ])
+      if (leadRes.ok) setLead((await leadRes.json() as { lead: LeadWithListing }).lead)
+      if (notesRes.ok) setNotes((await notesRes.json() as { notes: LeadNote[] }).notes)
+      if (visitsRes.ok) setVisits((await visitsRes.json() as { visits: PropertyVisit[] }).visits)
+    } catch {
+      // network failure — show what we have
+    } finally {
+      setLoading(false)
+    }
   }, [id])
 
   useEffect(() => { void load() }, [load])
@@ -77,20 +100,78 @@ export default function LeadDetailPage() {
     }
   }
 
-  if (loading) return <p className="text-gray-400 text-sm">טוען...</p>
+  if (loading) return (
+    <div className="max-w-xl space-y-6 animate-pulse">
+      <div className="h-4 w-24 bg-gray-200 rounded" />
+      <div className="h-7 w-48 bg-gray-200 rounded" />
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+        {[...Array(4)].map((_, i) => <div key={i} className="h-4 bg-gray-100 rounded w-3/4" />)}
+      </div>
+    </div>
+  )
   if (!lead) return <p className="text-gray-500 text-sm">ליד לא נמצא</p>
+
+  const isCandidate = !lead.listing_id
+  const hasPrefs = isCandidate && (lead.budget || lead.rooms_min || lead.rooms_max || lead.desired_areas)
 
   return (
     <div className="max-w-xl space-y-6">
       <div>
-        <Link href="/dashboard/leads" className="text-sm text-gray-400 hover:text-gray-600">← לידים</Link>
-        <h1 className="text-xl font-bold text-gray-900 mt-1">{lead.name || 'אנונימי'}</h1>
+        <Link href="/dashboard/leads" className="text-sm text-gray-400 hover:text-gray-600">← לידים וקונים</Link>
+        <div className="flex items-center gap-2 mt-1">
+          <h1 className="text-xl font-bold text-gray-900">{lead.name || 'אנונימי'}</h1>
+          {isCandidate && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700">קונה</span>
+          )}
+        </div>
         {(lead.phone || lead.email) && (
           <p className="text-sm text-gray-500 mt-0.5">
             {[lead.phone, lead.email].filter(Boolean).join(' · ')}
           </p>
         )}
       </div>
+
+      {/* Linked listing (non-candidates) */}
+      {lead.listing_id && lead.listing_title && (
+        <Link
+          href={`/dashboard/listings/${lead.listing_id}/edit`}
+          className="block bg-blue-50 hover:bg-blue-100 rounded-2xl border border-blue-100 p-4 transition-colors group"
+        >
+          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide">מתעניין/ת בנכס</p>
+          <div className="flex items-center justify-between gap-3 mt-1.5">
+            <div className="min-w-0">
+              <p className="font-semibold text-gray-900 truncate">🏠 {lead.listing_title}</p>
+              {lead.listing_city && (
+                <p className="text-xs text-gray-500 mt-0.5">{lead.listing_city}</p>
+              )}
+            </div>
+            <span className="shrink-0 text-blue-600 group-hover:text-blue-800 text-sm font-medium">פתח ←</span>
+          </div>
+        </Link>
+      )}
+
+      {/* Buyer preferences (candidates only) */}
+      {hasPrefs && (
+        <div className="bg-purple-50 rounded-2xl border border-purple-100 p-4 space-y-2">
+          <p className="text-xs font-semibold text-purple-700 uppercase tracking-wide">מה הקונה מחפש</p>
+          <div className="flex flex-wrap gap-3 text-sm text-gray-700">
+            {lead.budget && (
+              <span>תקציב: <strong>{lead.budget.toLocaleString('he-IL')} ₪</strong></span>
+            )}
+            {(lead.rooms_min || lead.rooms_max) && (
+              <span>
+                חדרים: <strong>
+                  {lead.rooms_min ?? '?'}
+                  {lead.rooms_max && lead.rooms_max !== lead.rooms_min ? `–${lead.rooms_max}` : ''}
+                </strong>
+              </span>
+            )}
+            {lead.desired_areas && (
+              <span>אזורים: <strong>{lead.desired_areas}</strong></span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Status selector */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
@@ -110,6 +191,49 @@ export default function LeadDetailPage() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Visits */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-700">ביקורים ({visits.length})</h2>
+          <Link href="/dashboard/calendar" className="text-xs text-blue-600 hover:underline">
+            יומן +
+          </Link>
+        </div>
+        {visits.length === 0 ? (
+          <p className="text-xs text-gray-400 bg-white border border-gray-200 rounded-2xl p-4 text-center">
+            אין ביקורים מתוכננים. ניתן להוסיף ביומן או דרך עמוד הנכס.
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {visits.map(v => (
+              <Link
+                key={v.id}
+                href={v.listing_id ? `/dashboard/listings/${v.listing_id}/visits` : '/dashboard/calendar'}
+                className="block bg-white rounded-xl border border-gray-200 p-3 hover:border-blue-200 transition-colors"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <div className="text-sm">
+                    <div className="font-semibold text-gray-900">
+                      {new Date(v.visit_at).toLocaleString('he-IL', {
+                        weekday: 'short', day: 'numeric', month: 'short',
+                        hour: '2-digit', minute: '2-digit',
+                      })}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {v.duration_minutes} דק׳ · {v.visit_type === 'seller' ? 'פגישת מוכר' : 'קונה'}
+                    </div>
+                    {v.notes && <div className="text-xs text-gray-400 mt-0.5">{v.notes}</div>}
+                  </div>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${VISIT_STATUS_COLORS[v.status]}`}>
+                    {VISIT_STATUS_LABELS[v.status]}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Notes */}

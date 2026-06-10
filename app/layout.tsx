@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Frank_Ruhl_Libre, Assistant } from "next/font/google";
 import Providers from "@/components/providers";
 import ToastContainer from "@/components/ui/ToastContainer";
+import ConsentBanner from "@/components/consent-banner";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -29,8 +30,9 @@ const assistant = Assistant({
 });
 
 export const metadata: Metadata = {
-  title: "Property Landing Builder",
+  title: "PropBuilder",
   description: "Build beautiful real estate landing pages",
+  icons: { icon: '/icon.svg', shortcut: '/icon.svg' },
 };
 
 export default function RootLayout({
@@ -49,6 +51,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col font-body">
         <Providers>{children}</Providers>
         <ToastContainer />
+        <ConsentBanner />
         <Analytics />
         <SpeedInsights />
       </body>

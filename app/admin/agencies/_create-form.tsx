@@ -112,7 +112,7 @@ export default function CreateAgencyForm() {
               disabled={loading}
               className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-colors"
             >
-              {loading ? 'יוצר...' : 'צור וש שלח הזמנה'}
+              {loading ? 'יוצר...' : 'צור ושלח הזמנה'}
             </button>
             <button
               type="button"

@@ -1,5 +1,6 @@
 import { getAllPersonalUsers } from '@/lib/db/queries/personal-users'
 import { sql } from '@/lib/db'
+import { DeleteUserButton } from './_delete-button'
 
 interface ListingCount { user_id: string; count: string }
 
@@ -32,6 +33,7 @@ export default async function AdminPersonalUsersPage() {
                 <th className="text-right px-5 py-3 font-medium">תוכנית</th>
                 <th className="text-right px-5 py-3 font-medium">נכסים</th>
                 <th className="text-right px-5 py-3 font-medium">נוצר</th>
+                <th className="text-right px-5 py-3 font-medium">פעולות</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-700">
@@ -60,6 +62,9 @@ export default async function AdminPersonalUsersPage() {
                   </td>
                   <td className="px-5 py-3 text-gray-400 text-xs">
                     {new Date(u.created_at).toLocaleDateString('he-IL')}
+                  </td>
+                  <td className="px-5 py-3">
+                    <DeleteUserButton id={u.id} label={u.name ?? u.email ?? 'משתמש'} />
                   </td>
                 </tr>
               ))}

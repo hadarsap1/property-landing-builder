@@ -83,6 +83,7 @@ export function listingToProject(listing: Listing): PropertyProject {
     aiTagline: listing.ai_tagline ?? '',
     aiStory: listing.ai_story ?? '',
     aiHighlights: listing.ai_highlights ?? [],
+    chatQA: listing.chat_qa ?? '',
 
     images,
     heroImageIndex: heroIdx,
@@ -150,6 +151,7 @@ export function projectToListingData(
     ai_tagline: project.aiTagline || null,
     ai_story: project.aiStory || null,
     ai_highlights: project.aiHighlights,
+    chat_qa: project.chatQA || null,
     video_url: project.videoUrl || null,
     gallery_type,
     carousel_speed,

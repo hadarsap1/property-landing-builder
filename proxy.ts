@@ -15,20 +15,18 @@ export function proxy(request: NextRequest) {
     ? host.slice(0, host.length - rootHost.length - 1)
     : null
 
-  let response: NextResponse
+  // Forward the original pathname to server components via REQUEST headers
+  // (response headers aren't visible to headers() in server components).
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-pathname', request.nextUrl.pathname)
 
   // Agency subdomain — rewrite to /agency/[slug]/...
   if (subdomain && subdomain !== 'www') {
     url.pathname = `/agency/${subdomain}${url.pathname}`
-    response = NextResponse.rewrite(url)
-  } else {
-    response = NextResponse.next()
+    return NextResponse.rewrite(url, { request: { headers: requestHeaders } })
   }
 
-  // Inject current pathname so server layouts can detect the active route
-  response.headers.set('x-pathname', request.nextUrl.pathname)
-
-  return response
+  return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
 export const config = {

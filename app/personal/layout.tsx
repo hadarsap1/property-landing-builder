@@ -16,6 +16,13 @@ export default async function PersonalLayout({ children }: { children: React.Rea
         </Link>
 
         <div className="mr-auto flex items-center gap-3">
+          <Link
+            href="/personal/help"
+            className="flex items-center gap-1 text-sm text-blue-600 hover:bg-blue-50 px-2.5 py-1.5 rounded-lg transition-colors font-medium"
+          >
+            <span>❓</span>
+            <span className="hidden sm:inline">עזרה</span>
+          </Link>
           <span className="text-sm text-gray-500 hidden sm:block truncate max-w-[180px]">
             {session.user?.email ?? 'אורח'}
           </span>

@@ -98,6 +98,7 @@ export interface Listing {
   ai_tagline: string | null
   ai_story: string | null
   ai_highlights: string[] | null
+  chat_qa: string | null
 
   hero_image_url: string | null
   image_urls: string[] | null
@@ -147,13 +148,17 @@ export interface PendingChange {
 
 export interface Lead {
   id: string
-  listing_id: string
+  listing_id: string | null
   agency_id: string
   name: string | null
   phone: string | null
   email: string | null
   source: 'booking' | 'open_house' | 'whatsapp' | 'direct'
   status: 'new' | 'contacted' | 'visited' | 'serious' | 'irrelevant' | 'offer_made' | 'closed'
+  budget: number | null
+  rooms_min: number | null
+  rooms_max: number | null
+  desired_areas: string | null
   created_at: Date
   last_interaction: Date | null
 }
@@ -173,6 +178,23 @@ export interface OpenHouseRegistration {
   listing_id: string
   name: string | null
   phone: string | null
+  created_at: Date
+}
+
+export interface PropertyVisit {
+  id: string
+  listing_id: string
+  agency_id: string
+  agent_id: string | null
+  lead_id: string | null
+  visit_at: Date
+  duration_minutes: number
+  visit_type: 'buyer' | 'seller'
+  visitor_name: string | null
+  visitor_phone: string | null
+  visitor_email: string | null
+  notes: string | null
+  status: 'scheduled' | 'completed' | 'cancelled' | 'no_show'
   created_at: Date
 }
 

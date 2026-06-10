@@ -22,6 +22,7 @@ interface BuilderClientProps {
   listingId: string | null
   listingSlug: string | null
   initialProject: PropertyProject | null
+  isLoggedIn: boolean
 }
 
 const STEP_NAMES: Record<number, string> = {
@@ -66,6 +67,7 @@ const DEFAULT_PROJECT: PropertyProject = {
   aiTagline: '',
   aiStory: '',
   aiHighlights: [],
+  chatQA: '',
   images: [],
   heroImageIndex: 0,
   galleryType: 'grid',
@@ -114,6 +116,7 @@ export default function BuilderClient({
   listingId: initialListingId,
   listingSlug: initialListingSlug,
   initialProject,
+  isLoggedIn,
 }: BuilderClientProps) {
   const router = useRouter()
   const [step, setStep] = useState(0)
@@ -124,6 +127,7 @@ export default function BuilderClient({
   const [listingId, setListingId] = useState<string | null>(initialListingId)
   const [listingSlug, setListingSlug] = useState<string | null>(initialListingSlug)
   const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle')
+  const [saveError, setSaveError] = useState<string | null>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const activePillRef = useRef<HTMLButtonElement>(null)
@@ -213,13 +217,26 @@ export default function BuilderClient({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       })
-      if (!res.ok) throw new Error('save failed')
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`
+        try {
+          const errBody = (await res.json()) as { error?: string }
+          if (errBody.error) msg = errBody.error
+        } catch { /* response wasn't JSON */ }
+        console.error('[builder] save failed:', msg)
+        setSaveError(msg)
+        setSaveStatus('error')
+        return
+      }
       // Update slug if the server returned a new one
       const body = (await res.json()) as { listing?: { slug?: string } }
       if (body.listing?.slug) setListingSlug(body.listing.slug)
+      setSaveError(null)
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus('idle'), 2000)
-    } catch {
+    } catch (err) {
+      console.error('[builder] save threw:', err)
+      setSaveError(err instanceof Error ? err.message : 'שגיאת רשת')
       setSaveStatus('error')
     }
   }, [])
@@ -294,12 +311,14 @@ export default function BuilderClient({
   function isNextDisabled() {
     if (step === 1 && !project.city.trim()) return true
     if (step === 3 && !project.rawStory.trim()) return true
+    if (step === 8 && !project.phone.trim()) return true
     return false
   }
 
   function nextButtonTitle() {
     if (step === 1 && !project.city.trim()) return 'יש למלא עיר לפני המשך'
     if (step === 3 && !project.rawStory.trim()) return 'יש לכתוב משהו על הנכס לפני המשך'
+    if (step === 8 && !project.phone.trim()) return 'יש להזין טלפון לפני המשך'
     return undefined
   }
 
@@ -317,7 +336,13 @@ export default function BuilderClient({
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-gray-400">טוען...</div>
+        <div className="flex flex-col items-center gap-3">
+          <svg className="animate-spin h-8 w-8 text-blue-500" viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+          <span className="text-sm text-gray-500">טוען...</span>
+        </div>
       </div>
     )
   }
@@ -399,7 +424,9 @@ export default function BuilderClient({
                   <><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />נשמר</>
                 )}
                 {saveStatus === 'error' && (
-                  <span className="text-red-500 font-medium">⚠ שגיאה בשמירה</span>
+                  <span className="text-red-500 font-medium" title={saveError ?? ''}>
+                    ⚠ שגיאה בשמירה{saveError ? `: ${saveError}` : ''}
+                  </span>
                 )}
                 {(saveStatus === 'idle' || saveStatus === 'pending') && (
                   <span>{Math.round(progress)}%</span>
@@ -454,7 +481,7 @@ export default function BuilderClient({
               {step === 6 && <Step6 project={project} onChange={onChange} />}
               {step === 7 && <Step7 project={project} onChange={onChange} />}
               {step === 8 && <Step8 project={project} onChange={onChange} />}
-              {step === 9 && <Step9 project={project} listingUrl={listingUrl} />}
+              {step === 9 && <Step9 project={project} listingUrl={listingUrl} isLoggedIn={isLoggedIn} />}
             </div>
           </div>
         </div>

@@ -12,7 +12,8 @@ const FEATURES = [
   'מיתוג מלא — לוגו, צבעים, כתובת ייחודית',
   'ניהול צוות סוכנים ללא הגבלה',
   'מעקב לידים ופייפליין מכירות',
-  'אנליטיקס ומדידת ביצועים',
+  'ניהול יומן ביקורים',
+  'תובנות חכמות על ביצועי הדפים',
   'עורך AI לתיאורים שיווקיים',
   'פורטל מוכר לעדכונים ישירים',
   'הודעות מייל על לידים חדשים',
@@ -109,15 +110,29 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <p className="text-center text-sm text-gray-400 mt-10">
-          שאלות? נשמח לעזור.{' '}
-          <a
-            href={`mailto:${process.env.SUPER_ADMIN_EMAIL ?? 'info@propbuilder.co.il'}`}
-            className="text-blue-600 hover:underline"
-          >
-            צור קשר
-          </a>
-        </p>
+        <div className="mt-10 text-center space-y-2">
+          <p className="text-sm text-gray-500 font-medium">ביטול והחזרות</p>
+          <p className="text-sm text-gray-400 max-w-xl mx-auto leading-relaxed">
+            ניתן לבטל את המנוי בכל עת מדף ההגדרות. הגישה נשמרת עד סוף תקופת החיוב הנוכחית.
+            אין החזר כספי על תקופות חיוב שכבר החלו, אלא אם נקבע אחרת על פי חוק.
+            לניסיון חינם — לא יחויב כרטיס אשראי עד תום הניסיון.
+          </p>
+          <p className="text-sm text-gray-400">
+            שאלות?{' '}
+            <a
+              href="mailto:support@propbuilder.co.il"
+              className="text-blue-600 hover:underline"
+            >
+              support@propbuilder.co.il
+            </a>
+          </p>
+          <p className="text-xs text-gray-300 mt-4">
+            PropBuilder · מדיניות פרטיות:{' '}
+            <a href="/privacy" className="hover:underline">propbuilder.co.il/privacy</a>
+            {' · '}
+            <a href="/terms" className="hover:underline">תנאי שימוש</a>
+          </p>
+        </div>
       </section>
     </div>
   )

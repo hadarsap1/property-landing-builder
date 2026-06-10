@@ -2,9 +2,11 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
-import ConfirmDialog from '@/components/ui/ConfirmDialog'
+import { SocialPostModal } from '@/components/social-post-modal'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 const STATUS_LABELS: Record<Listing['status'], string> = {
   active: 'פעיל',
@@ -32,23 +34,20 @@ export function ListingCard({
   agencySlug: string
   pendingChanges: number
 }) {
+  const router = useRouter()
   const [status, setStatus] = useState<Listing['status']>(listing.status)
   const [saving, setSaving] = useState(false)
+  const [deleted, setDeleted] = useState(false)
+  const [socialOpen, setSocialOpen] = useState(false)
   const [pendingStatus, setPendingStatus] = useState<Listing['status'] | null>(null)
   const [statusError, setStatusError] = useState<string | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteError, setDeleteError] = useState(false)
 
-  const LABELS: Record<Listing['status'], string> = { active: 'פעיל', paused: 'מושהה', sold: 'נמכר' }
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
-  const publicUrl = agencySlug ? `/agency/${agencySlug}/${listing.slug}` : null
+  const publicUrl = agencySlug ? `/agency/${agencySlug}/listings/${listing.slug}` : null
 
-  function changeStatus(next: Listing['status']) {
-    if (next === status) return
-    setPendingStatus(next)
-  }
-
-  async function confirmStatusChange() {
-    if (!pendingStatus) return
-    const next = pendingStatus
+  async function confirmStatusChange(next: Listing['status']) {
     setPendingStatus(null)
     setSaving(true)
     setStatusError(null)
@@ -65,15 +64,23 @@ export function ListingCard({
     setSaving(false)
   }
 
+  async function confirmDelete() {
+    setDeleteOpen(false)
+    setSaving(true)
+    const res = await fetch(`/api/listings/${listing.id}`, { method: 'DELETE' })
+    if (res.ok) {
+      setDeleted(true)
+      router.refresh()
+    } else {
+      setSaving(false)
+      setDeleteError(true)
+    }
+  }
+
+  if (deleted) return null
+
   return (
     <>
-    {pendingStatus && (
-      <ConfirmDialog
-        message={`לשנות סטטוס ל"${LABELS[pendingStatus]}"?`}
-        onConfirm={() => void confirmStatusChange()}
-        onCancel={() => setPendingStatus(null)}
-      />
-    )}
     <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-2">
       {listing.hero_image_url ? (
         <Image
@@ -97,7 +104,10 @@ export function ListingCard({
           <select
             value={status}
             disabled={saving}
-            onChange={e => changeStatus(e.target.value as Listing['status'])}
+            onChange={e => {
+              const next = e.target.value as Listing['status']
+              if (next !== status) setPendingStatus(next)
+            }}
             className={`text-xs px-2 py-0.5 rounded-full font-medium border cursor-pointer focus:outline-none disabled:opacity-60 ${STATUS_SELECT_COLORS[status]}`}
           >
             {(Object.keys(STATUS_LABELS) as Listing['status'][]).map(s => (
@@ -132,15 +142,64 @@ export function ListingCard({
           {pendingChanges > 0 ? `${pendingChanges} שינויים` : 'מוכר'}
         </Link>
         <Link
+          href={`/dashboard/listings/${listing.id}/visits`}
+          className="text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg px-3 py-1.5 font-medium transition-colors"
+        >
+          ביקורים
+        </Link>
+        <Link
           href={`/dashboard/listings/${listing.id}/edit`}
           className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg px-3 py-1.5 font-medium transition-colors"
         >
           עריכה
         </Link>
+        <button
+          onClick={() => setSocialOpen(true)}
+          className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg px-3 py-1.5 font-medium transition-colors"
+        >
+          ✨ פוסט
+        </button>
+        <button
+          onClick={() => setDeleteOpen(true)}
+          disabled={saving}
+          className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1.5 font-medium transition-colors disabled:opacity-50"
+        >
+          מחק
+        </button>
       </div>
       {statusError && (
         <p className="text-xs text-red-600 pt-1">{statusError}</p>
       )}
+
+      {deleteError && (
+        <p className="text-xs text-red-500 text-left mt-1">שגיאה במחיקת הנכס</p>
+      )}
+
+      <SocialPostModal
+        listingId={listing.id}
+        listingUrl={publicUrl ? (typeof window !== 'undefined' ? `${window.location.origin}${publicUrl}` : publicUrl) : null}
+        listingTitle={listing.ai_title || listing.title || 'נכס'}
+        open={socialOpen}
+        onClose={() => setSocialOpen(false)}
+      />
+
+      <ConfirmDialog
+        open={pendingStatus !== null}
+        message={`לשנות סטטוס ל"${pendingStatus ? STATUS_LABELS[pendingStatus] : ''}"?`}
+        confirmLabel="שנה"
+        onConfirm={() => { if (pendingStatus) void confirmStatusChange(pendingStatus) }}
+        onCancel={() => setPendingStatus(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        message={`למחוק את "${listing.ai_title || listing.title || 'הנכס'}"? פעולה זו לא ניתנת לביטול.`}
+        confirmLabel="מחק"
+        cancelLabel="ביטול"
+        danger
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteOpen(false)}
+      />
     </div>
     </>
   )

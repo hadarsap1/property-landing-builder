@@ -56,7 +56,20 @@ export default function SettingsPage() {
     setSaving(false)
   }
 
-  if (!agency) return <div className="text-gray-400 text-sm">טוען...</div>
+  if (!agency) return (
+    <div className="max-w-xl space-y-6 animate-pulse">
+      <div className="h-7 w-40 bg-gray-200 rounded" />
+      <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
+        <div className="h-14 w-28 bg-gray-200 rounded-lg" />
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="space-y-1.5">
+            <div className="h-3 w-20 bg-gray-200 rounded" />
+            <div className="h-10 bg-gray-100 rounded-xl" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 
   return (
     <div className="max-w-xl space-y-6">
@@ -154,7 +167,7 @@ export default function SettingsPage() {
             <input type="tel" value={form.contact_phone}
               onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
               className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="03-1234567" />
+              placeholder="03-1234567" dir="ltr" />
           </div>
         </div>
 

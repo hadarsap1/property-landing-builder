@@ -29,9 +29,11 @@ export default function AdminBillingPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    void fetch('/api/admin/subscriptions')
+    fetch('/api/admin/subscriptions')
       .then(r => r.json())
-      .then((d: { subscriptions?: SubRow[] }) => { setSubs(d.subscriptions ?? []); setLoading(false) })
+      .then((d: { subscriptions?: SubRow[] }) => setSubs(d.subscriptions ?? []))
+      .catch(() => setSubs([]))
+      .finally(() => setLoading(false))
   }, [])
 
   async function toggleOverride(agencyId: string, current: boolean) {
@@ -52,7 +54,15 @@ export default function AdminBillingPage() {
       <h1 className="text-2xl font-bold text-white mb-6">ניהול מנויים</h1>
 
       {loading ? (
-        <p className="text-gray-400">טוען...</p>
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 animate-pulse">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="flex gap-4 px-5 py-4 border-b border-gray-700 last:border-0">
+              <div className="h-4 w-32 bg-gray-700 rounded" />
+              <div className="h-4 w-16 bg-gray-700 rounded" />
+              <div className="h-4 w-20 bg-gray-700 rounded" />
+            </div>
+          ))}
+        </div>
       ) : subs.length === 0 ? (
         <p className="text-gray-400">אין מנויים עדיין</p>
       ) : (
@@ -80,8 +90,8 @@ export default function AdminBillingPage() {
                       {STATUS_LABELS[s.status] ?? s.status}
                     </span>
                     {s.manual_override && (
-                      <span className="mr-1 text-xs px-2 py-0.5 rounded-full font-medium bg-purple-900 text-purple-300">
-                        override
+                      <span className="mr-1 text-xs px-2 py-0.5 rounded-full font-medium bg-purple-900 text-purple-300" title="גישה מלאה מופעלת ידנית, ללא חיוב">
+                        גישה ידנית
                       </span>
                     )}
                   </td>
@@ -107,7 +117,7 @@ export default function AdminBillingPage() {
                           : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       }`}
                     >
-                      {s.manual_override ? 'בטל override' : 'הפעל override'}
+                      {s.manual_override ? 'בטל גישה ידנית' : 'פתח גישה ידנית'}
                     </button>
                   </td>
                 </tr>

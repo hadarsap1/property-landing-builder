@@ -394,6 +394,23 @@ export default function Step4({ project, onChange }: StepProps) {
         </div>
       )}
 
+      {/* Min-image warning */}
+      {project.images.length === 0 && (
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+          <span className="text-lg leading-none mt-0.5">📷</span>
+          <p>
+            <span className="font-semibold">לא הועלו תמונות.</span>
+            {' '}דפי נחיתה עם תמונות מקבלים פי 3 יותר פניות — מומלץ להוסיף לפחות 3 תמונות.
+          </p>
+        </div>
+      )}
+      {project.images.length > 0 && project.images.length < 3 && (
+        <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
+          <span className="text-lg leading-none mt-0.5">💡</span>
+          <p>יש לך {project.images.length} תמונה. הוספת לפחות 3 תמונות משפרת משמעותית את שיעור הפניות.</p>
+        </div>
+      )}
+
       {/* Gallery type */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">סוג גלריה</label>

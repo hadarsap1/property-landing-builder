@@ -2,6 +2,8 @@ import { auth } from '@/auth'
 import { getListingsByAgency } from '@/lib/db/queries/listings'
 import { getAgencyById } from '@/lib/db/queries/agencies'
 import { getActivePendingCountsByListings } from '@/lib/db/queries/pending-changes'
+import { getLeadsByAgency } from '@/lib/db/queries/leads'
+import { getAgencyStats } from '@/lib/db/queries/analytics'
 import Link from 'next/link'
 import { ListingCard } from './_listing-card'
 
@@ -10,12 +12,17 @@ export default async function DashboardPage() {
   const agencyId = session?.user?.agencyId
   if (!agencyId) return null
 
-  const [listings, agency] = await Promise.all([
+  const [listings, agency, leads, stats] = await Promise.all([
     getListingsByAgency(agencyId),
     getAgencyById(agencyId),
+    getLeadsByAgency(agencyId).catch(() => []),
+    getAgencyStats(agencyId, 30).catch(() => null),
   ])
 
   const pendingCounts = await getActivePendingCountsByListings(listings.map(l => l.id))
+
+  const newLeads = leads.filter(l => l.status === 'new').length
+  const activeListings = listings.filter(l => l.status === 'active').length
 
   return (
     <div className="space-y-6">
@@ -31,6 +38,40 @@ export default async function DashboardPage() {
           className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
         >
           + נכס חדש
+        </Link>
+      </div>
+
+      {/* Stats overview */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Link href="/dashboard/leads" className="bg-white rounded-2xl border border-gray-200 p-4 space-y-1 hover:border-blue-200 transition-colors">
+          <div className="text-xl">📬</div>
+          <div className="text-2xl font-bold text-gray-900">{leads.length}</div>
+          <div className="text-xs text-gray-500">לידים</div>
+          {newLeads > 0 && (
+            <div className="text-xs font-semibold text-blue-600">{newLeads} חדשים</div>
+          )}
+        </Link>
+
+        <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-1">
+          <div className="text-xl">🏠</div>
+          <div className="text-2xl font-bold text-gray-900">{activeListings}</div>
+          <div className="text-xs text-gray-500">נכסים פעילים</div>
+        </div>
+
+        <Link href="/dashboard/analytics" className="bg-white rounded-2xl border border-gray-200 p-4 space-y-1 hover:border-blue-200 transition-colors">
+          <div className="text-xl">👁</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {(stats?.total_views ?? 0).toLocaleString('he-IL')}
+          </div>
+          <div className="text-xs text-gray-500">צפיות (30י׳)</div>
+        </Link>
+
+        <Link href="/dashboard/analytics" className="bg-white rounded-2xl border border-gray-200 p-4 space-y-1 hover:border-blue-200 transition-colors">
+          <div className="text-xl">💬</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {((stats?.whatsapp_clicks ?? 0) + (stats?.phone_clicks ?? 0)).toLocaleString('he-IL')}
+          </div>
+          <div className="text-xs text-gray-500">פניות (30י׳)</div>
         </Link>
       </div>
 

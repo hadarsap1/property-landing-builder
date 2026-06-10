@@ -1,23 +1,37 @@
 import { sql, db } from '@/lib/db'
 import type { Lead, LeadNote } from '@/lib/db/types'
 
+export type LeadWithListing = Lead & {
+  listing_title: string | null
+  listing_slug: string | null
+  listing_city: string | null
+}
+
 export async function createLead(data: {
-  listing_id: string
+  listing_id?: string | null
   agency_id: string
   name?: string | null
   phone?: string | null
   email?: string | null
   source: Lead['source']
+  budget?: number | null
+  rooms_min?: number | null
+  rooms_max?: number | null
+  desired_areas?: string | null
 }): Promise<Lead> {
   const { rows } = await sql<Lead>`
-    INSERT INTO leads (listing_id, agency_id, name, phone, email, source)
+    INSERT INTO leads (listing_id, agency_id, name, phone, email, source, budget, rooms_min, rooms_max, desired_areas)
     VALUES (
-      ${data.listing_id},
+      ${data.listing_id ?? null},
       ${data.agency_id},
       ${data.name ?? null},
       ${data.phone ?? null},
       ${data.email ?? null},
-      ${data.source}
+      ${data.source},
+      ${data.budget ?? null},
+      ${data.rooms_min ?? null},
+      ${data.rooms_max ?? null},
+      ${data.desired_areas ?? null}
     )
     RETURNING *
   `
@@ -27,17 +41,17 @@ export async function createLead(data: {
 export async function getLeadsByAgency(
   agencyId: string,
   filters: { listingId?: string; status?: Lead['status']; limit?: number; offset?: number } = {}
-): Promise<Lead[]> {
-  const conditions: string[] = ['agency_id = $1']
+): Promise<LeadWithListing[]> {
+  const conditions: string[] = ['l.agency_id = $1']
   const values: (string | number | null)[] = [agencyId]
 
   if (filters.listingId) {
     values.push(filters.listingId)
-    conditions.push(`listing_id = $${values.length}`)
+    conditions.push(`l.listing_id = $${values.length}`)
   }
   if (filters.status) {
     values.push(filters.status)
-    conditions.push(`status = $${values.length}`)
+    conditions.push(`l.status = $${values.length}`)
   }
 
   const limit = filters.limit ?? 100
@@ -46,16 +60,31 @@ export async function getLeadsByAgency(
   const limitIdx = values.length - 1
   const offsetIdx = values.length
 
-  const { rows } = await db.query<Lead>(
-    `SELECT * FROM leads WHERE ${conditions.join(' AND ')} ORDER BY created_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+  const { rows } = await db.query<LeadWithListing>(
+    `SELECT l.*,
+       COALESCE(li.ai_title, li.title) AS listing_title,
+       li.slug AS listing_slug,
+       li.city AS listing_city
+     FROM leads l
+     LEFT JOIN listings li ON li.id = l.listing_id
+     WHERE ${conditions.join(' AND ')}
+     ORDER BY l.created_at DESC
+     LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
     values
   )
   return rows
 }
 
-export async function getLeadById(id: string): Promise<Lead | null> {
-  const { rows } = await sql<Lead>`
-    SELECT * FROM leads WHERE id = ${id} LIMIT 1
+export async function getLeadById(id: string): Promise<LeadWithListing | null> {
+  const { rows } = await sql<LeadWithListing>`
+    SELECT l.*,
+       COALESCE(li.ai_title, li.title) AS listing_title,
+       li.slug AS listing_slug,
+       li.city AS listing_city
+     FROM leads l
+     LEFT JOIN listings li ON li.id = l.listing_id
+     WHERE l.id = ${id}
+     LIMIT 1
   `
   return rows[0] ?? null
 }

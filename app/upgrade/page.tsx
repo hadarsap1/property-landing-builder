@@ -8,6 +8,7 @@ export default function UpgradePage() {
   const router = useRouter()
   const [agencyName, setAgencyName] = useState('')
   const [agencySlug, setAgencySlug] = useState('')
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -29,6 +30,10 @@ export default function UpgradePage() {
     setError('')
     if (!agencyName.trim() || !agencySlug.trim()) {
       setError('יש למלא שם סוכנות ושם זיהוי')
+      return
+    }
+    if (!agreedToTerms) {
+      setError('יש לאשר את תנאי השימוש ומדיניות הפרטיות')
       return
     }
     setLoading(true)
@@ -60,7 +65,7 @@ export default function UpgradePage() {
           <div className="text-4xl mb-3">🏢</div>
           <h1 className="text-2xl font-bold text-gray-900">שדרוג לחשבון מקצועי</h1>
           <p className="text-gray-500 mt-2 text-sm leading-relaxed">
-            צור סוכנות, נהל צוות, קבל לידים ואנליטיקס מלא
+            צור סוכנות, נהל צוות, קבל לידים ותובנות חכמות בזמן אמת
           </p>
         </div>
 
@@ -105,9 +110,24 @@ export default function UpgradePage() {
               </div>
             )}
 
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={e => setAgreedToTerms(e.target.checked)}
+                className="mt-0.5 shrink-0 accent-blue-600"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                קראתי ואני מסכים/ה ל
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mx-1">תנאי השימוש</a>
+                ול
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mr-1">מדיניות הפרטיות</a>
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-3 rounded-xl transition-colors"
             >
               {loading ? 'מעבד...' : 'שדרג לחשבון מקצועי'}

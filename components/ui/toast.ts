@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useSyncExternalStore } from 'react'
 
 export type ToastType = 'success' | 'error' | 'info'
 
@@ -32,14 +32,11 @@ export function toast(message: string, type: ToastType = 'info', durationMs = 35
   }, durationMs)
 }
 
+function subscribe(listener: Listener): () => void {
+  listeners.add(listener)
+  return () => listeners.delete(listener)
+}
+
 export function useToasts(): ToastEntry[] {
-  const [state, setState] = useState<ToastEntry[]>(entries)
-  useEffect(() => {
-    listeners.add(setState)
-    setState([...entries])
-    return () => {
-      listeners.delete(setState)
-    }
-  }, [])
-  return state
+  return useSyncExternalStore(subscribe, () => entries, () => entries)
 }

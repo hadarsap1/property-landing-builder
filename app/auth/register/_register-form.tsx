@@ -3,10 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { googleSignInAction } from '../login/actions'
+import { GoogleSignInButton } from '../_google-button'
 
 export default function RegisterForm({ trialDays }: { trialDays: number }) {
   const router = useRouter()
   const [form, setForm] = useState({ name: '', agency_name: '', email: '', password: '', confirm: '' })
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -21,6 +24,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
     if (form.password !== form.confirm) { setError('הסיסמאות אינן תואמות'); return }
     if (form.password.length < 8) { setError('הסיסמה חייבת להכיל לפחות 8 תווים'); return }
 
+    if (!agreedToTerms) { setError('יש לאשר את תנאי השימוש ומדיניות הפרטיות'); return }
     setLoading(true)
     try {
       const res = await fetch('/api/auth/register', {
@@ -54,13 +58,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
           )}
 
           {/* Google sign-up — fastest path */}
-          <a
-            href="/api/auth/signin/google?callbackUrl=/auth/broker-setup"
-            className="flex items-center justify-center gap-3 w-full border border-gray-300 rounded-xl py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            הרשמה עם Google
-          </a>
+          <GoogleSignInButton callbackUrl="/auth/broker-setup" label="הרשמה עם Google" />
 
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px bg-gray-200" />
@@ -70,18 +68,20 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {([
-              { id: 'name',        label: 'שם מלא',       type: 'text',     placeholder: 'ישראל ישראלי' },
-              { id: 'agency_name', label: 'שם הסוכנות',   type: 'text',     placeholder: 'סוכנות נדל״ן מצוינת' },
-              { id: 'email',       label: 'כתובת מייל',   type: 'email',    placeholder: 'you@agency.co.il' },
-              { id: 'password',    label: 'סיסמה',         type: 'password', placeholder: 'לפחות 8 תווים' },
-              { id: 'confirm',     label: 'אימות סיסמה',  type: 'password', placeholder: 'הקלד שוב' },
-            ] as const).map(({ id, label, type, placeholder }) => (
+              { id: 'name',        label: 'שם מלא',       type: 'text',     placeholder: 'ישראל ישראלי',         ac: 'name',         ltr: false },
+              { id: 'agency_name', label: 'שם הסוכנות',   type: 'text',     placeholder: 'סוכנות נדל״ן מצוינת', ac: 'organization', ltr: false },
+              { id: 'email',       label: 'כתובת מייל',   type: 'email',    placeholder: 'you@agency.co.il',     ac: 'email',        ltr: true  },
+              { id: 'password',    label: 'סיסמה',         type: 'password', placeholder: 'לפחות 8 תווים',       ac: 'new-password', ltr: true  },
+              { id: 'confirm',     label: 'אימות סיסמה',  type: 'password', placeholder: 'הקלד שוב',             ac: 'new-password', ltr: true  },
+            ] as const).map(({ id, label, type, placeholder, ac, ltr }) => (
               <div key={id} className="space-y-1">
                 <label htmlFor={id} className="text-sm font-medium text-gray-700">{label}</label>
                 <input
                   id={id}
                   type={type}
                   required
+                  dir={ltr ? 'ltr' : undefined}
+                  autoComplete={ac}
                   value={form[id]}
                   onChange={set(id)}
                   placeholder={placeholder}
@@ -90,9 +90,24 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
               </div>
             ))}
 
+            <label className="flex items-start gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedToTerms}
+                onChange={e => setAgreedToTerms(e.target.checked)}
+                className="mt-0.5 shrink-0 accent-blue-600"
+              />
+              <span className="text-xs text-gray-500 leading-relaxed">
+                קראתי ואני מסכים/ה ל
+                <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mx-1">תנאי השימוש</a>
+                ול
+                <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mr-1">מדיניות הפרטיות</a>
+              </span>
+            </label>
+
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || !agreedToTerms}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
             >
               {loading ? 'יוצר חשבון...' : 'צור חשבון'}

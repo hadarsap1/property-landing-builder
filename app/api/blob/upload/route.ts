@@ -4,7 +4,8 @@ import { auth } from '@/auth'
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth()
-  if (!session?.user?.agencyId) {
+  const userId = session?.user?.agencyId ?? session?.user?.personalUserId
+  if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     'image/gif': 'gif',
   }
   const ext = MIME_EXT[file.type] ?? 'jpg'
-  const pathname = `listings/${session.user.agencyId}/${Date.now()}.${ext}`
+  const pathname = `listings/${userId}/${Date.now()}.${ext}`
 
   const blob = await put(pathname, file, { access: 'public', contentType: file.type })
 

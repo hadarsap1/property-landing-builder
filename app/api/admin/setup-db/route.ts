@@ -14,11 +14,12 @@ function timingSafeStringEqual(a: string, b: string): boolean {
 }
 
 // One-click DB schema setup — run once after connecting a new Postgres database.
-// Protected by SETUP_SECRET env var. Call: GET /api/admin/setup-db?secret=YOUR_SECRET
-export async function GET(req: NextRequest) {
+// Protected by SETUP_SECRET env var via Authorization header.
+// Call: POST /api/admin/setup-db  with header  Authorization: Bearer YOUR_SECRET
+export async function POST(req: NextRequest) {
   const secret = process.env.SETUP_SECRET
-  const provided = req.nextUrl.searchParams.get('secret') ?? ''
-  if (!secret || !timingSafeStringEqual(provided, secret)) {
+  const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? ''
+  if (!secret || !timingSafeStringEqual(bearer, secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

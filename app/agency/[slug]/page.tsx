@@ -74,7 +74,7 @@ function ListingPreviewCard({
 
   return (
     <Link
-      href={`/agency/${agencySlug}/${listing.slug}`}
+      href={`/agency/${agencySlug}/listings/${listing.slug}`}
       className="block bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
     >
       {listing.hero_image_url ? (
