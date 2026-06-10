@@ -77,13 +77,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return true
     },
 
-    async jwt({ token, user, account, trigger, session: updateData }) {
-      // Allow client-side session update (e.g. after broker setup)
-      if (trigger === 'update' && updateData) {
-        const d = updateData as Record<string, unknown>
-        if (d.userType) token.userType = d.userType as string
-        if (d.agencyId) token.agencyId = d.agencyId as string
-        if (d.role) token.role = d.role as string
+    async jwt({ token, user, account, trigger }) {
+      // Session update requested (e.g. after broker setup completes).
+      // Re-derive role/agencyId from DB so the client cannot spoof these.
+      if (trigger === 'update' && token.email) {
+        const agent = await getAgentByEmail(token.email as string).catch(() => null)
+        if (agent) {
+          token.userType = 'commercial'
+          token.agencyId = agent.agency_id
+          token.role = agent.role
+        }
         return token
       }
 

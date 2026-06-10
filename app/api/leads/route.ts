@@ -74,20 +74,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   })
 
   // Fire-and-forget email notification to agency contact
-  void getAgencyById(body.agency_id).then((agency) => {
-    const contactEmail = agency?.contact_email
-    if (!contactEmail) return
-    const listingTitle = listing.ai_title || listing.title || 'נכס'
-    const origin = process.env.NEXTAUTH_URL ?? 'https://app.propbuilder.co.il'
-    void sendLeadNotificationEmail({
-      to: contactEmail,
-      leadName: body.name ?? null,
-      leadPhone: body.phone ?? null,
-      leadEmail: body.email ?? null,
-      listingTitle,
-      listingUrl: `${origin}/dashboard/leads`,
+  void getAgencyById(body.agency_id)
+    .then((agency) => {
+      const contactEmail = agency?.contact_email
+      if (!contactEmail) return
+      const listingTitle = listing.ai_title || listing.title || 'נכס'
+      const origin = process.env.NEXTAUTH_URL ?? `https://${process.env.ROOT_DOMAIN ?? 'app.propbuilder.co.il'}`
+      return sendLeadNotificationEmail({
+        to: contactEmail,
+        leadName: body.name ?? null,
+        leadPhone: body.phone ?? null,
+        leadEmail: body.email ?? null,
+        listingTitle,
+        listingUrl: `${origin}/dashboard/leads`,
+      })
     })
-  })
+    .catch((err: unknown) => {
+      console.error('[leads] email notification failed:', err instanceof Error ? err.message : err)
+    })
 
   return NextResponse.json({ lead }, { status: 201 })
 }

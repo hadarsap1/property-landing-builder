@@ -35,10 +35,17 @@ export async function getAgencyById(id: string): Promise<Agency | null> {
   return rows[0] ?? null
 }
 
+const AGENCY_WRITABLE_COLUMNS = new Set([
+  'name', 'logo_url', 'primary_color', 'secondary_color', 'contact_email', 'contact_phone',
+])
+
 export async function updateAgency(
   id: string,
   data: Partial<Pick<Agency, 'name' | 'logo_url' | 'primary_color' | 'secondary_color' | 'contact_email' | 'contact_phone'>>
 ): Promise<Agency | null> {
+  for (const key of Object.keys(data)) {
+    if (!AGENCY_WRITABLE_COLUMNS.has(key)) throw new Error(`Invalid agency column: ${key}`)
+  }
   const entries = Object.entries(data).filter(([, v]) => v !== undefined)
   if (!entries.length) return getAgencyById(id)
   const sets = entries.map(([k], i) => `${k} = $${i + 1}`).join(', ')

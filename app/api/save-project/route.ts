@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 interface SaveProjectBody {
   project: unknown;
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'Missing project data' }, { status: 400 });
   }
 
-  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const code = crypto.randomUUID();
 
   const isDev = !process.env.KV_URL;
   if (isDev) {

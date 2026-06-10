@@ -82,10 +82,15 @@ export async function acceptInvitation(
   return rows[0] ?? null
 }
 
+const AGENT_WRITABLE_COLUMNS = new Set(['name', 'phone', 'photo_url', 'calendly_url', 'role'])
+
 export async function updateAgent(
   id: string,
   data: Partial<Pick<Agent, 'name' | 'phone' | 'photo_url' | 'calendly_url' | 'role'>>
 ): Promise<Agent | null> {
+  for (const key of Object.keys(data)) {
+    if (!AGENT_WRITABLE_COLUMNS.has(key)) throw new Error(`Invalid agent column: ${key}`)
+  }
   const entries = Object.entries(data).filter(([, v]) => v !== undefined)
   if (!entries.length) return getAgentById(id)
   const sets = entries.map(([k], i) => `${k} = $${i + 1}`).join(', ')

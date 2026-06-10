@@ -36,14 +36,20 @@ const STATUSES = Object.keys(STATUS_LABELS) as Lead['status'][]
 export default function LeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | ''>('')
 
   useEffect(() => {
     setLoading(true)
+    setFetchError(null)
     const qs = statusFilter ? `?status=${statusFilter}` : ''
     void fetch(`/api/leads${qs}`)
-      .then(r => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('server error')
+        return r.json()
+      })
       .then((d: { leads: Lead[] }) => { setLeads(d.leads); setLoading(false) })
+      .catch(() => { setFetchError('שגיאה בטעינת הלידים — נסה לרענן את הדף'); setLoading(false) })
   }, [statusFilter])
 
   const activePipeline: Lead['status'][] = ['new', 'contacted', 'visited', 'serious', 'offer_made']
@@ -82,6 +88,17 @@ export default function LeadsPage() {
 
       {loading ? (
         <LeadsSkeleton />
+      ) : fetchError ? (
+        <div className="text-center py-20">
+          <div className="text-3xl mb-3">⚠️</div>
+          <p className="text-sm text-red-600">{fetchError}</p>
+          <button
+            onClick={() => setStatusFilter(s => s)}
+            className="mt-4 text-sm text-blue-600 hover:underline"
+          >
+            נסה שוב
+          </button>
+        </div>
       ) : leads.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <div className="text-4xl mb-3">📬</div>

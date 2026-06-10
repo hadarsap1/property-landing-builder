@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import type { Agent } from '@/lib/db/types'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 type SafeAgent = Omit<Agent, 'password_hash' | 'invitation_token'>
 
@@ -16,6 +17,7 @@ export default function TeamPage() {
   const [loading, setLoading] = useState(true)
   const [showInvite, setShowInvite] = useState(false)
   const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
 
   async function loadAgents() {
     const res = await fetch('/api/agents')
@@ -28,14 +30,25 @@ export default function TeamPage() {
 
   useEffect(() => { void loadAgents() }, [])
 
-  async function handleDelete(id: string, name: string) {
-    if (!confirm(`למחוק את ${name}?`)) return
+  async function confirmDelete() {
+    if (!deleteTarget) return
+    const { id } = deleteTarget
+    setDeleteTarget(null)
     await fetch(`/api/agents/${id}`, { method: 'DELETE' })
     setAgents((prev) => prev.filter((a) => a.id !== id))
   }
 
   return (
     <div className="max-w-2xl space-y-6">
+      {deleteTarget && (
+        <ConfirmDialog
+          message={`למחוק את ${deleteTarget.name}?`}
+          onConfirm={() => void confirmDelete()}
+          onCancel={() => setDeleteTarget(null)}
+          confirmLabel="מחק"
+          danger
+        />
+      )}
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold text-gray-900">ניהול צוות</h1>
         <button
@@ -95,7 +108,7 @@ export default function TeamPage() {
       ) : (
         <div className="divide-y divide-gray-100 bg-white rounded-2xl border border-gray-200 overflow-hidden">
           {agents.map((agent) => (
-            <AgentRow key={agent.id} agent={agent} onDelete={handleDelete} />
+            <AgentRow key={agent.id} agent={agent} onDelete={(id, name) => setDeleteTarget({ id, name })} />
           ))}
         </div>
       )}

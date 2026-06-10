@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
+import ConfirmDialog from '@/components/ui/ConfirmDialog'
 
 const STATUS_LABELS: Record<Listing['status'], string> = {
   active: 'פעיל',
@@ -32,26 +33,47 @@ export function ListingCard({
 }) {
   const [status, setStatus] = useState<Listing['status']>(listing.status)
   const [saving, setSaving] = useState(false)
+  const [pendingStatus, setPendingStatus] = useState<Listing['status'] | null>(null)
+  const [statusError, setStatusError] = useState<string | null>(null)
 
+  const LABELS: Record<Listing['status'], string> = { active: 'פעיל', paused: 'מושהה', sold: 'נמכר' }
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
   const publicUrl = agencySlug ? `/agency/${agencySlug}/${listing.slug}` : null
 
-  async function changeStatus(next: Listing['status']) {
+  function changeStatus(next: Listing['status']) {
     if (next === status) return
-    const LABELS: Record<Listing['status'], string> = { active: 'פעיל', paused: 'מושהה', sold: 'נמכר' }
-    if (!confirm(`לשנות סטטוס ל"${LABELS[next]}"?`)) return
+    setPendingStatus(next)
+  }
+
+  async function confirmStatusChange() {
+    if (!pendingStatus) return
+    const next = pendingStatus
+    setPendingStatus(null)
     setSaving(true)
+    setStatusError(null)
     const res = await fetch(`/api/listings/${listing.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: next }),
     })
-    if (res.ok) setStatus(next)
+    if (res.ok) {
+      setStatus(next)
+    } else {
+      setStatusError('שגיאה בשמירת הסטטוס — נסה שוב')
+    }
     setSaving(false)
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex items-center gap-4">
+    <>
+    {pendingStatus && (
+      <ConfirmDialog
+        message={`לשנות סטטוס ל"${LABELS[pendingStatus]}"?`}
+        onConfirm={() => void confirmStatusChange()}
+        onCancel={() => setPendingStatus(null)}
+      />
+    )}
+    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-2">
       {listing.hero_image_url ? (
         <img
           src={listing.hero_image_url}
@@ -72,7 +94,7 @@ export function ListingCard({
           <select
             value={status}
             disabled={saving}
-            onChange={e => void changeStatus(e.target.value as Listing['status'])}
+            onChange={e => changeStatus(e.target.value as Listing['status'])}
             className={`text-xs px-2 py-0.5 rounded-full font-medium border cursor-pointer focus:outline-none disabled:opacity-60 ${STATUS_SELECT_COLORS[status]}`}
           >
             {(Object.keys(STATUS_LABELS) as Listing['status'][]).map(s => (
@@ -113,6 +135,10 @@ export function ListingCard({
           עריכה
         </Link>
       </div>
+      {statusError && (
+        <p className="text-xs text-red-600 pt-1">{statusError}</p>
+      )}
     </div>
+    </>
   )
 }

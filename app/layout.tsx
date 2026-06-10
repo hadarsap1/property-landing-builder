@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Frank_Ruhl_Libre, Assistant } from "next/font/google";
 import Providers from "@/components/providers";
+import ToastContainer from "@/components/ui/ToastContainer";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-full flex flex-col font-body">
         <Providers>{children}</Providers>
+        <ToastContainer />
         <Analytics />
         <SpeedInsights />
       </body>

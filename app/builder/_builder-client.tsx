@@ -236,6 +236,19 @@ export default function BuilderClient({
     }
   }, [project, listingId, hydrated, saveToDb])
 
+  // ── Unsaved-changes guard ──────────────────────────────────────────────
+
+  useEffect(() => {
+    if (step < 1) return
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (saveStatus === 'saving' || saveStatus === 'pending') {
+        e.preventDefault()
+      }
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [step, saveStatus])
+
   // ── iframe sync (live preview) ─────────────────────────────────────────
 
   const postToIframe = useCallback((p: PropertyProject) => {
