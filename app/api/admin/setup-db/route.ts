@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@vercel/postgres'
+import crypto from 'crypto'
+
+function timingSafeStringEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) {
+    // Normalise timing: compare against itself before returning false
+    crypto.timingSafeEqual(bufA, bufA)
+    return false
+  }
+  return crypto.timingSafeEqual(bufA, bufB)
+}
 
 // One-click DB schema setup — run once after connecting a new Postgres database.
 // Protected by SETUP_SECRET env var via Authorization header.
 // Call: POST /api/admin/setup-db  with header  Authorization: Bearer YOUR_SECRET
 export async function POST(req: NextRequest) {
   const secret = process.env.SETUP_SECRET
-  const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
-  if (!secret || bearer !== secret) {
+  const bearer = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ?? ''
+  if (!secret || !timingSafeStringEqual(bearer, secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

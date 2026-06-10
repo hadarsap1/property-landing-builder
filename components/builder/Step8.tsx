@@ -43,8 +43,9 @@ export default function Step8({ project, onChange }: StepProps) {
 
       {/* Seller name */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">שם המוכר</label>
+        <label htmlFor="seller-name" className="block text-sm font-medium text-gray-700 mb-1">שם המוכר</label>
         <input
+          id="seller-name"
           type="text"
           value={project.sellerName}
           onChange={(e) => onChange({ sellerName: e.target.value })}
@@ -55,10 +56,11 @@ export default function Step8({ project, onChange }: StepProps) {
 
       {/* Phone */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
           טלפון <span className="text-red-500">*</span>
         </label>
         <input
+          id="phone"
           type="tel"
           value={project.phone}
           onChange={handlePhoneChange}
@@ -87,10 +89,11 @@ export default function Step8({ project, onChange }: StepProps) {
 
         {separateWA && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 mb-1">
               מספר WhatsApp
             </label>
             <input
+              id="whatsapp"
               type="text"
               value={project.whatsapp}
               onChange={(e) => onChange({ whatsapp: e.target.value.replace(/\D/g, '') })}

@@ -89,20 +89,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   })
 
   // Fire-and-forget email notification to agency contact
-  void getAgencyById(body.agency_id).then((agency) => {
-    const contactEmail = agency?.contact_email
-    if (!contactEmail) return
-    const listingTitle = listing.ai_title || listing.title || 'נכס'
-    const origin = process.env.NEXTAUTH_URL ?? 'https://app.propbuilder.co.il'
-    void sendLeadNotificationEmail({
-      to: contactEmail,
-      leadName: body.name ?? null,
-      leadPhone: body.phone ?? null,
-      leadEmail: body.email ?? null,
-      listingTitle,
-      listingUrl: `${origin}/dashboard/leads`,
+  void getAgencyById(body.agency_id)
+    .then((agency) => {
+      const contactEmail = agency?.contact_email
+      if (!contactEmail) return
+      const listingTitle = listing.ai_title || listing.title || 'נכס'
+      const origin = process.env.NEXTAUTH_URL ?? `https://${process.env.ROOT_DOMAIN ?? 'app.propbuilder.co.il'}`
+      return sendLeadNotificationEmail({
+        to: contactEmail,
+        leadName: body.name ?? null,
+        leadPhone: body.phone ?? null,
+        leadEmail: body.email ?? null,
+        listingTitle,
+        listingUrl: `${origin}/dashboard/leads`,
+      })
     })
-  })
+    .catch((err: unknown) => {
+      console.error('[leads] email notification failed:', err instanceof Error ? err.message : err)
+    })
 
   return NextResponse.json({ lead }, { status: 201 })
 }
@@ -117,7 +121,9 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   const { searchParams } = req.nextUrl
   const listingId = searchParams.get('listingId') ?? undefined
   const status = (searchParams.get('status') ?? undefined) as Lead['status'] | undefined
+  const limit = Math.min(parseInt(searchParams.get('limit') ?? '100', 10) || 100, 200)
+  const offset = Math.max(parseInt(searchParams.get('offset') ?? '0', 10) || 0, 0)
 
-  const leads = await getLeadsByAgency(session.user.agencyId, { listingId, status })
+  const leads = await getLeadsByAgency(session.user.agencyId, { listingId, status, limit, offset })
   return NextResponse.json({ leads })
 }

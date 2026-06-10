@@ -74,7 +74,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: process.env.ANTHROPIC_MODEL_GENERATE ?? 'claude-sonnet-4-6',
       max_tokens: MAX_TOKENS_OUTPUT,
       system: `אתה קופירייטר נדל"ן מהשורה הראשונה בשוק הישראלי. כותב בעברית. סגנון חם, ספציפי, ושכנועי - לא גנרי. הדגש על ייחודיות הנכס.`,
       messages: [

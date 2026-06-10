@@ -5,7 +5,32 @@ import { upsertSubscription } from '@/lib/billing/access'
 import { PLAN_TRIAL_DAYS } from '@/lib/billing/config'
 import { sendAdminNotificationEmail } from '@/lib/email'
 
+const REGISTER_LIMIT_MAX = 5
+const REGISTER_LIMIT_WINDOW = 3600 // 1 hour
+
+async function isRegisterRateLimited(ip: string): Promise<boolean> {
+  if (!process.env.KV_URL) return false
+  try {
+    const { kv } = await import('@vercel/kv')
+    const key = `rl:register:${ip}`
+    const count = await kv.incr(key)
+    if (count === 1) await kv.expire(key, REGISTER_LIMIT_WINDOW)
+    return count > REGISTER_LIMIT_MAX
+  } catch {
+    return false
+  }
+}
+
 export async function POST(req: NextRequest): Promise<NextResponse> {
+  const ip =
+    req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    req.headers.get('x-real-ip') ??
+    'unknown'
+
+  if (await isRegisterRateLimited(ip)) {
+    return NextResponse.json({ error: 'יותר מדי ניסיונות — נסה שוב מאוחר יותר' }, { status: 429 })
+  }
+
   try {
     const body = (await req.json()) as {
       name?: string

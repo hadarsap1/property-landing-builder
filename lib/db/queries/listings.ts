@@ -3,6 +3,27 @@ import type { Listing } from '@/lib/db/types'
 
 type PgValue = string | number | boolean | string[] | null
 
+// Exhaustive list of columns that may be written to the listings table.
+// Every caller of buildInsert/buildUpdate for listings must pass only these keys.
+export const LISTING_COLUMNS = new Set([
+  'agency_id', 'user_id', 'agent_id', 'slug', 'status', 'listing_type', 'furniture',
+  'title', 'street', 'city', 'neighborhood', 'price', 'price_on_request',
+  'built_area', 'outdoor_area', 'rooms', 'floor', 'total_floors',
+  'parking_spots', 'parking_covered', 'has_storage', 'has_saferoom',
+  'has_elevator', 'air_directions', 'build_year', 'renovation_year', 'bathrooms',
+  'raw_description', 'ai_title', 'ai_tagline', 'ai_story', 'ai_highlights',
+  'hero_image_url', 'image_urls', 'video_url', 'gallery_type', 'carousel_speed',
+  'show_map', 'map_query_override', 'template_id', 'accent_color', 'font_style',
+  'section_order', 'hidden_sections', 'seller_name', 'seller_phone', 'seller_whatsapp',
+  'open_house_date', 'open_house_end',
+])
+
+export function assertListingColumns(data: Record<string, unknown>): void {
+  for (const key of Object.keys(data)) {
+    if (!LISTING_COLUMNS.has(key)) throw new Error(`Invalid listing column: ${key}`)
+  }
+}
+
 // Transliterate Hebrew characters so slugs remain readable even for Hebrew city/street names.
 const HE_MAP: Record<string, string> = {
   'א':'a','ב':'b','ג':'g','ד':'d','ה':'h','ו':'v','ז':'z','ח':'ch','ט':'t',
@@ -39,9 +60,15 @@ function buildUpdate(table: string, id: string, data: Record<string, PgValue>) {
   }
 }
 
-export async function getListingsByAgency(agencyId: string): Promise<Listing[]> {
+export async function getListingsByAgency(
+  agencyId: string,
+  opts: { limit?: number; offset?: number } = {}
+): Promise<Listing[]> {
+  const limit = opts.limit ?? 100
+  const offset = opts.offset ?? 0
   const { rows } = await sql<Listing>`
-    SELECT * FROM listings WHERE agency_id = ${agencyId} ORDER BY created_at DESC
+    SELECT * FROM listings WHERE agency_id = ${agencyId}
+    ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
   `
   return rows
 }
@@ -60,9 +87,15 @@ export async function getListingBySlug(agencyId: string, slug: string): Promise<
   return rows[0] ?? null
 }
 
-export async function getListingsByUser(userId: string): Promise<Listing[]> {
+export async function getListingsByUser(
+  userId: string,
+  opts: { limit?: number; offset?: number } = {}
+): Promise<Listing[]> {
+  const limit = opts.limit ?? 100
+  const offset = opts.offset ?? 0
   const { rows } = await sql<Listing>`
-    SELECT * FROM listings WHERE user_id = ${userId} ORDER BY created_at DESC
+    SELECT * FROM listings WHERE user_id = ${userId}
+    ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}
   `
   return rows
 }
@@ -98,6 +131,7 @@ export async function createListing(data: {
   slug: string
   [key: string]: PgValue | undefined
 }): Promise<Listing> {
+  assertListingColumns(data)
   const { text, values } = buildInsert('listings', data as Record<string, PgValue>)
   const { rows } = await db.query<Listing>(text, values)
   return rows[0]
@@ -108,6 +142,7 @@ export async function updateListing(
   data: Record<string, PgValue>
 ): Promise<Listing | null> {
   if (Object.keys(data).length === 0) return getListingById(id)
+  assertListingColumns(data)
   const { text, values } = buildUpdate('listings', id, data)
   const { rows } = await db.query<Listing>(text, values)
   return rows[0] ?? null

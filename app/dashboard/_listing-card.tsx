@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
@@ -39,6 +40,7 @@ export function ListingCard({
   const [deleted, setDeleted] = useState(false)
   const [socialOpen, setSocialOpen] = useState(false)
   const [pendingStatus, setPendingStatus] = useState<Listing['status'] | null>(null)
+  const [statusError, setStatusError] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState(false)
 
@@ -48,12 +50,17 @@ export function ListingCard({
   async function confirmStatusChange(next: Listing['status']) {
     setPendingStatus(null)
     setSaving(true)
+    setStatusError(null)
     const res = await fetch(`/api/listings/${listing.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: next }),
     })
-    if (res.ok) setStatus(next)
+    if (res.ok) {
+      setStatus(next)
+    } else {
+      setStatusError('שגיאה בשמירת הסטטוס — נסה שוב')
+    }
     setSaving(false)
   }
 
@@ -73,11 +80,14 @@ export function ListingCard({
   if (deleted) return null
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex items-center gap-4">
+    <>
+    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-2">
       {listing.hero_image_url ? (
-        <img
+        <Image
           src={listing.hero_image_url}
           alt={listing.title ?? ''}
+          width={64}
+          height={64}
           className="w-16 h-16 rounded-xl object-cover shrink-0"
         />
       ) : (
@@ -157,6 +167,9 @@ export function ListingCard({
           מחק
         </button>
       </div>
+      {statusError && (
+        <p className="text-xs text-red-600 pt-1">{statusError}</p>
+      )}
 
       {deleteError && (
         <p className="text-xs text-red-500 text-left mt-1">שגיאה במחיקת הנכס</p>
@@ -188,5 +201,6 @@ export function ListingCard({
         onCancel={() => setDeleteOpen(false)}
       />
     </div>
+    </>
   )
 }

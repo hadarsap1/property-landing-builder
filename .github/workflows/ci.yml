@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, 'claude/**']
+  pull_request:
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+  lint-typecheck:
+    name: Lint & type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # next-env.d.ts is gitignored but required for tsc; generate it via next
+      - name: Generate Next.js type declarations
+        run: node -e "require('next/dist/lib/create-next-config-for-ts-check.js')" 2>/dev/null || printf '/// <reference types="next" />\n/// <reference types="next/image-types/global" />\n' > next-env.d.ts
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      # TODO: make blocking once pre-existing react-hooks violations are fixed
+      - name: Lint (non-blocking)
+        run: npm run lint
+        continue-on-error: true
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    env:
+      # Provide dummy env vars so the build succeeds in CI without real secrets
+      NEXTAUTH_SECRET: ci-secret-for-build-only
+      NEXTAUTH_URL: http://localhost:3000
+      POSTGRES_URL: postgresql://ci:ci@localhost/ci
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  audit:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Audit (high+)
+        run: npm audit --audit-level=high --omit=dev
