@@ -968,7 +968,13 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
           </span>
           {/* WhatsApp */}
           <a
-            href={`https://wa.me/?text=${encodeURIComponent(`🏠 ${project.aiTitle || project.title || 'נכס למכירה'}\n${shareUrl}`)}`}
+            href={`https://wa.me/?text=${encodeURIComponent([
+              `🏠 ${project.aiTitle || project.title || 'נכס למכירה'}`,
+              project.openHouseDate && new Date(project.openHouseDate).getTime() > Date.now()
+                ? `🗓️ בית פתוח: ${new Date(project.openHouseDate).toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })} בשעה ${new Date(project.openHouseDate).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })}`
+                : null,
+              shareUrl,
+            ].filter(Boolean).join('\n'))}`}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors shadow-sm"

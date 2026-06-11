@@ -310,6 +310,15 @@ export default function HomePage() {
           <Link href="/pricing" className="hover:underline transition-colors">מחירים לסוכנויות</Link>
           {' · '}
           <Link href="/terms" className="hover:underline transition-colors">תנאי שימוש</Link>
+          {' · '}
+          <a
+            href="https://hadarsap.online"
+            target="_blank"
+            rel="noopener"
+            className="hover:underline transition-colors"
+          >
+            hadarsap.online
+          </a>
         </p>
       </footer>
     </div>
