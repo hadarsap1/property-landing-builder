@@ -43,6 +43,10 @@ async function isAgencyRateLimited(agencyId: string): Promise<boolean> {
 }
 
 function buildPropertyDescription(l: Listing): string {
+  const openHouse =
+    l.open_house_date && new Date(l.open_house_date).getTime() > Date.now()
+      ? `בית פתוח: ${new Date(l.open_house_date).toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })} בשעה ${new Date(l.open_house_date).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })} — חשוב לציין בפוסט!`
+      : null
   return [
     l.ai_title || l.title,
     l.ai_tagline,
@@ -52,6 +56,7 @@ function buildPropertyDescription(l: Listing): string {
     l.floor && `קומה: ${l.floor}${l.total_floors ? ` מתוך ${l.total_floors}` : ''}`,
     l.price && !l.price_on_request && `מחיר: ₪${l.price.toLocaleString('he-IL')}`,
     l.price_on_request && 'מחיר לפי פנייה',
+    openHouse,
     l.ai_story && `סיפור: ${l.ai_story.slice(0, 600)}`,
     l.ai_highlights?.length && `נקודות בולטות: ${l.ai_highlights.slice(0, 5).join(' · ')}`,
   ].filter(Boolean).join('\n')
@@ -103,7 +108,7 @@ export async function POST(req: NextRequest, { params }: RouteContext): Promise<
 
   try {
     const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: process.env.ANTHROPIC_MODEL_GENERATE ?? 'claude-sonnet-4-6',
       max_tokens: 600,
       system: `אתה קופירייטר נדל"ן בכיר שכותב פוסטים ברשתות חברתיות עבור סוכנים ישראלים.
 כותב בעברית טבעית ושוטפת. אל תשתמש במילים גנריות ("מדהים", "חלום") — תיאור ספציפי תמיד מנצח.`,
