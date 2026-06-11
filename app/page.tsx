@@ -304,22 +304,24 @@ export default function HomePage() {
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────── */}
-      <footer className="text-center text-sm py-6" style={{ borderTop: `1px solid ${G.border}`, color: G.muted }}>
-        <p>
-          Property Builder · {new Date().getFullYear()} ·{' '}
-          <Link href="/pricing" className="hover:underline transition-colors">מחירים לסוכנויות</Link>
-          {' · '}
-          <Link href="/terms" className="hover:underline transition-colors">תנאי שימוש</Link>
-          {' · '}
+      <footer className="text-sm py-6 px-4" style={{ borderTop: `1px solid ${G.border}`, color: G.muted }}>
+        <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1.5 max-w-lg mx-auto text-center">
+          <span className="whitespace-nowrap">Property Builder · {new Date().getFullYear()}</span>
+          <span aria-hidden="true">·</span>
+          <Link href="/pricing" className="hover:underline transition-colors whitespace-nowrap">מחירים לסוכנויות</Link>
+          <span aria-hidden="true">·</span>
+          <Link href="/terms" className="hover:underline transition-colors whitespace-nowrap">תנאי שימוש</Link>
+          <span aria-hidden="true">·</span>
           <a
             href="https://hadarsap.online"
             target="_blank"
             rel="noopener"
-            className="hover:underline transition-colors"
+            className="hover:underline transition-colors whitespace-nowrap"
+            dir="ltr"
           >
             hadarsap.online
           </a>
-        </p>
+        </div>
       </footer>
     </div>
   )

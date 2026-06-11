@@ -15,10 +15,6 @@ export default function AdminDiscountCodesPage() {
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    void loadCodes()
-  }, [])
-
   async function loadCodes() {
     try {
       const res = await fetch('/api/admin/discount-codes')
@@ -32,6 +28,11 @@ export default function AdminDiscountCodesPage() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    void loadCodes()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault()

@@ -102,6 +102,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         leadEmail: body.email ?? null,
         listingTitle,
         listingUrl: `${origin}/dashboard/leads`,
+        source,
       })
     })
     .catch((err: unknown) => {

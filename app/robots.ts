@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
         userAgent: '*',
         allow: '/',
         // Private/auth surfaces and share-by-secret-link pages must not be indexed
-        disallow: ['/api/', '/dashboard/', '/admin/', '/auth/', '/builder/', '/preview/', '/seller/'],
+        disallow: ['/api/', '/dashboard/', '/admin/', '/auth/', '/builder/', '/preview/', '/seller/', '/flyer/'],
       },
     ],
   }

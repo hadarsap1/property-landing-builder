@@ -341,7 +341,7 @@ export default function Step1({ project, onChange }: StepProps) {
           </div>
         )}
         {!project.priceOnRequest && !project.price && (
-          <p className="text-xs text-orange-500 mt-1">הזן מחיר או סמן "לא להציג מחיר בדף"</p>
+          <p className="text-xs text-orange-500 mt-1">הזן מחיר או סמן &quot;לא להציג מחיר בדף&quot;</p>
         )}
       </div>
 

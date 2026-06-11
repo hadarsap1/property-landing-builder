@@ -162,7 +162,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">1</span>
             <div>
               <p className="font-medium text-gray-800 text-sm">שמור וקבל קישור</p>
-              <p className="text-xs text-gray-500">לחץ על "שמור וקבל קישור" למטה, ותקבל קוד 6 ספרות וקישור ישיר</p>
+              <p className="text-xs text-gray-500">לחץ על &quot;שמור וקבל קישור&quot; למטה, ותקבל קוד 6 ספרות וקישור ישיר</p>
             </div>
           </li>
           <li className="flex items-start gap-3">

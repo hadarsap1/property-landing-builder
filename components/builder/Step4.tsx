@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PropertyProject, StoredImage } from '@/types/project'
 
 interface StepProps {
@@ -90,10 +90,12 @@ export default function Step4({ project, onChange }: StepProps) {
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set())
   const [enhancing, setEnhancing] = useState<Record<string, boolean>>({})
   const fileInputRef = useRef<HTMLInputElement>(null)
-  // Tracks the latest images array so parallel uploads don't clobber each other
+  // Tracks the latest images array so parallel uploads don't clobber each other.
+  // Synced in an effect (not during render) so concurrent renders stay pure.
   const latestImagesRef = useRef<StoredImage[]>(project.images)
-  // Keep ref in sync with prop (parent may update between uploads)
-  latestImagesRef.current = project.images
+  useEffect(() => {
+    latestImagesRef.current = project.images
+  }, [project.images])
 
   function applyEnhancement(dataUrl: string): Promise<string> {
     return new Promise((resolve, reject) => {
