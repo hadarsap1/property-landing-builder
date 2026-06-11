@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = listing.ai_title || listing.title || 'נכס למכירה'
   const city = listing.city ? ` — ${listing.city}` : ''
   const desc = listing.ai_tagline || `${listing.rooms ?? ''} חדרים${city}`
-  const canonical = listingCanonicalUrl(slug, listingSlug)
+  const canonical = listingCanonicalUrl(agency, listingSlug)
 
   return {
     title,
@@ -56,7 +56,7 @@ export default async function ListingPage({ params }: Props) {
 
   const project = listingToProject(listing)
   const agent = listing.agent_id ? await getAgentById(listing.agent_id) : null
-  const jsonLd = listingJsonLd(listing, agency, listingCanonicalUrl(slug, listingSlug))
+  const jsonLd = listingJsonLd(listing, agency, listingCanonicalUrl(agency, listingSlug))
 
   return (
     <>

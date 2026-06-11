@@ -35,13 +35,20 @@ export async function getAgencyById(id: string): Promise<Agency | null> {
   return rows[0] ?? null
 }
 
+export async function getAgencyByCustomDomain(domain: string): Promise<Agency | null> {
+  const { rows } = await sql<Agency>`
+    SELECT * FROM agencies WHERE custom_domain = ${domain.toLowerCase()} LIMIT 1
+  `
+  return rows[0] ?? null
+}
+
 export const AGENCY_WRITABLE_COLUMNS = new Set([
-  'name', 'logo_url', 'primary_color', 'secondary_color', 'contact_email', 'contact_phone',
+  'name', 'logo_url', 'primary_color', 'secondary_color', 'contact_email', 'contact_phone', 'custom_domain',
 ])
 
 export async function updateAgency(
   id: string,
-  data: Partial<Pick<Agency, 'name' | 'logo_url' | 'primary_color' | 'secondary_color' | 'contact_email' | 'contact_phone'>>
+  data: Partial<Pick<Agency, 'name' | 'logo_url' | 'primary_color' | 'secondary_color' | 'contact_email' | 'contact_phone' | 'custom_domain'>>
 ): Promise<Agency | null> {
   for (const key of Object.keys(data)) {
     if (!AGENCY_WRITABLE_COLUMNS.has(key)) throw new Error(`Invalid agency column: ${key}`)

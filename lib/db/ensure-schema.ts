@@ -1,4 +1,4 @@
-import { db } from '@vercel/postgres'
+import { db } from '@/lib/db'
 
 let schemaReady = false
 
@@ -248,6 +248,9 @@ const SCHEMA_STATEMENTS = [
   `ALTER TABLE leads ADD COLUMN IF NOT EXISTS desired_areas text`,
 
   `ALTER TABLE listings ADD COLUMN IF NOT EXISTS chat_qa text`,
+
+  `ALTER TABLE agencies ADD COLUMN IF NOT EXISTS custom_domain text UNIQUE`,
+  `CREATE INDEX IF NOT EXISTS idx_agencies_custom_domain ON agencies(custom_domain) WHERE custom_domain IS NOT NULL`,
 
   `CREATE INDEX IF NOT EXISTS idx_leads_listing_id       ON leads(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_leads_agency_id        ON leads(agency_id)`,
