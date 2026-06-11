@@ -59,6 +59,9 @@ export interface PropertyProject {
   sellerName: string;
   phone: string;
   whatsapp: string;
+  /** ISO datetime strings; empty string = no open house scheduled */
+  openHouseDate: string;
+  openHouseEnd: string;
 }
 
 export interface StoredImage {

@@ -96,6 +96,8 @@ const DEFAULT_PROJECT: PropertyProject = {
   sellerName: '',
   phone: '',
   whatsapp: '',
+  openHouseDate: '',
+  openHouseEnd: '',
 }
 
 type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error'

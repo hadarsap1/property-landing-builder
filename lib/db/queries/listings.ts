@@ -81,6 +81,19 @@ export async function getListingsByAgency(
   return rows
 }
 
+/** Lean slug list for sitemap generation — active listings only. */
+export async function getActiveListingSlugs(
+  agencyId: string
+): Promise<{ slug: string; updated_at: Date }[]> {
+  const { rows } = await sql<{ slug: string; updated_at: Date }>`
+    SELECT slug, updated_at FROM listings
+    WHERE agency_id = ${agencyId} AND status = 'active'
+    ORDER BY updated_at DESC
+    LIMIT 5000
+  `
+  return rows
+}
+
 export async function getListingById(id: string): Promise<Listing | null> {
   const { rows } = await sql<Listing>`
     SELECT * FROM listings WHERE id = ${id} LIMIT 1

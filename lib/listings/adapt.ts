@@ -105,6 +105,8 @@ export function listingToProject(listing: Listing): PropertyProject {
     sellerName: listing.seller_name ?? '',
     phone: listing.seller_phone ?? '',
     whatsapp: listing.seller_whatsapp ?? '',
+    openHouseDate: listing.open_house_date ? new Date(listing.open_house_date).toISOString() : '',
+    openHouseEnd: listing.open_house_end ? new Date(listing.open_house_end).toISOString() : '',
   }
 }
 
@@ -165,5 +167,7 @@ export function projectToListingData(
     seller_name: project.sellerName || null,
     seller_phone: project.phone || null,
     seller_whatsapp: project.whatsapp || null,
+    open_house_date: project.openHouseDate || null,
+    open_house_end: project.openHouseEnd || null,
   }
 }
