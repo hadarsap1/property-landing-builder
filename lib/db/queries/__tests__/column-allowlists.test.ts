@@ -6,8 +6,11 @@ vi.mock('bcryptjs', () => ({ default: { hash: vi.fn(), compare: vi.fn() } }))
 
 import {
   LISTING_COLUMNS,
+  CLIENT_WRITABLE_COLUMNS,
   assertListingColumns,
 } from '../listings'
+import { projectToListingData } from '@/lib/listings/adapt'
+import type { PropertyProject } from '@/types/project'
 import { AGENT_WRITABLE_COLUMNS } from '../agents'
 import { AGENCY_WRITABLE_COLUMNS } from '../agencies'
 
@@ -26,6 +29,41 @@ describe('LISTING_COLUMNS allowlist', () => {
     const dangerous = ['__proto__', 'constructor', 'prototype', 'id', 'created_at']
     for (const col of dangerous) {
       expect(LISTING_COLUMNS.has(col), `"${col}" should not be in LISTING_COLUMNS`).toBe(false)
+    }
+  })
+})
+
+describe('allowlist consistency', () => {
+  it('every column the builder saves passes assertListingColumns', () => {
+    // Regression: chat_qa was once writable via PATCH but missing from
+    // LISTING_COLUMNS, so every builder autosave threw and returned 500.
+    // projectToListingData produces exactly what the builder PATCHes.
+    const emptyProject = {
+      listingType: 'sale', title: '', street: '', city: '', neighborhood: '',
+      price: null, priceOnRequest: false, furniture: '', builtArea: null,
+      gardenArea: null, rooms: null, floor: null, totalFloors: null,
+      parkingSpots: null, parkingType: '', hasStorage: false, hasSaferoom: false,
+      hasElevator: false, airDirections: [], buildYear: null, renovationYear: null,
+      bathrooms: null, rawStory: '', aiTitle: '', aiTagline: '', aiStory: '',
+      aiHighlights: [], chatQA: '', images: [], heroImageIndex: 0,
+      galleryType: 'grid', videoUrl: '', showMap: true, mapQuery: '',
+      template: 'modern-blue', accentColor: '', fontStyle: 'sans-serif',
+      sectionOrder: [], sectionVisibility: {}, specIcons: {},
+      sellerName: '', phone: '', whatsapp: '', openHouseDate: '', openHouseEnd: '',
+    } as unknown as PropertyProject
+    const saved = projectToListingData(emptyProject)
+    expect(() => assertListingColumns(saved)).not.toThrow()
+  })
+
+  it('client-writable set is a subset of LISTING_COLUMNS', () => {
+    for (const col of CLIENT_WRITABLE_COLUMNS) {
+      expect(LISTING_COLUMNS.has(col), `"${col}" writable but not a known column`).toBe(true)
+    }
+  })
+
+  it('server-managed columns are not client-writable', () => {
+    for (const col of ['agency_id', 'user_id', 'agent_id', 'slug']) {
+      expect(CLIENT_WRITABLE_COLUMNS.has(col), `"${col}" must not be client-writable`).toBe(false)
     }
   })
 })

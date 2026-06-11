@@ -11,7 +11,7 @@ export const LISTING_COLUMNS = new Set([
   'built_area', 'outdoor_area', 'rooms', 'floor', 'total_floors',
   'parking_spots', 'parking_covered', 'has_storage', 'has_saferoom',
   'has_elevator', 'air_directions', 'build_year', 'renovation_year', 'bathrooms',
-  'raw_description', 'ai_title', 'ai_tagline', 'ai_story', 'ai_highlights',
+  'raw_description', 'ai_title', 'ai_tagline', 'ai_story', 'ai_highlights', 'chat_qa',
   'hero_image_url', 'image_urls', 'video_url', 'gallery_type', 'carousel_speed',
   'show_map', 'map_query_override', 'template_id', 'accent_color', 'font_style',
   'section_order', 'hidden_sections', 'seller_name', 'seller_phone', 'seller_whatsapp',
@@ -23,6 +23,14 @@ export function assertListingColumns(data: Record<string, unknown>): void {
     if (!LISTING_COLUMNS.has(key)) throw new Error(`Invalid listing column: ${key}`)
   }
 }
+
+// Columns the server assigns itself — clients may never write these via the API.
+const SERVER_MANAGED_COLUMNS = new Set(['agency_id', 'user_id', 'agent_id', 'slug'])
+
+/** Columns clients may PATCH. Derived from LISTING_COLUMNS so the two sets can't drift. */
+export const CLIENT_WRITABLE_COLUMNS = new Set(
+  [...LISTING_COLUMNS].filter((c) => !SERVER_MANAGED_COLUMNS.has(c))
+)
 
 // Transliterate Hebrew characters so slugs remain readable even for Hebrew city/street names.
 const HE_MAP: Record<string, string> = {

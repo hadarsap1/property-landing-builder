@@ -4,6 +4,7 @@ import {
   getListingById,
   updateListing,
   deleteListing,
+  CLIENT_WRITABLE_COLUMNS,
 } from '@/lib/db/queries/listings'
 import type { Listing } from '@/lib/db/types'
 import type { Session } from 'next-auth'
@@ -43,23 +44,12 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
   }
 
   // Allowlist: only known listing columns may be written — prevents column-name injection
-  // into the buildUpdate SQL string interpolation
-  const WRITABLE_FIELDS = new Set([
-    'listing_type', 'furniture',
-    'title', 'street', 'city', 'neighborhood', 'price', 'price_on_request',
-    'built_area', 'outdoor_area', 'rooms', 'floor', 'total_floors',
-    'parking_spots', 'parking_covered', 'has_storage', 'has_saferoom',
-    'has_elevator', 'air_directions', 'build_year', 'renovation_year', 'bathrooms',
-    'raw_description', 'ai_title', 'ai_tagline', 'ai_story', 'ai_highlights', 'chat_qa',
-    'hero_image_url', 'image_urls', 'video_url', 'gallery_type', 'carousel_speed',
-    'show_map', 'map_query_override', 'template_id', 'accent_color', 'font_style',
-    'section_order', 'hidden_sections', 'seller_name', 'seller_phone', 'seller_whatsapp',
-    'open_house_date', 'open_house_end', 'status',
-    // 'slug' intentionally omitted — slugs are server-generated and must not be client-writable
-  ])
+  // into the buildUpdate SQL string interpolation. Derived from LISTING_COLUMNS (single
+  // source of truth) minus server-managed columns like slug/agency_id, so this filter can
+  // never drift out of sync with updateListing's assertListingColumns and 500 on save.
   const raw = (await req.json()) as Record<string, unknown>
   const data = Object.fromEntries(
-    Object.entries(raw).filter(([k]) => WRITABLE_FIELDS.has(k))
+    Object.entries(raw).filter(([k]) => CLIENT_WRITABLE_COLUMNS.has(k))
   ) as Record<string, string | number | boolean | string[] | null>
 
   // Validate status against known enum
