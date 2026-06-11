@@ -4,6 +4,9 @@ import SellerForm from './_seller-form'
 
 export const dynamic = 'force-dynamic'
 
+// Secret-link page — must never be indexed
+export const metadata = { robots: { index: false, follow: false } }
+
 type Props = { params: Promise<{ token: string }> }
 
 export default async function SellerPage({ params }: Props) {

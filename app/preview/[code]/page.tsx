@@ -7,8 +7,11 @@ export const dynamic = 'force-dynamic';
 
 // ── Data loading ──────────────────────────────────────────────────────────────
 
+// UUID codes (current) or legacy 6-digit codes still alive in KV
+const CODE_RE = /^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|\d{6})$/i;
+
 async function loadProject(code: string): Promise<PropertyProject | null> {
-  if (!/^\d{6}$/.test(code)) return null;
+  if (!CODE_RE.test(code)) return null;
   if (!process.env.KV_URL) return null;
   try {
     const { kv } = await import('@vercel/kv');
@@ -38,6 +41,8 @@ export async function generateMetadata({
   return {
     title,
     description: desc,
+    // Share-by-link pages are private — keep them out of search engines
+    robots: { index: false, follow: false },
     openGraph: { title, description: desc, type: 'website' },
   };
 }
