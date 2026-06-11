@@ -1,4 +1,4 @@
-import { db } from '@vercel/postgres'
+import { db } from '@/lib/db'
 
 let schemaReady = false
 

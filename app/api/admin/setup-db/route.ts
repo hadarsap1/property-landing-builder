@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@vercel/postgres'
+import { db } from '@/lib/db'
 import crypto from 'crypto'
 
 function timingSafeStringEqual(a: string, b: string): boolean {
