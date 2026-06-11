@@ -153,6 +153,13 @@ export function ListingCard({
         >
           עריכה
         </Link>
+        <Link
+          href={`/flyer/${listing.id}`}
+          target="_blank"
+          className="text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg px-3 py-1.5 font-medium transition-colors"
+        >
+          🖨️ פלייר
+        </Link>
         <button
           onClick={() => setSocialOpen(true)}
           className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-lg px-3 py-1.5 font-medium transition-colors"

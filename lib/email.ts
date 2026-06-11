@@ -31,6 +31,7 @@ export async function sendLeadNotificationEmail({
   leadEmail,
   listingTitle,
   listingUrl,
+  source,
 }: {
   to: string
   leadName: string | null
@@ -38,7 +39,9 @@ export async function sendLeadNotificationEmail({
   leadEmail: string | null
   listingTitle: string
   listingUrl: string
+  source?: string
 }): Promise<void> {
+  const isOpenHouse = source === 'open_house'
   if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
     console.info(`\n[lead-notify] New lead for "${listingTitle}" from ${leadName ?? 'אנונימי'} (${leadPhone ?? leadEmail ?? '—'})`)
     return
@@ -50,11 +53,11 @@ export async function sendLeadNotificationEmail({
   await transport.sendMail({
     from: process.env.EMAIL_FROM,
     to,
-    subject: `ליד חדש: ${listingTitle}`,
-    text: `ליד חדש התקבל לנכס "${listingTitle}".\n\nשם: ${leadName ?? '—'}\nיצירת קשר: ${contact}\n\nצפה בלוח הבקרה:\n${listingUrl}`,
+    subject: isOpenHouse ? `הרשמה לבית פתוח: ${listingTitle}` : `ליד חדש: ${listingTitle}`,
+    text: `${isOpenHouse ? 'נרשם חדש לבית הפתוח' : 'ליד חדש התקבל'} לנכס "${listingTitle}".\n\nשם: ${leadName ?? '—'}\nיצירת קשר: ${contact}\n\nצפה בלוח הבקרה:\n${listingUrl}`,
     html: `
       <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
-        <h2 style="color:#1e3a5f">ליד חדש התקבל</h2>
+        <h2 style="color:#1e3a5f">${isOpenHouse ? '🏠 נרשם חדש לבית הפתוח' : 'ליד חדש התקבל'}</h2>
         <p>נכס: <strong>${listingTitle}</strong></p>
         <table style="border-collapse:collapse;width:100%;margin:12px 0">
           <tr><td style="padding:6px 0;color:#6b7280">שם</td><td style="padding:6px 0;font-weight:600">${leadName ?? '—'}</td></tr>

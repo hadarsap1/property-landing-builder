@@ -212,7 +212,7 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
 
           {result.rawStory && (
             <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-              <span className="text-xs text-gray-500 block mb-1">תיאור שיועבר לשלב "הסיפור"</span>
+              <span className="text-xs text-gray-500 block mb-1">תיאור שיועבר לשלב &quot;הסיפור&quot;</span>
               <p className="text-sm text-gray-700 line-clamp-3 leading-relaxed">{result.rawStory}</p>
             </div>
           )}

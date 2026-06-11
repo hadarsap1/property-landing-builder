@@ -42,10 +42,8 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
 
-      # TODO: make blocking once pre-existing react-hooks violations are fixed
-      - name: Lint (non-blocking)
+      - name: Lint
         run: npm run lint
-        continue-on-error: true
 
   build:
     name: Build

@@ -45,7 +45,7 @@ export default function PricingPage() {
           ניסיון חינם ל-{PLAN_TRIAL_DAYS} ימים · ללא כרטיס אשראי
         </div>
         <h1 className="text-4xl font-extrabold text-gray-900 mb-4">מחירים פשוטים ושקופים</h1>
-        <p className="text-lg text-gray-500">תכנית אחת לסוכנויות. כל הפיצ'רים. ביטול בכל עת.</p>
+        <p className="text-lg text-gray-500">תכנית אחת לסוכנויות. כל הפיצ&apos;רים. ביטול בכל עת.</p>
       </section>
 
       <section className="max-w-3xl mx-auto px-6 pb-20">

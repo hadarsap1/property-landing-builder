@@ -32,7 +32,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">1. כללי</h2>
               <p>
-                Property Landing Builder ("השירות") הוא כלי מקוון ליצירת דפי נחיתה לנכסי נדל"ן.
+                Property Landing Builder (&quot;השירות&quot;) הוא כלי מקוון ליצירת דפי נחיתה לנכסי נדל&quot;ן.
                 השימוש בשירות מהווה הסכמה לתנאים המפורטים להלן.
                 אם אינך מסכים לתנאים, אנא הפסק להשתמש בשירות.
               </p>
@@ -41,7 +41,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">2. השימוש המותר</h2>
               <p className="mb-2">
-                השירות מיועד לשימוש חוקי בלבד, לצורך יצירת ופרסום מידע על נכסי נדל"ן.
+                השירות מיועד לשימוש חוקי בלבד, לצורך יצירת ופרסום מידע על נכסי נדל&quot;ן.
                 המשתמש מתחייב:
               </p>
               <ul className="list-disc list-inside space-y-1 text-gray-600 mr-4">
@@ -57,7 +57,7 @@ export default function TermsPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-2">3. תוכן שיווקי שנוצר על ידי AI</h2>
               <p>
                 השירות משתמש בינה מלאכותית (Anthropic Claude) לצורך יצירת תיאורי נכסים ותוכן שיווקי.
-                התוכן שנוצר מסופק "כמות שהוא" ויתכנו בו אי דיוקים.
+                התוכן שנוצר מסופק &quot;כמות שהוא&quot; ויתכנו בו אי דיוקים.
                 האחריות לבדיקת התוכן ולדיוקו מוטלת על המשתמש בלבד.
                 השירות אינו מהווה ייעוץ משפטי, פיננסי, שמאי, או מקצועי מכל סוג שהוא.
               </p>
@@ -101,7 +101,7 @@ export default function TermsPage() {
             <section>
               <h2 className="text-lg font-semibold text-gray-900 mb-2">7. הגבלת אחריות</h2>
               <p className="mb-2">
-                השירות מסופק "כמות שהוא", ללא כל אחריות מפורשת או משתמעת.
+                השירות מסופק &quot;כמות שהוא&quot;, ללא כל אחריות מפורשת או משתמעת.
                 בעל השירות לא יהיה אחראי בגין:
               </p>
               <ul className="list-disc list-inside space-y-1 text-gray-600 mr-4">
