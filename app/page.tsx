@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import ThemeToggle from '@/components/ThemeToggle'
+import LayoutDebug from '@/components/layout-debug'
 
 export const metadata: Metadata = {
   title: 'PropBuilder — דף נחיתה מקצועי לנכס שלך',
@@ -110,6 +111,7 @@ const FEATURES = [
 export default function HomePage() {
   return (
     <div dir="rtl" lang="he" className="font-body" style={{ background: G.bg, color: G.text, minHeight: '100vh' }}>
+      <LayoutDebug />
 
       {/* ── NAV ─────────────────────────────────────────────── */}
       <nav
