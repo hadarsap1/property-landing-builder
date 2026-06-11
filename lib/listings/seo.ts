@@ -3,9 +3,17 @@ import type { Agency } from '@/lib/db/types'
 
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? 'property-landing-builder.vercel.app'
 
-/** Canonical public URL for a listing on its agency subdomain. */
-export function listingCanonicalUrl(agencySlug: string, listingSlug: string): string {
-  return `https://${agencySlug}.${ROOT_DOMAIN}/listings/${listingSlug}`
+/** Public host for an agency — custom domain when connected, platform subdomain otherwise. */
+export function agencyHost(agency: Pick<Agency, 'slug' | 'custom_domain'>): string {
+  return agency.custom_domain || `${agency.slug}.${ROOT_DOMAIN}`
+}
+
+/** Canonical public URL for a listing on its agency's public host. */
+export function listingCanonicalUrl(
+  agency: Pick<Agency, 'slug' | 'custom_domain'>,
+  listingSlug: string
+): string {
+  return `https://${agencyHost(agency)}/listings/${listingSlug}`
 }
 
 /**

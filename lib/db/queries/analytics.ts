@@ -81,6 +81,59 @@ export async function getAgencyTimeSeries(agencyId: string, days = 30): Promise<
   }))
 }
 
+export interface FunnelStats {
+  views: number
+  unique_sessions: number
+  contact_clicks: number
+  leads: number
+  open_house_regs: number
+}
+
+/** Views → unique visitors → contact clicks → leads, over the same window. */
+export async function getAgencyFunnel(agencyId: string, days = 30): Promise<FunnelStats> {
+  const [events, leadRows] = await Promise.all([
+    sql<{ views: string; unique_sessions: string; contact_clicks: string }>`
+      SELECT
+        COUNT(*) FILTER (WHERE event_type = 'page_view') AS views,
+        COUNT(DISTINCT session_id) FILTER (WHERE event_type = 'page_view') AS unique_sessions,
+        COUNT(*) FILTER (WHERE event_type IN ('whatsapp_click','phone_click','booking_click')) AS contact_clicks
+      FROM analytics_events
+      WHERE agency_id = ${agencyId}
+        AND created_at >= now() - (${days} || ' days')::interval
+    `,
+    sql<{ leads: string; open_house_regs: string }>`
+      SELECT
+        COUNT(*) AS leads,
+        COUNT(*) FILTER (WHERE source = 'open_house') AS open_house_regs
+      FROM leads
+      WHERE agency_id = ${agencyId}
+        AND created_at >= now() - (${days} || ' days')::interval
+    `,
+  ])
+  const e = events.rows[0]
+  const l = leadRows.rows[0]
+  return {
+    views:           parseInt(e?.views           ?? '0', 10),
+    unique_sessions: parseInt(e?.unique_sessions ?? '0', 10),
+    contact_clicks:  parseInt(e?.contact_clicks  ?? '0', 10),
+    leads:           parseInt(l?.leads           ?? '0', 10),
+    open_house_regs: parseInt(l?.open_house_regs ?? '0', 10),
+  }
+}
+
+/** Lead counts per listing for the same window — joined into the per-listing table. */
+export async function getLeadCountsByListing(agencyId: string, days = 30): Promise<Record<string, number>> {
+  const { rows } = await sql<{ listing_id: string; leads: string }>`
+    SELECT listing_id, COUNT(*) AS leads
+    FROM leads
+    WHERE agency_id = ${agencyId}
+      AND listing_id IS NOT NULL
+      AND created_at >= now() - (${days} || ' days')::interval
+    GROUP BY listing_id
+  `
+  return Object.fromEntries(rows.map((r) => [r.listing_id, parseInt(r.leads, 10)]))
+}
+
 export interface ListingStatRow {
   listing_id: string
   views: number

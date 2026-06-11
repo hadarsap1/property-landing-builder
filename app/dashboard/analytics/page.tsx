@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { AgencyStats, DayBucket, ListingStatRow } from '@/lib/db/queries/analytics'
+import type { AgencyStats, DayBucket, ListingStatRow, FunnelStats } from '@/lib/db/queries/analytics'
 
 type AnalyticsResponse = {
   stats: AgencyStats
   timeSeries: DayBucket[]
-  listingStats: (ListingStatRow & { title: string; slug: string })[]
+  listingStats: (ListingStatRow & { title: string; slug: string; leads: number })[]
+  funnel: FunnelStats
   days: number
 }
 
@@ -48,6 +49,7 @@ export default function AnalyticsPage() {
       ) : (
         <>
           <StatCards stats={data.stats} />
+          <Funnel funnel={data.funnel} />
           <TimeSeriesChart series={data.timeSeries} />
           <ListingsTable rows={data.listingStats} />
         </>
@@ -100,6 +102,60 @@ function StatCards({ stats }: { stats: AgencyStats }) {
           <div className="text-xs text-gray-500">{c.label}</div>
         </div>
       ))}
+    </div>
+  )
+}
+
+/* ── Conversion funnel ──────────────────────────────────────────────── */
+function Funnel({ funnel }: { funnel: FunnelStats }) {
+  const stages = [
+    { label: 'צפיות בדפים',   value: funnel.views,           color: 'bg-blue-500' },
+    { label: 'מבקרים ייחודיים', value: funnel.unique_sessions, color: 'bg-sky-500' },
+    { label: 'יצירות קשר',    value: funnel.contact_clicks,   color: 'bg-teal-500' },
+    { label: 'לידים',          value: funnel.leads,            color: 'bg-green-500' },
+  ]
+  const max = Math.max(stages[0].value, 1)
+
+  if (funnel.views === 0 && funnel.leads === 0) return null
+
+  function pct(from: number, to: number): string {
+    if (!from) return '—'
+    return `${Math.round((to / from) * 100)}%`
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-700">משפך המרה</h2>
+        {funnel.open_house_regs > 0 && (
+          <span className="text-xs text-amber-600 font-medium">
+            🗓️ {funnel.open_house_regs} נרשמו לבתים פתוחים
+          </span>
+        )}
+      </div>
+      <div className="space-y-2">
+        {stages.map((s, i) => (
+          <div key={s.label} className="flex items-center gap-3">
+            <div className="w-28 shrink-0 text-xs text-gray-600">{s.label}</div>
+            <div className="flex-1 h-7 bg-gray-50 rounded-lg overflow-hidden">
+              <div
+                className={`h-full ${s.color} rounded-lg flex items-center px-2 transition-all`}
+                style={{ width: `${Math.max((s.value / max) * 100, s.value > 0 ? 6 : 0)}%` }}
+              >
+                <span className="text-xs font-bold text-white">{s.value.toLocaleString('he-IL')}</span>
+              </div>
+            </div>
+            <div className="w-12 shrink-0 text-xs text-gray-400 text-left" title={i === 0 ? '' : `המרה מ${stages[i - 1].label}`}>
+              {i === 0 ? '' : pct(stages[i - 1].value, s.value)}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-gray-400">
+        {funnel.views > 0 && funnel.leads > 0
+          ? `סה״כ: ${pct(funnel.views, funnel.leads)} מהצפיות הפכו ללידים`
+          : 'אחוזי ההמרה מחושבים בין שלב לשלב'}
+      </p>
     </div>
   )
 }
@@ -167,7 +223,7 @@ function TimeSeriesChart({ series }: { series: DayBucket[] }) {
 function ListingsTable({
   rows,
 }: {
-  rows: (ListingStatRow & { title: string; slug: string })[]
+  rows: (ListingStatRow & { title: string; slug: string; leads: number })[]
 }) {
   if (!rows.length) return null
 
@@ -187,6 +243,7 @@ function ListingsTable({
                 <span title="צפיות">👁 {r.views}</span>
                 <span title="מבקרים ייחודיים">👤 {r.unique_sessions}</span>
                 <span title="לחיצות">📲 {r.clicks}</span>
+                <span title="לידים" className={r.leads > 0 ? 'text-green-600 font-semibold' : ''}>🎯 {r.leads}</span>
               </div>
             </div>
             {/* Mini bar */}

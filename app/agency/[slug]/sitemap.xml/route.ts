@@ -19,7 +19,7 @@ export async function GET(
   const agency = await getAgencyBySlug(slug)
   if (!agency) return new NextResponse('Not found', { status: 404 })
 
-  const base = `https://${slug}.${ROOT_DOMAIN}`
+  const base = `https://${agency.custom_domain || `${slug}.${ROOT_DOMAIN}`}`
   const listings = await getActiveListingSlugs(agency.id)
 
   const urls = [

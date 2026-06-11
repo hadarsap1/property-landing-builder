@@ -7,8 +7,9 @@ export default function SettingsPage() {
   const [agency, setAgency] = useState<Agency | null>(null)
   const [form, setForm] = useState({
     name: '', primary_color: '#2563eb', secondary_color: '#1e3a5f',
-    contact_email: '', contact_phone: '', logo_url: '',
+    contact_email: '', contact_phone: '', logo_url: '', custom_domain: '',
   })
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [logoUploading, setLogoUploading] = useState(false)
@@ -27,6 +28,7 @@ export default function SettingsPage() {
             contact_email: d.agency.contact_email ?? '',
             contact_phone: d.agency.contact_phone ?? '',
             logo_url: d.agency.logo_url ?? '',
+            custom_domain: d.agency.custom_domain ?? '',
           })
         }
       })
@@ -47,12 +49,18 @@ export default function SettingsPage() {
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
     setSaving(true)
+    setSaveError(null)
     const res = await fetch('/api/agency', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     })
-    if (res.ok) { setSaved(true); setTimeout(() => setSaved(false), 2500) }
+    if (res.ok) {
+      setSaved(true); setTimeout(() => setSaved(false), 2500)
+    } else {
+      const d = (await res.json().catch(() => ({}))) as { error?: string }
+      setSaveError(d.error ?? 'שגיאה בשמירה')
+    }
     setSaving(false)
   }
 
@@ -131,6 +139,27 @@ export default function SettingsPage() {
           </p>
         </div>
 
+        {/* Custom domain */}
+        <div>
+          <label htmlFor="custom-domain" className="block text-sm font-medium text-gray-700 mb-1">
+            דומיין מותאם אישית <span className="text-gray-400 font-normal">(אופציונלי)</span>
+          </label>
+          <input
+            id="custom-domain"
+            type="text"
+            value={form.custom_domain}
+            onChange={e => setForm(f => ({ ...f, custom_domain: e.target.value }))}
+            placeholder="listings.my-agency.co.il"
+            dir="ltr"
+            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="text-xs text-gray-400 mt-1.5 space-y-1">
+            <p>כדי לחבר דומיין משלכם:</p>
+            <p>1. הוסיפו רשומת CNAME אצל ספק הדומיין שמצביעה אל <code className="bg-gray-100 px-1 rounded" dir="ltr">cname.vercel-dns.com</code></p>
+            <p>2. הזינו את הדומיין כאן ושמרו — דפי הנכסים שלכם יוגשו ממנו אוטומטית</p>
+          </div>
+        </div>
+
         {/* Colors */}
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -181,6 +210,8 @@ export default function SettingsPage() {
           )}
           <span className="text-white font-semibold">{form.name || 'שם הסוכנות'}</span>
         </div>
+
+        {saveError && <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{saveError}</p>}
 
         <button
           type="submit"

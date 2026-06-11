@@ -43,6 +43,7 @@ export interface Agency {
   secondary_color: string | null
   contact_email: string | null
   contact_phone: string | null
+  custom_domain: string | null
   created_at: Date
 }
 
