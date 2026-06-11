@@ -23,10 +23,13 @@ export default function PropertyChat({
   listingId,
   accent = '#2563eb',
   hasShareBar = false,
+  hasMobileBar = false,
 }: {
   listingId: string
   accent?: string
   hasShareBar?: boolean
+  /** Lift the bubble above the sticky call/WhatsApp bar, which only shows below the sm breakpoint */
+  hasMobileBar?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<Message[]>([])
@@ -95,7 +98,7 @@ export default function PropertyChat({
   return (
     <>
       {/* Floating bubble + tooltip wrapper */}
-      <div className={`group fixed left-6 z-50 ${hasShareBar ? 'bottom-20' : 'bottom-6'}`}>
+      <div className={`group fixed left-6 z-50 ${hasShareBar ? 'bottom-20' : hasMobileBar ? 'bottom-20 sm:bottom-6' : 'bottom-6'}`}>
         <button
           type="button"
           onClick={() => setOpen(o => !o)}
@@ -126,7 +129,7 @@ export default function PropertyChat({
       {open && (
         <div
           dir="rtl"
-          className={`fixed left-4 z-50 flex flex-col w-[min(360px,calc(100vw-2rem))] rounded-2xl shadow-2xl overflow-hidden border border-gray-200 ${hasShareBar ? 'bottom-36' : 'bottom-24'}`}
+          className={`fixed left-4 z-50 flex flex-col w-[min(360px,calc(100vw-2rem))] rounded-2xl shadow-2xl overflow-hidden border border-gray-200 ${hasShareBar ? 'bottom-36' : hasMobileBar ? 'bottom-36 sm:bottom-24' : 'bottom-24'}`}
           style={{ maxHeight: 'min(520px, calc(100vh - 10rem))' }}
         >
           {/* Header */}

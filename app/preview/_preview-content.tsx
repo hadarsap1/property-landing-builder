@@ -90,6 +90,79 @@ const FONT_FAMILY: Record<PropertyProject['fontStyle'], string> = {
 const AIR_LABEL: Record<string, string> = { N: 'צפון', S: 'דרום', E: 'מזרח', W: 'מערב' };
 const PARKING_LABEL: Record<string, string> = { covered: 'מקורה', outdoor: 'חיצונית' };
 
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+
+function Lightbox({ images, index, onClose, onNavigate }: {
+  images: StoredImage[];
+  index: number;
+  onClose: () => void;
+  onNavigate: (index: number) => void;
+}) {
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+      // RTL: ArrowRight goes to previous image, ArrowLeft to next
+      if (e.key === 'ArrowRight') onNavigate((index - 1 + images.length) % images.length);
+      if (e.key === 'ArrowLeft') onNavigate((index + 1) % images.length);
+    }
+    document.addEventListener('keydown', onKey);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = '';
+    };
+  }, [index, images.length, onClose, onNavigate]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center"
+      role="dialog"
+      aria-modal="true"
+      aria-label="גלריית תמונות במסך מלא"
+      onClick={onClose}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={images[index].dataUrl}
+        alt={images[index].name}
+        className="max-w-full max-h-full object-contain select-none"
+        onClick={(e) => e.stopPropagation()}
+      />
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 left-4 text-white/80 hover:text-white text-4xl leading-none w-12 h-12 flex items-center justify-center"
+        aria-label="סגור"
+      >
+        ×
+      </button>
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onNavigate((index - 1 + images.length) % images.length); }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-colors"
+            aria-label="הקודם"
+          >
+            ›
+          </button>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onNavigate((index + 1) % images.length); }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/10 hover:bg-white/25 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-colors"
+            aria-label="הבא"
+          >
+            ‹
+          </button>
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-black/40 px-3 py-1 rounded-full">
+            {index + 1} / {images.length}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 // ── Gallery ───────────────────────────────────────────────────────────────────
 
 function Gallery({ images, galleryType, accent }: {
@@ -98,6 +171,7 @@ function Gallery({ images, galleryType, accent }: {
   accent: string;
 }) {
   const [current, setCurrent] = useState(0);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const isCarousel = galleryType !== 'grid';
   const isAuto = galleryType.startsWith('auto-');
   const intervalMs = isAuto
@@ -110,23 +184,45 @@ function Gallery({ images, galleryType, accent }: {
     return () => clearInterval(timer);
   }, [isAuto, intervalMs, images.length]);
 
+  const lightbox = lightboxIndex !== null && (
+    <Lightbox
+      images={images}
+      index={lightboxIndex}
+      onClose={() => setLightboxIndex(null)}
+      onNavigate={setLightboxIndex}
+    />
+  );
+
   if (!isCarousel) {
     return (
+      <>
+      {lightbox}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {images.map((img) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+        {images.map((img, idx) => (
+          <button
             key={img.id}
-            src={img.dataUrl}
-            alt={img.name}
-            className="w-full aspect-video object-cover rounded-xl"
-          />
+            type="button"
+            onClick={() => setLightboxIndex(idx)}
+            className="block w-full cursor-zoom-in focus:outline-none focus:ring-2 rounded-xl"
+            aria-label={`הצג תמונה ${idx + 1} במסך מלא`}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={img.dataUrl}
+              alt={img.name}
+              loading="lazy"
+              className="w-full aspect-video object-cover rounded-xl"
+            />
+          </button>
         ))}
       </div>
+      </>
     );
   }
 
   return (
+    <>
+    {lightbox}
     <div className="relative overflow-hidden rounded-xl" style={{ aspectRatio: '16/9' }}>
       {images.map((img, idx) => (
         // eslint-disable-next-line @next/next/no-img-element
@@ -134,7 +230,8 @@ function Gallery({ images, galleryType, accent }: {
           key={img.id}
           src={img.dataUrl}
           alt={img.name}
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+          onClick={() => setLightboxIndex(idx)}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 cursor-zoom-in ${
             idx === current ? 'opacity-100' : 'opacity-0'
           }`}
         />
@@ -177,6 +274,7 @@ function Gallery({ images, galleryType, accent }: {
         {current + 1} / {images.length}
       </div>
     </div>
+    </>
   );
 }
 
@@ -207,6 +305,60 @@ function buildSpecs(p: PropertyProject): SpecItem[] {
     s.push({ icon: icons.airDirections ?? '🧭', label: 'כיוונים', value: p.airDirections.map((d) => AIR_LABEL[d] ?? d).join(', ') });
   }
   return s;
+}
+
+// ── Sticky contact bar (mobile conversion driver) ─────────────────────────────
+
+function StickyContactBar({ phone, whatsappUrl, accent, track }: {
+  phone: string;
+  whatsappUrl: string;
+  accent: string;
+  track: (event: string) => void;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    // Appear after the visitor scrolls past the hero — don't compete with the hero CTA
+    function onScroll() {
+      setVisible(window.scrollY > window.innerHeight * 0.7);
+    }
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  if (!phone && !whatsappUrl) return null;
+
+  return (
+    <div
+      dir="rtl"
+      className={`fixed bottom-0 right-0 left-0 z-50 flex sm:hidden transition-transform duration-300 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] ${
+        visible ? 'translate-y-0' : 'translate-y-full'
+      }`}
+    >
+      {phone && (
+        <a
+          href={`tel:${phone.replace(/\s/g, '')}`}
+          onClick={() => track('phone_click')}
+          className="flex-1 flex items-center justify-center gap-2 text-white font-bold py-4 text-base"
+          style={{ backgroundColor: accent }}
+        >
+          📞 התקשר
+        </a>
+      )}
+      {whatsappUrl && (
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => track('whatsapp_click')}
+          className="flex-1 flex items-center justify-center gap-2 bg-green-500 text-white font-bold py-4 text-base"
+        >
+          💬 WhatsApp
+        </a>
+      )}
+    </div>
+  );
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -593,7 +745,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
 
       {/* ── Footer ────────────────────────────────────────────────── */}
       <footer
-        className={`py-6 text-center text-sm border-t ${shareCode ? 'pb-24' : ''}`}
+        className={`py-6 text-center text-sm border-t ${shareCode ? 'pb-24' : listingId && !editHref ? 'pb-24 sm:pb-6' : ''}`}
         style={{ backgroundColor: theme.pageBg, color: theme.mutedText, borderColor: theme.cardBorder }}
       >
         נבנה בעזרת{' '}
@@ -612,7 +764,22 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
 
       {/* ── AI Chat widget (public listing pages only) ──────────── */}
       {listingId && !editHref && (
-        <PropertyChat listingId={listingId} accent={accent} hasShareBar={!!(shareCode && shareUrl)} />
+        <PropertyChat
+          listingId={listingId}
+          accent={accent}
+          hasShareBar={!!(shareCode && shareUrl)}
+          hasMobileBar={!shareCode && !!(project.phone || whatsappUrl)}
+        />
+      )}
+
+      {/* ── Sticky mobile call/WhatsApp bar (public pages, not share pages) ── */}
+      {listingId && !editHref && !shareCode && (
+        <StickyContactBar
+          phone={project.phone}
+          whatsappUrl={whatsappUrl}
+          accent={accent}
+          track={track}
+        />
       )}
 
       {/* ── Floating share bar (public /preview/[code] only) ─────── */}
