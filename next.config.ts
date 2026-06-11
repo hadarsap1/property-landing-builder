@@ -9,8 +9,9 @@ const ContentSecurityPolicy = [
   "img-src * data: blob:",
   "media-src * blob:",
   "font-src 'self' data:",
+  // 'self' for the builder's same-origin live-preview iframe;
   // Google Maps embeds + optional YouTube video sections
-  "frame-src maps.google.com www.google.com www.youtube.com",
+  "frame-src 'self' maps.google.com www.google.com www.youtube.com",
   // Same-origin API + Vercel Analytics/Speed Insights endpoints
   "connect-src 'self' vitals.vercel-insights.com *.vercel-analytics.com",
   "frame-ancestors 'self'",
