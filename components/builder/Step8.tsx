@@ -8,6 +8,21 @@ interface StepProps {
   onChange: (partial: Partial<PropertyProject>) => void;
 }
 
+/** ISO string → value usable by <input type="datetime-local"> (local time, minute precision) */
+function isoToLocalInput(iso: string): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function localInputToIso(value: string): string {
+  if (!value) return '';
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? '' : d.toISOString();
+}
+
 function formatIsraeliPhone(raw: string): string {
   const digits = raw.replace(/\D/g, '');
   if (digits.length === 0) return '';
@@ -23,6 +38,7 @@ export default function Step8({ project, onChange }: StepProps) {
   const [separateWA, setSeparateWA] = useState(
     waDigits.length > 0 && waDigits !== phoneDigits
   );
+  const [openHouseOn, setOpenHouseOn] = useState(!!project.openHouseDate);
 
   function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const formatted = formatIsraeliPhone(e.target.value);
@@ -35,6 +51,11 @@ export default function Step8({ project, onChange }: StepProps) {
       // clear the separate WA number — preview will fall back to phone
       onChange({ whatsapp: '' });
     }
+  }
+
+  function toggleOpenHouse(checked: boolean) {
+    setOpenHouseOn(checked);
+    if (!checked) onChange({ openHouseDate: '', openHouseEnd: '' });
   }
 
   return (
@@ -103,6 +124,51 @@ export default function Step8({ project, onChange }: StepProps) {
             />
             <p className="text-xs text-gray-400 mt-1">
               ללא קידומת מדינה, לדוגמה: 0501234567
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Open house scheduling */}
+      <div className="space-y-3 border-t border-gray-100 pt-5">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={openHouseOn}
+            onChange={(e) => toggleOpenHouse(e.target.checked)}
+            className="w-4 h-4 text-blue-600 rounded"
+          />
+          <span className="text-sm text-gray-700">🏠 קבע בית פתוח</span>
+        </label>
+
+        {openHouseOn && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="open-house-start" className="block text-sm font-medium text-gray-700 mb-1">
+                תאריך ושעת התחלה
+              </label>
+              <input
+                id="open-house-start"
+                type="datetime-local"
+                value={isoToLocalInput(project.openHouseDate)}
+                onChange={(e) => onChange({ openHouseDate: localInputToIso(e.target.value) })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="open-house-end" className="block text-sm font-medium text-gray-700 mb-1">
+                שעת סיום <span className="text-gray-400 font-normal">(אופציונלי)</span>
+              </label>
+              <input
+                id="open-house-end"
+                type="datetime-local"
+                value={isoToLocalInput(project.openHouseEnd)}
+                onChange={(e) => onChange({ openHouseEnd: localInputToIso(e.target.value) })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+            <p className="text-xs text-gray-400 sm:col-span-2">
+              בדף הנכס יוצג באנר עם התאריך, ספירה לאחור וטופס הרשמה למבקרים — כל נרשם נכנס ללידים שלך.
             </p>
           </div>
         )}
