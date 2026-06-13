@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import type { WeeklyDigestData } from '@/lib/db/queries/analytics'
 
 export async function sendAdminNotificationEmail({
   subject,
@@ -199,6 +200,123 @@ export async function sendOpenHouseReminderEmail({
         <p style="color:#6b7280;font-size:13px">נשמח לראותכם!<br>${agencyName}</p>
       </div>
     `,
+  })
+}
+
+function trendHtml(current: number, prev: number): string {
+  if (prev === 0) return current > 0 ? '<span style="color:#16a34a">▲ חדש</span>' : '<span style="color:#9ca3af">—</span>'
+  const pct = Math.round(((current - prev) / prev) * 100)
+  if (pct === 0) return '<span style="color:#9ca3af">→ ללא שינוי</span>'
+  return pct > 0
+    ? `<span style="color:#16a34a">▲ ${pct}%</span>`
+    : `<span style="color:#dc2626">▼ ${Math.abs(pct)}%</span>`
+}
+
+export async function sendWeeklyDigestEmail({
+  to,
+  agentName,
+  agencyName,
+  dashboardUrl,
+  data,
+  agencyHost,
+}: {
+  to: string
+  agentName: string
+  agencyName: string
+  dashboardUrl: string
+  data: WeeklyDigestData
+  agencyHost: string
+}): Promise<void> {
+  const { currentWeek: c, previousWeek: p, topListings, upcomingOpenHouses } = data
+
+  const todayStr = new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'long', year: 'numeric' })
+  const subject = `דוח שבועי — ${agencyName} | ${todayStr}`
+
+  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
+    console.info(`\n[weekly-digest] ${subject} → ${to} | views=${c.views} leads=${c.leads}`)
+    return
+  }
+
+  const statBox = (label: string, value: number, trend: string) => `
+    <td style="text-align:center;padding:12px 8px;background:#f8fafc;border-radius:8px;min-width:80px">
+      <div style="font-size:22px;font-weight:700;color:#111827">${value.toLocaleString('he-IL')}</div>
+      <div style="font-size:11px;color:#6b7280;margin:2px 0">${label}</div>
+      <div style="font-size:11px">${trend}</div>
+    </td>`
+
+  const listingRows = topListings.map((l) => {
+    const url = `https://${agencyHost}/listings/${l.slug}`
+    return `
+      <tr>
+        <td style="padding:8px 6px;border-bottom:1px solid #f3f4f6;font-size:13px">
+          <a href="${url}" style="color:#2563eb;text-decoration:none">${l.title ?? 'נכס'}</a>
+          ${l.city ? `<span style="color:#9ca3af;font-size:11px"> · ${l.city}</span>` : ''}
+        </td>
+        <td style="padding:8px 6px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:13px">${l.views}</td>
+        <td style="padding:8px 6px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:13px">${l.leads}</td>
+      </tr>`
+  }).join('')
+
+  const openHouseRows = upcomingOpenHouses.map((oh) => {
+    const d = new Date(oh.open_house_date)
+    const dateStr = d.toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'long' })
+    const timeStr = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+    return `
+      <li style="padding:4px 0;font-size:13px;color:#374151">
+        <strong>${oh.title}</strong>${oh.city ? ` · ${oh.city}` : ''} — ${dateStr} ${timeStr}
+      </li>`
+  }).join('')
+
+  const html = `
+    <div dir="rtl" style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111827">
+      <h2 style="color:#1e3a5f;margin-bottom:4px">📊 דוח שבועי — ${agencyName}</h2>
+      <p style="color:#6b7280;font-size:13px;margin-top:0">7 הימים האחרונים · שלום ${agentName}</p>
+
+      <table style="width:100%;border-spacing:8px;border-collapse:separate;margin:16px 0">
+        <tr>
+          ${statBox('צפיות',                c.views,           trendHtml(c.views,           p.views))}
+          ${statBox('מבקרים ייחודיים',      c.unique_sessions, trendHtml(c.unique_sessions, p.unique_sessions))}
+          ${statBox('לחיצות יצירת קשר',    c.contact_clicks,  trendHtml(c.contact_clicks,  p.contact_clicks))}
+          ${statBox('לידים חדשים',          c.leads,           trendHtml(c.leads,           p.leads))}
+        </tr>
+      </table>
+
+      ${topListings.length ? `
+      <h3 style="font-size:14px;color:#374151;margin:24px 0 8px">נכסים מובילים השבוע</h3>
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#f8fafc">
+            <th style="text-align:right;padding:6px 8px;font-size:12px;color:#6b7280;font-weight:600">נכס</th>
+            <th style="padding:6px 8px;font-size:12px;color:#6b7280;font-weight:600;text-align:center">צפיות</th>
+            <th style="padding:6px 8px;font-size:12px;color:#6b7280;font-weight:600;text-align:center">לידים</th>
+          </tr>
+        </thead>
+        <tbody>${listingRows}</tbody>
+      </table>` : ''}
+
+      ${upcomingOpenHouses.length ? `
+      <h3 style="font-size:14px;color:#374151;margin:24px 0 8px">בתים פתוחים השבוע</h3>
+      <ul style="margin:0;padding:0 16px 0 0;list-style:disc">${openHouseRows}</ul>` : ''}
+
+      <div style="margin:28px 0 16px">
+        <a href="${dashboardUrl}"
+           style="display:inline-block;background:#2563eb;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:14px">
+          לדוח המלא בלוח הבקרה
+        </a>
+      </div>
+
+      <p style="color:#9ca3af;font-size:11px;border-top:1px solid #f3f4f6;padding-top:12px">
+        ${agencyName} · PropBuilder
+      </p>
+    </div>`
+
+  const transport = nodemailer.createTransport(process.env.EMAIL_SERVER)
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject,
+    html,
+    text: `דוח שבועי — ${agencyName}\n\nצפיות: ${c.views} (${trendHtml(c.views, p.views).replace(/<[^>]+>/g, '')})\nמבקרים: ${c.unique_sessions}\nלחיצות: ${c.contact_clicks}\nלידים: ${c.leads}\n\n${dashboardUrl}`,
   })
 }
 

@@ -141,6 +141,140 @@ export interface ListingStatRow {
   clicks: number
 }
 
+export interface DigestWeekStats {
+  views: number
+  unique_sessions: number
+  contact_clicks: number
+  leads: number
+  open_house_regs: number
+}
+
+export interface DigestTopListing {
+  listing_id: string
+  title: string
+  city: string | null
+  slug: string
+  views: number
+  unique_sessions: number
+  leads: number
+}
+
+export interface DigestUpcomingOpenHouse {
+  title: string
+  city: string | null
+  slug: string
+  open_house_date: Date
+}
+
+export interface WeeklyDigestData {
+  currentWeek: DigestWeekStats
+  previousWeek: DigestWeekStats
+  topListings: DigestTopListing[]
+  upcomingOpenHouses: DigestUpcomingOpenHouse[]
+}
+
+export async function getWeeklyDigestData(agencyId: string): Promise<WeeklyDigestData> {
+  const [curEvents, curLeads, prevEvents, prevLeads, topRows, leadsPerListing, openHouseRows] =
+    await Promise.all([
+      sql<{ views: string; unique_sessions: string; contact_clicks: string }>`
+        SELECT
+          COUNT(*) FILTER (WHERE event_type = 'page_view') AS views,
+          COUNT(DISTINCT session_id) FILTER (WHERE event_type = 'page_view') AS unique_sessions,
+          COUNT(*) FILTER (WHERE event_type IN ('whatsapp_click','phone_click','booking_click')) AS contact_clicks
+        FROM analytics_events
+        WHERE agency_id = ${agencyId} AND created_at >= now() - interval '7 days'
+      `,
+      sql<{ leads: string; open_house_regs: string }>`
+        SELECT COUNT(*) AS leads,
+               COUNT(*) FILTER (WHERE source = 'open_house') AS open_house_regs
+        FROM leads
+        WHERE agency_id = ${agencyId} AND created_at >= now() - interval '7 days'
+      `,
+      sql<{ views: string; unique_sessions: string; contact_clicks: string }>`
+        SELECT
+          COUNT(*) FILTER (WHERE event_type = 'page_view') AS views,
+          COUNT(DISTINCT session_id) FILTER (WHERE event_type = 'page_view') AS unique_sessions,
+          COUNT(*) FILTER (WHERE event_type IN ('whatsapp_click','phone_click','booking_click')) AS contact_clicks
+        FROM analytics_events
+        WHERE agency_id = ${agencyId}
+          AND created_at >= now() - interval '14 days'
+          AND created_at <  now() - interval '7 days'
+      `,
+      sql<{ leads: string; open_house_regs: string }>`
+        SELECT COUNT(*) AS leads,
+               COUNT(*) FILTER (WHERE source = 'open_house') AS open_house_regs
+        FROM leads
+        WHERE agency_id = ${agencyId}
+          AND created_at >= now() - interval '14 days'
+          AND created_at <  now() - interval '7 days'
+      `,
+      sql<{ listing_id: string; title: string; city: string | null; slug: string; views: string; unique_sessions: string }>`
+        SELECT e.listing_id,
+               COALESCE(li.ai_title, li.title) AS title,
+               li.city, li.slug,
+               COUNT(*) FILTER (WHERE e.event_type = 'page_view') AS views,
+               COUNT(DISTINCT e.session_id) FILTER (WHERE e.event_type = 'page_view') AS unique_sessions
+        FROM analytics_events e
+        JOIN listings li ON li.id = e.listing_id
+        WHERE e.agency_id = ${agencyId}
+          AND e.listing_id IS NOT NULL
+          AND e.created_at >= now() - interval '7 days'
+        GROUP BY e.listing_id, li.ai_title, li.title, li.city, li.slug
+        ORDER BY views DESC
+        LIMIT 5
+      `,
+      sql<{ listing_id: string; leads: string }>`
+        SELECT listing_id, COUNT(*) AS leads
+        FROM leads
+        WHERE agency_id = ${agencyId}
+          AND listing_id IS NOT NULL
+          AND created_at >= now() - interval '7 days'
+        GROUP BY listing_id
+      `,
+      sql<{ title: string; city: string | null; slug: string; open_house_date: Date }>`
+        SELECT COALESCE(ai_title, title) AS title, city, slug, open_house_date
+        FROM listings
+        WHERE agency_id = ${agencyId}
+          AND status = 'active'
+          AND open_house_date >= now()
+          AND open_house_date <= now() + interval '7 days'
+        ORDER BY open_house_date ASC
+        LIMIT 5
+      `,
+    ])
+
+  const leadsMap = Object.fromEntries(
+    leadsPerListing.rows.map((r) => [r.listing_id, parseInt(r.leads, 10)])
+  )
+
+  return {
+    currentWeek: {
+      views:           parseInt(curEvents.rows[0]?.views           ?? '0', 10),
+      unique_sessions: parseInt(curEvents.rows[0]?.unique_sessions ?? '0', 10),
+      contact_clicks:  parseInt(curEvents.rows[0]?.contact_clicks  ?? '0', 10),
+      leads:           parseInt(curLeads.rows[0]?.leads            ?? '0', 10),
+      open_house_regs: parseInt(curLeads.rows[0]?.open_house_regs  ?? '0', 10),
+    },
+    previousWeek: {
+      views:           parseInt(prevEvents.rows[0]?.views           ?? '0', 10),
+      unique_sessions: parseInt(prevEvents.rows[0]?.unique_sessions ?? '0', 10),
+      contact_clicks:  parseInt(prevEvents.rows[0]?.contact_clicks  ?? '0', 10),
+      leads:           parseInt(prevLeads.rows[0]?.leads            ?? '0', 10),
+      open_house_regs: parseInt(prevLeads.rows[0]?.open_house_regs  ?? '0', 10),
+    },
+    topListings: topRows.rows.map((r) => ({
+      listing_id:      r.listing_id,
+      title:           r.title,
+      city:            r.city,
+      slug:            r.slug,
+      views:           parseInt(r.views,           10),
+      unique_sessions: parseInt(r.unique_sessions, 10),
+      leads:           leadsMap[r.listing_id] ?? 0,
+    })),
+    upcomingOpenHouses: openHouseRows.rows,
+  }
+}
+
 export async function getListingStats(agencyId: string, days = 30): Promise<ListingStatRow[]> {
   const { rows } = await sql<{
     listing_id: string
