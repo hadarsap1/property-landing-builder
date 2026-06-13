@@ -12,11 +12,13 @@ const APP_URL = process.env.NEXTAUTH_URL ?? `https://${ROOT_DOMAIN}`
 
 export async function GET(req: Request): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
-  if (secret) {
-    const auth = req.headers.get('authorization')
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (!secret) {
+    console.error('[weekly-digest] CRON_SECRET is not set — refusing request')
+    return NextResponse.json({ error: 'Service misconfigured' }, { status: 503 })
+  }
+  const auth = req.headers.get('authorization')
+  if (auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const agencies = await getAllAgenciesForDigest()

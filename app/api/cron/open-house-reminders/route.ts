@@ -8,11 +8,13 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request): Promise<NextResponse> {
   const secret = process.env.CRON_SECRET
-  if (secret) {
-    const auth = req.headers.get('authorization')
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  if (!secret) {
+    console.error('[open-house-reminders] CRON_SECRET is not set — refusing request')
+    return NextResponse.json({ error: 'Service misconfigured' }, { status: 503 })
+  }
+  const auth = req.headers.get('authorization')
+  if (auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const leads = await getOpenHouseLeadsForTomorrow()

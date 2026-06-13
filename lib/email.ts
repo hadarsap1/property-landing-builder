@@ -1,6 +1,15 @@
 import nodemailer from 'nodemailer'
 import type { WeeklyDigestData } from '@/lib/db/queries/analytics'
 
+function escHtml(s: string | null | undefined): string {
+  return (s ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 export async function sendAdminNotificationEmail({
   subject,
   body,
@@ -59,10 +68,10 @@ export async function sendLeadNotificationEmail({
     html: `
       <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
         <h2 style="color:#1e3a5f">${isOpenHouse ? '🏠 נרשם חדש לבית הפתוח' : 'ליד חדש התקבל'}</h2>
-        <p>נכס: <strong>${listingTitle}</strong></p>
+        <p>נכס: <strong>${escHtml(listingTitle)}</strong></p>
         <table style="border-collapse:collapse;width:100%;margin:12px 0">
-          <tr><td style="padding:6px 0;color:#6b7280">שם</td><td style="padding:6px 0;font-weight:600">${leadName ?? '—'}</td></tr>
-          <tr><td style="padding:6px 0;color:#6b7280">יצירת קשר</td><td style="padding:6px 0;font-weight:600">${contact}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280">שם</td><td style="padding:6px 0;font-weight:600">${escHtml(leadName)}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280">יצירת קשר</td><td style="padding:6px 0;font-weight:600">${escHtml(contact)}</td></tr>
         </table>
         <a href="${listingUrl}"
            style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
@@ -101,8 +110,8 @@ export async function sendSellerMagicLinkEmail({
     text: `${greeting}\n\nהנה הקישור שלך לצפייה ועדכון פרטי הנכס:\n${sellerUrl}\n\nהקישור תקף ל-7 ימים.`,
     html: `
       <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
-        <h2 style="color:#1e3a5f">עדכון נכס: ${listingTitle}</h2>
-        <p>${greeting}<br>הנה הקישור שלך לצפייה ועדכון פרטי הנכס.</p>
+        <h2 style="color:#1e3a5f">עדכון נכס: ${escHtml(listingTitle)}</h2>
+        <p>${sellerName ? `שלום ${escHtml(sellerName)},` : 'שלום,'}<br>הנה הקישור שלך לצפייה ועדכון פרטי הנכס.</p>
         <a href="${sellerUrl}"
            style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
           צפה בנכס ועדכן פרטים
@@ -186,18 +195,18 @@ export async function sendOpenHouseReminderEmail({
     html: `
       <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
         <h2 style="color:#1e3a5f">🏠 תזכורת לבית פתוח</h2>
-        <p>${greeting}</p>
-        <p>מחר יתקיים בית פתוח לנכס <strong>${listingTitle}</strong>.</p>
+        <p>${name ? `שלום ${escHtml(name)},` : 'שלום,'}</p>
+        <p>מחר יתקיים בית פתוח לנכס <strong>${escHtml(listingTitle)}</strong>.</p>
         <table style="border-collapse:collapse;width:100%;margin:12px 0">
-          <tr><td style="padding:6px 0;color:#6b7280">תאריך</td><td style="padding:6px 0;font-weight:600">${dateStr}</td></tr>
-          <tr><td style="padding:6px 0;color:#6b7280">שעה</td><td style="padding:6px 0;font-weight:600">${timeStr}</td></tr>
-          ${addressDisplay ? `<tr><td style="padding:6px 0;color:#6b7280">כתובת</td><td style="padding:6px 0;font-weight:600">${addressDisplay}</td></tr>` : ''}
+          <tr><td style="padding:6px 0;color:#6b7280">תאריך</td><td style="padding:6px 0;font-weight:600">${escHtml(dateStr)}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280">שעה</td><td style="padding:6px 0;font-weight:600">${escHtml(timeStr)}</td></tr>
+          ${addressDisplay ? `<tr><td style="padding:6px 0;color:#6b7280">כתובת</td><td style="padding:6px 0;font-weight:600">${escHtml(addressDisplay)}</td></tr>` : ''}
         </table>
         <a href="${listingUrl}"
            style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
           פרטי הנכס
         </a>
-        <p style="color:#6b7280;font-size:13px">נשמח לראותכם!<br>${agencyName}</p>
+        <p style="color:#6b7280;font-size:13px">נשמח לראותכם!<br>${escHtml(agencyName)}</p>
       </div>
     `,
   })
@@ -249,8 +258,8 @@ export async function sendWeeklyDigestEmail({
     return `
       <tr>
         <td style="padding:8px 6px;border-bottom:1px solid #f3f4f6;font-size:13px">
-          <a href="${url}" style="color:#2563eb;text-decoration:none">${l.title ?? 'נכס'}</a>
-          ${l.city ? `<span style="color:#9ca3af;font-size:11px"> · ${l.city}</span>` : ''}
+          <a href="${url}" style="color:#2563eb;text-decoration:none">${escHtml(l.title) || 'נכס'}</a>
+          ${l.city ? `<span style="color:#9ca3af;font-size:11px"> · ${escHtml(l.city)}</span>` : ''}
         </td>
         <td style="padding:8px 6px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:13px">${l.views}</td>
         <td style="padding:8px 6px;border-bottom:1px solid #f3f4f6;text-align:center;font-size:13px">${l.leads}</td>
@@ -263,14 +272,14 @@ export async function sendWeeklyDigestEmail({
     const timeStr = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
     return `
       <li style="padding:4px 0;font-size:13px;color:#374151">
-        <strong>${oh.title}</strong>${oh.city ? ` · ${oh.city}` : ''} — ${dateStr} ${timeStr}
+        <strong>${escHtml(oh.title)}</strong>${oh.city ? ` · ${escHtml(oh.city)}` : ''} — ${escHtml(dateStr)} ${escHtml(timeStr)}
       </li>`
   }).join('')
 
   const html = `
     <div dir="rtl" style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#111827">
-      <h2 style="color:#1e3a5f;margin-bottom:4px">📊 דוח שבועי — ${agencyName}</h2>
-      <p style="color:#6b7280;font-size:13px;margin-top:0">7 הימים האחרונים · שלום ${agentName}</p>
+      <h2 style="color:#1e3a5f;margin-bottom:4px">📊 דוח שבועי — ${escHtml(agencyName)}</h2>
+      <p style="color:#6b7280;font-size:13px;margin-top:0">7 הימים האחרונים · שלום ${escHtml(agentName)}</p>
 
       <table style="width:100%;border-spacing:8px;border-collapse:separate;margin:16px 0">
         <tr>
@@ -306,7 +315,7 @@ export async function sendWeeklyDigestEmail({
       </div>
 
       <p style="color:#9ca3af;font-size:11px;border-top:1px solid #f3f4f6;padding-top:12px">
-        ${agencyName} · PropBuilder
+        ${escHtml(agencyName)} · PropBuilder
       </p>
     </div>`
 
@@ -351,8 +360,8 @@ export async function sendInviteEmail({
     text: `שלום,\n\nהוזמנת${by} לצוות ${agencyName}.\n\nלחץ על הקישור להגדרת סיסמה:\n${inviteUrl}\n\nהקישור תקף ל-48 שעות.`,
     html: `
       <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
-        <h2 style="color:#1e3a5f">הצטרף ל-${agencyName}</h2>
-        <p>שלום,<br>הוזמנת${by} לצוות <strong>${agencyName}</strong>.</p>
+        <h2 style="color:#1e3a5f">הצטרף ל-${escHtml(agencyName)}</h2>
+        <p>שלום,<br>הוזמנת${inviterName ? ` על ידי ${escHtml(inviterName)}` : ''} לצוות <strong>${escHtml(agencyName)}</strong>.</p>
         <a href="${inviteUrl}"
            style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
           הגדר סיסמה

@@ -51,7 +51,8 @@ export async function updateAgency(
   data: Partial<Pick<Agency, 'name' | 'logo_url' | 'primary_color' | 'secondary_color' | 'contact_email' | 'contact_phone' | 'custom_domain'>>
 ): Promise<Agency | null> {
   for (const key of Object.keys(data)) {
-    if (!AGENCY_WRITABLE_COLUMNS.has(key)) throw new Error(`Invalid agency column: ${key}`)
+    if (!AGENCY_WRITABLE_COLUMNS.has(key) || !/^[a-z_]+$/.test(key))
+      throw new Error(`Invalid agency column: ${key}`)
   }
   const entries = Object.entries(data).filter(([, v]) => v !== undefined)
   if (!entries.length) return getAgencyById(id)
