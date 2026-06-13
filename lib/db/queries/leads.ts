@@ -5,6 +5,19 @@ export type LeadWithListing = Lead & {
   listing_title: string | null
   listing_slug: string | null
   listing_city: string | null
+  open_house_date: Date | null
+  open_house_end: Date | null
+}
+
+export type OpenHouseReminderLead = Lead & {
+  listing_title: string | null
+  listing_slug: string | null
+  listing_city: string | null
+  listing_street: string | null
+  open_house_date: Date
+  agency_slug: string
+  agency_custom_domain: string | null
+  agency_name: string
 }
 
 export async function createLead(data: {
@@ -64,7 +77,9 @@ export async function getLeadsByAgency(
     `SELECT l.*,
        COALESCE(li.ai_title, li.title) AS listing_title,
        li.slug AS listing_slug,
-       li.city AS listing_city
+       li.city AS listing_city,
+       li.open_house_date,
+       li.open_house_end
      FROM leads l
      LEFT JOIN listings li ON li.id = l.listing_id
      WHERE ${conditions.join(' AND ')}
@@ -80,7 +95,9 @@ export async function getLeadById(id: string): Promise<LeadWithListing | null> {
     SELECT l.*,
        COALESCE(li.ai_title, li.title) AS listing_title,
        li.slug AS listing_slug,
-       li.city AS listing_city
+       li.city AS listing_city,
+       li.open_house_date,
+       li.open_house_end
      FROM leads l
      LEFT JOIN listings li ON li.id = l.listing_id
      WHERE l.id = ${id}
@@ -151,4 +168,41 @@ export async function countPendingFollowUps(agencyId: string): Promise<number> {
       AND ln.follow_up_at <= now()
   `
   return parseInt(rows[0]?.count ?? '0', 10)
+}
+
+/** Returns open-house leads with email addresses whose listing opens tomorrow (UTC day). */
+export async function getOpenHouseLeadsForTomorrow(
+  referenceDate?: Date
+): Promise<OpenHouseReminderLead[]> {
+  const ref = referenceDate ?? new Date()
+  const tomorrow = new Date(ref)
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
+  const dayStart = `${tomorrow.toISOString().slice(0, 10)}T00:00:00`
+  const dayEnd = `${tomorrow.toISOString().slice(0, 10)}T23:59:59`
+
+  const { rows } = await db.query<OpenHouseReminderLead>(
+    `SELECT l.*,
+       COALESCE(li.ai_title, li.title) AS listing_title,
+       li.slug AS listing_slug,
+       li.city AS listing_city,
+       li.street AS listing_street,
+       li.open_house_date,
+       a.slug AS agency_slug,
+       a.custom_domain AS agency_custom_domain,
+       a.name AS agency_name
+     FROM leads l
+     JOIN listings li ON li.id = l.listing_id
+     JOIN agencies a ON a.id = l.agency_id
+     WHERE l.source = 'open_house'
+       AND l.email IS NOT NULL
+       AND l.open_house_reminder_sent_at IS NULL
+       AND li.open_house_date >= $1
+       AND li.open_house_date <= $2`,
+    [dayStart, dayEnd]
+  )
+  return rows
+}
+
+export async function markOpenHouseReminderSent(leadId: string): Promise<void> {
+  await sql`UPDATE leads SET open_house_reminder_sent_at = now() WHERE id = ${leadId}`
 }

@@ -6,6 +6,25 @@ import Link from 'next/link'
 import type { Lead, LeadNote, PropertyVisit } from '@/lib/db/types'
 import type { LeadWithListing } from '@/lib/db/queries/leads'
 
+function formatWaPhone(phone: string): string {
+  const digits = phone.replace(/\D/g, '')
+  if (digits.startsWith('972')) return digits
+  if (digits.startsWith('0')) return `972${digits.slice(1)}`
+  return `972${digits}`
+}
+
+function buildWhatsAppReminderUrl(lead: LeadWithListing): string {
+  if (!lead.phone || !lead.open_house_date) return ''
+  const d = new Date(lead.open_house_date)
+  const dateStr = d.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })
+  const timeStr = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+  const title = lead.listing_title ?? 'הנכס'
+  const city = lead.listing_city ? ` ב${lead.listing_city}` : ''
+  const nameGreet = lead.name ? `שלום ${lead.name}! ` : ''
+  const msg = `${nameGreet}תזכורת: מחר, ${dateStr} בשעה ${timeStr}, יתקיים בית פתוח ל${title}${city}. נשמח לראותך!`
+  return `https://wa.me/${formatWaPhone(lead.phone)}?text=${encodeURIComponent(msg)}`
+}
+
 const VISIT_STATUS_LABELS: Record<PropertyVisit['status'], string> = {
   scheduled: 'מתוכנן',
   completed: 'הושלם',
@@ -130,6 +149,33 @@ export default function LeadDetailPage() {
           </p>
         )}
       </div>
+
+      {/* Open-house WhatsApp reminder */}
+      {lead.source === 'open_house' && lead.phone && (
+        <div className="bg-green-50 rounded-2xl border border-green-100 p-4">
+          <p className="text-xs font-semibold text-green-700 uppercase tracking-wide mb-2">תזכורת לבית פתוח</p>
+          {lead.open_house_date && (
+            <p className="text-sm text-gray-700 mb-3">
+              {new Date(lead.open_house_date).toLocaleString('he-IL', {
+                weekday: 'long', day: 'numeric', month: 'long',
+                hour: '2-digit', minute: '2-digit',
+              })}
+            </p>
+          )}
+          {buildWhatsAppReminderUrl(lead) ? (
+            <a
+              href={buildWhatsAppReminderUrl(lead)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            >
+              <span>📱</span> שלח תזכורת בוואטסאפ
+            </a>
+          ) : (
+            <p className="text-xs text-gray-400">אין תאריך בית פתוח מוגדר בנכס</p>
+          )}
+        </div>
+      )}
 
       {/* Linked listing (non-candidates) */}
       {lead.listing_id && lead.listing_title && (

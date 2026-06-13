@@ -242,10 +242,11 @@ const SCHEMA_STATEMENTS = [
   `CREATE INDEX IF NOT EXISTS idx_pending_changes_listing ON pending_changes(listing_id)`,
   `CREATE INDEX IF NOT EXISTS idx_pending_changes_status  ON pending_changes(status)`,
   `ALTER TABLE leads ALTER COLUMN listing_id DROP NOT NULL`,
-  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget        integer`,
-  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS rooms_min     numeric`,
-  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS rooms_max     numeric`,
-  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS desired_areas text`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget                      integer`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS rooms_min                   numeric`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS rooms_max                   numeric`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS desired_areas               text`,
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS open_house_reminder_sent_at timestamp`,
 
   `ALTER TABLE listings ADD COLUMN IF NOT EXISTS chat_qa text`,
 

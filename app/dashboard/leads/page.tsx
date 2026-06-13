@@ -106,7 +106,7 @@ export default function LeadsPage() {
       }
       const { lead } = (await res.json()) as { lead: Lead }
       // Candidates have no listing — pad the listing fields to match LeadWithListing shape
-      const enriched: LeadWithListing = { ...lead, listing_title: null, listing_slug: null, listing_city: null }
+      const enriched: LeadWithListing = { ...lead, listing_title: null, listing_slug: null, listing_city: null, open_house_date: null, open_house_end: null }
       setLeads(prev => [enriched, ...prev])
       setForm(EMPTY_CANDIDATE)
       setShowModal(false)

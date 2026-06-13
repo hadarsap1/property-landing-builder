@@ -16,7 +16,8 @@ export async function GET(req: NextRequest): Promise<NextResponse> {
   }
 
   const agencyId = session.user.agencyId
-  const days = Math.min(parseInt(req.nextUrl.searchParams.get('days') ?? '30', 10), 90)
+  const rawDays = parseInt(req.nextUrl.searchParams.get('days') ?? '30', 10)
+  const days = Number.isFinite(rawDays) ? Math.min(Math.max(rawDays, 1), 90) : 30
 
   const [stats, timeSeries, listingStats, listings, funnel, leadCounts] = await Promise.all([
     getAgencyStats(agencyId, days),

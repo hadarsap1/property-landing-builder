@@ -10,12 +10,124 @@ export default function LoginPage({
   searchParams: Promise<SP>
 }) {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4" dir="rtl">
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-gray-900">PropBuilder</Link>
+    <main className="min-h-screen" dir="rtl">
+      <div className="min-h-screen flex flex-col md:flex-row" dir="ltr">
+
+        {/* ── Branding panel (left, desktop only) ── */}
+        <div
+          className="hidden md:flex md:w-[52%] flex-col justify-between px-14 py-12 relative overflow-hidden"
+          style={{ background: 'linear-gradient(150deg, #1c1826 0%, #100e18 100%)' }}
+          dir="rtl"
+        >
+          {/* Subtle radial glow */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              inset: 0,
+              background: 'radial-gradient(ellipse at 30% 60%, rgba(212,168,83,0.08) 0%, transparent 65%)',
+            }}
+          />
+          {/* Dot-grid overlay */}
+          <div
+            className="absolute pointer-events-none opacity-[0.04]"
+            style={{
+              inset: 0,
+              backgroundImage: 'radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)',
+              backgroundSize: '28px 28px',
+            }}
+          />
+
+          {/* Top: logo */}
+          <div className="relative">
+            <Link href="/" className="text-2xl font-bold text-white tracking-tight">
+              Prop<span style={{ color: '#d4a853' }}>Builder</span>
+            </Link>
+          </div>
+
+          {/* Mid: value props */}
+          <div className="relative space-y-8">
+            <div>
+              <h2 className="text-3xl font-bold text-white leading-tight mb-2">
+                פלטפורמת שיווק הנדל&quot;ן
+              </h2>
+              <p className="text-xl font-semibold" style={{ color: '#d4a853' }}>
+                המובילה בישראל
+              </p>
+            </div>
+
+            <ul className="space-y-5">
+              {[
+                {
+                  icon: '🏘️',
+                  title: 'דפי נחיתה מקצועיים',
+                  desc: 'צור תוך דקות, ללא קידוד, עם עיצוב שמוכר',
+                },
+                {
+                  icon: '🤖',
+                  title: 'AI שכותב בעברית',
+                  desc: 'תיאורי נכסים שמדברים ללב הקונה',
+                },
+                {
+                  icon: '📊',
+                  title: 'ניהול לידים חכם',
+                  desc: 'מעקב, תזכורות ודו"ח ביצועים שבועי',
+                },
+              ].map(({ icon, title, desc }) => (
+                <li key={title} className="flex items-start gap-4">
+                  <span className="text-2xl mt-0.5 shrink-0">{icon}</span>
+                  <div>
+                    <p className="text-white font-semibold text-sm">{title}</p>
+                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Bottom: social proof */}
+          <div className="relative">
+            <div
+              className="rounded-2xl p-5"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: '1px solid rgba(255,255,255,0.09)',
+              }}
+            >
+              <p className="text-sm text-white/70 leading-relaxed mb-3">
+                &quot;PropBuilder חסך לנו שעות עבודה בכל נכס. עכשיו כל לידים נכנסים ישר לדאשבורד.&quot;
+              </p>
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #d4a853, #b8892e)' }}
+                >
+                  ד
+                </div>
+                <div>
+                  <p className="text-white text-xs font-semibold">דני כהן</p>
+                  <p className="text-white/40 text-xs">מנהל סוכנות, תל אביב</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <LoginContent searchParams={searchParams} />
+
+        {/* ── Form panel (right on desktop, full on mobile) ── */}
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-gray-50 min-h-screen md:min-h-0" dir="rtl">
+          {/* Logo shown only on mobile (branding panel hidden) */}
+          <div className="mb-8 md:hidden">
+            <Link href="/" className="text-2xl font-bold text-gray-900">PropBuilder</Link>
+          </div>
+
+          <div className="w-full max-w-sm">
+            <LoginContent searchParams={searchParams} />
+          </div>
+
+          <p className="mt-8 text-xs text-gray-400 text-center">
+            © {new Date().getFullYear()} PropBuilder · כל הזכויות שמורות
+          </p>
+        </div>
+
       </div>
     </main>
   )

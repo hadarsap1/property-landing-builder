@@ -81,77 +81,93 @@ export function ListingCard({
 
   return (
     <>
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col gap-2">
-      {listing.hero_image_url ? (
-        <Image
-          src={listing.hero_image_url}
-          alt={listing.title ?? ''}
-          width={64}
-          height={64}
-          className="w-16 h-16 rounded-xl object-cover shrink-0"
-        />
-      ) : (
-        <div className="w-16 h-16 rounded-xl bg-gray-100 flex items-center justify-center text-2xl shrink-0">
-          🏠
-        </div>
-      )}
+    <div className="bg-white rounded-2xl border border-gray-200 hover:border-gray-300 transition-colors">
+      {/* Main row */}
+      <div className="flex items-center gap-4 p-4">
+        {/* Thumbnail */}
+        {listing.hero_image_url ? (
+          <Image
+            src={listing.hero_image_url}
+            alt={listing.title ?? ''}
+            width={72}
+            height={72}
+            className="w-[72px] h-[72px] rounded-xl object-cover shrink-0"
+          />
+        ) : (
+          <div className="w-[72px] h-[72px] rounded-xl bg-gray-100 flex items-center justify-center text-2xl shrink-0">
+            🏠
+          </div>
+        )}
 
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-gray-900 truncate">
-            {listing.ai_title || listing.title || 'נכס ללא שם'}
-          </span>
-          <select
-            value={status}
-            disabled={saving}
-            onChange={e => {
-              const next = e.target.value as Listing['status']
-              if (next !== status) setPendingStatus(next)
-            }}
-            className={`text-xs px-2 py-0.5 rounded-full font-medium border cursor-pointer focus:outline-none disabled:opacity-60 ${STATUS_SELECT_COLORS[status]}`}
-          >
-            {(Object.keys(STATUS_LABELS) as Listing['status'][]).map(s => (
-              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
-            ))}
-          </select>
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+            <span className="font-semibold text-gray-900 truncate text-sm">
+              {listing.ai_title || listing.title || 'נכס ללא שם'}
+            </span>
+            <select
+              value={status}
+              disabled={saving}
+              onChange={e => {
+                const next = e.target.value as Listing['status']
+                if (next !== status) setPendingStatus(next)
+              }}
+              className={`text-xs px-2 py-0.5 rounded-full font-medium border cursor-pointer focus:outline-none disabled:opacity-60 ${STATUS_SELECT_COLORS[status]}`}
+            >
+              {(Object.keys(STATUS_LABELS) as Listing['status'][]).map(s => (
+                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+              ))}
+            </select>
+            {pendingChanges > 0 && (
+              <Link
+                href={`/dashboard/listings/${listing.id}/review`}
+                className="text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full px-2 py-0.5 font-medium hover:bg-yellow-100 transition-colors"
+              >
+                {pendingChanges} שינויים
+              </Link>
+            )}
+          </div>
+          <p className="text-xs text-gray-500 truncate">{address || '—'}</p>
+          <p className="text-xs font-semibold text-gray-800 mt-0.5">
+            {listing.price_on_request ? 'מחיר לפי פנייה' : formatPrice(listing.price)}
+          </p>
         </div>
-        <p className="text-sm text-gray-500 mt-0.5 truncate">{address || '—'}</p>
-        <p className="text-sm font-medium text-gray-700 mt-0.5">
-          {listing.price_on_request ? 'מחיר לפי פנייה' : formatPrice(listing.price)}
-        </p>
+
+        {/* Primary CTA */}
+        <div className="flex items-center gap-2 shrink-0">
+          <Link
+            href={`/dashboard/listings/${listing.id}/edit`}
+            className="text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-4 py-2 font-semibold transition-colors"
+          >
+            עריכה
+          </Link>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
+      {/* Secondary actions row */}
+      <div className="flex items-center gap-1.5 px-4 pb-3 flex-wrap border-t border-gray-100 pt-3">
         {publicUrl && (
           <Link
             href={publicUrl}
             target="_blank"
             className="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
           >
-            צפה
+            צפה בדף
           </Link>
         )}
-        <Link
-          href={`/dashboard/listings/${listing.id}/review`}
-          className={`text-xs rounded-lg px-3 py-1.5 font-medium transition-colors ${
-            pendingChanges > 0
-              ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-700'
-              : 'text-gray-500 hover:text-gray-800 border border-gray-200'
-          }`}
-        >
-          {pendingChanges > 0 ? `${pendingChanges} שינויים` : 'מוכר'}
-        </Link>
+        {pendingChanges === 0 && (
+          <Link
+            href={`/dashboard/listings/${listing.id}/review`}
+            className="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+          >
+            מוכר
+          </Link>
+        )}
         <Link
           href={`/dashboard/listings/${listing.id}/visits`}
           className="text-xs border border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg px-3 py-1.5 font-medium transition-colors"
         >
           ביקורים
-        </Link>
-        <Link
-          href={`/dashboard/listings/${listing.id}/edit`}
-          className="text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg px-3 py-1.5 font-medium transition-colors"
-        >
-          עריכה
         </Link>
         <Link
           href={`/flyer/${listing.id}`}
@@ -169,17 +185,17 @@ export function ListingCard({
         <button
           onClick={() => setDeleteOpen(true)}
           disabled={saving}
-          className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1.5 font-medium transition-colors disabled:opacity-50"
+          className="text-xs text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-1.5 font-medium transition-colors disabled:opacity-50 mr-auto"
         >
           מחק
         </button>
       </div>
-      {statusError && (
-        <p className="text-xs text-red-600 pt-1">{statusError}</p>
-      )}
 
+      {statusError && (
+        <p className="text-xs text-red-600 px-4 pb-3">{statusError}</p>
+      )}
       {deleteError && (
-        <p className="text-xs text-red-500 text-left mt-1">שגיאה במחיקת הנכס</p>
+        <p className="text-xs text-red-500 px-4 pb-3">שגיאה במחיקת הנכס</p>
       )}
 
       <SocialPostModal
