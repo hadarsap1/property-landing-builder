@@ -162,6 +162,7 @@ export interface Lead {
   desired_areas: string | null
   created_at: Date
   last_interaction: Date | null
+  open_house_reminder_sent_at: Date | null
 }
 
 export interface LeadNote {

@@ -144,6 +144,64 @@ export async function sendPasswordResetEmail({
   })
 }
 
+export async function sendOpenHouseReminderEmail({
+  to,
+  name,
+  listingTitle,
+  listingUrl,
+  openHouseDate,
+  street,
+  city,
+  agencyName,
+}: {
+  to: string
+  name: string | null
+  listingTitle: string
+  listingUrl: string
+  openHouseDate: Date
+  street: string | null
+  city: string | null
+  agencyName: string
+}): Promise<void> {
+  const d = new Date(openHouseDate)
+  const dateStr = d.toLocaleDateString('he-IL', { weekday: 'long', day: 'numeric', month: 'long' })
+  const timeStr = d.toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' })
+  const greeting = name ? `שלום ${name},` : 'שלום,'
+  const addressParts = [street, city].filter(Boolean)
+  const addressDisplay = addressParts.join(', ')
+  const subject = `תזכורת: בית פתוח מחר — ${listingTitle}`
+
+  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
+    console.info(`\n[open-house-reminder] ${subject} → ${to}`)
+    return
+  }
+
+  const transport = nodemailer.createTransport(process.env.EMAIL_SERVER)
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject,
+    text: `${greeting}\n\nתזכורת: מחר, ${dateStr} בשעה ${timeStr}, יתקיים בית פתוח לנכס "${listingTitle}"${addressDisplay ? ` ב${addressDisplay}` : ''}.\n\nפרטי הנכס: ${listingUrl}\n\nנשמח לראותכם!\n${agencyName}`,
+    html: `
+      <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#1e3a5f">🏠 תזכורת לבית פתוח</h2>
+        <p>${greeting}</p>
+        <p>מחר יתקיים בית פתוח לנכס <strong>${listingTitle}</strong>.</p>
+        <table style="border-collapse:collapse;width:100%;margin:12px 0">
+          <tr><td style="padding:6px 0;color:#6b7280">תאריך</td><td style="padding:6px 0;font-weight:600">${dateStr}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280">שעה</td><td style="padding:6px 0;font-weight:600">${timeStr}</td></tr>
+          ${addressDisplay ? `<tr><td style="padding:6px 0;color:#6b7280">כתובת</td><td style="padding:6px 0;font-weight:600">${addressDisplay}</td></tr>` : ''}
+        </table>
+        <a href="${listingUrl}"
+           style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+          פרטי הנכס
+        </a>
+        <p style="color:#6b7280;font-size:13px">נשמח לראותכם!<br>${agencyName}</p>
+      </div>
+    `,
+  })
+}
+
 interface InviteEmailOptions {
   to: string
   agencyName: string
