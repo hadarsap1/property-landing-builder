@@ -6,20 +6,60 @@ import { getLeadsByAgency } from '@/lib/db/queries/leads'
 import { getAgencyStats } from '@/lib/db/queries/analytics'
 import Link from 'next/link'
 import { ListingCard } from './_listing-card'
+import type { Listing } from '@/lib/db/types'
+import type { LeadWithListing } from '@/lib/db/queries/leads'
+import type { AgencyStats } from '@/lib/db/queries/analytics'
+import type { Agency } from '@/lib/db/types'
+
+function DbErrorBanner({ message }: { message: string }) {
+  const isDbError = message.includes('POSTGRES_URL') || message.includes('missing_connection_string') || message.includes('does not exist') || message.includes('Connection')
+  return (
+    <div className="text-center py-20 space-y-4" dir="rtl">
+      <div className="text-4xl">⚠️</div>
+      <p className="text-base font-semibold text-gray-800">
+        {isDbError ? 'מסד הנתונים אינו מחובר' : 'שגיאה בטעינת הנתונים'}
+      </p>
+      <p className="text-sm text-gray-500 max-w-sm mx-auto">
+        {isDbError
+          ? 'יש להגדיר את משתנה הסביבה POSTGRES_URL בהגדרות Vercel ולהריץ setup-db.'
+          : message}
+      </p>
+      {isDbError && (
+        <a
+          href="https://vercel.com/dashboard"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-block text-sm text-blue-600 hover:underline"
+        >
+          פתח הגדרות Vercel ←
+        </a>
+      )}
+    </div>
+  )
+}
 
 export default async function DashboardPage() {
   const session = await auth()
   const agencyId = session?.user?.agencyId
   if (!agencyId) return null
 
-  const [listings, agency, leads, stats] = await Promise.all([
-    getListingsByAgency(agencyId),
-    getAgencyById(agencyId),
-    getLeadsByAgency(agencyId).catch(() => []),
-    getAgencyStats(agencyId, 30).catch(() => null),
-  ])
+  let listings: Listing[]
+  let agency: Agency | null
+  let leads: LeadWithListing[]
+  let stats: AgencyStats | null
+  let pendingCounts: Record<string, number>
 
-  const pendingCounts = await getActivePendingCountsByListings(listings.map(l => l.id))
+  try {
+    ;[listings, agency, leads, stats] = await Promise.all([
+      getListingsByAgency(agencyId),
+      getAgencyById(agencyId),
+      getLeadsByAgency(agencyId).catch(() => [] as LeadWithListing[]),
+      getAgencyStats(agencyId, 30).catch(() => null),
+    ])
+    pendingCounts = await getActivePendingCountsByListings(listings.map(l => l.id))
+  } catch (err: unknown) {
+    return <DbErrorBanner message={err instanceof Error ? err.message : String(err)} />
+  }
 
   const newLeads = leads.filter(l => l.status === 'new').length
   const activeListings = listings.filter(l => l.status === 'active').length

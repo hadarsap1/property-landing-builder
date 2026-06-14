@@ -27,9 +27,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (agencyId) {
     const isBillingPage = pathname.startsWith('/dashboard/billing')
     if (!isBillingPage) {
-      const sub = await getSubscription(agencyId)
-      if (!subscriptionIsActive(sub)) {
-        redirect('/dashboard/billing')
+      try {
+        const sub = await getSubscription(agencyId)
+        if (!subscriptionIsActive(sub)) {
+          redirect('/dashboard/billing')
+        }
+      } catch {
+        // DB misconfigured — fall through and let the page render its own error
       }
     }
   }

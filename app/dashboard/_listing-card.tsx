@@ -25,6 +25,25 @@ function formatPrice(price: number | null): string {
   return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', maximumFractionDigits: 0 }).format(price)
 }
 
+function isoToLocalInput(iso: string | Date | null | undefined): string {
+  if (!iso) return ''
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return ''
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+function localInputToIso(value: string): string | null {
+  if (!value) return null
+  const d = new Date(value)
+  return isNaN(d.getTime()) ? null : d.toISOString()
+}
+
+function formatOpenHouseDate(d: Date | null): string {
+  if (!d) return ''
+  return new Date(d).toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+}
+
 export function ListingCard({
   listing,
   agencySlug,
@@ -43,6 +62,14 @@ export function ListingCard({
   const [statusError, setStatusError] = useState<string | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteError, setDeleteError] = useState(false)
+
+  // Open house state
+  const [ohOpen, setOhOpen] = useState(false)
+  const [ohDate, setOhDate] = useState(isoToLocalInput(listing.open_house_date))
+  const [ohEnd, setOhEnd] = useState(isoToLocalInput(listing.open_house_end))
+  const [ohSaving, setOhSaving] = useState(false)
+  const [ohError, setOhError] = useState<string | null>(null)
+  const [ohSaved, setOhSaved] = useState<Date | null>(listing.open_house_date ? new Date(listing.open_house_date) : null)
 
   const address = [listing.street, listing.city].filter(Boolean).join(', ')
   const publicUrl = agencySlug ? `/agency/${agencySlug}/listings/${listing.slug}` : null
@@ -75,6 +102,46 @@ export function ListingCard({
       setSaving(false)
       setDeleteError(true)
     }
+  }
+
+  async function saveOpenHouse() {
+    setOhSaving(true)
+    setOhError(null)
+    const body: Record<string, string | null> = {
+      open_house_date: localInputToIso(ohDate),
+      open_house_end: localInputToIso(ohEnd),
+    }
+    const res = await fetch(`/api/listings/${listing.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (res.ok) {
+      setOhSaved(body.open_house_date ? new Date(body.open_house_date) : null)
+      setOhOpen(false)
+    } else {
+      setOhError('שגיאה בשמירה — נסה שוב')
+    }
+    setOhSaving(false)
+  }
+
+  async function clearOpenHouse() {
+    setOhSaving(true)
+    setOhError(null)
+    const res = await fetch(`/api/listings/${listing.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ open_house_date: null, open_house_end: null }),
+    })
+    if (res.ok) {
+      setOhDate('')
+      setOhEnd('')
+      setOhSaved(null)
+      setOhOpen(false)
+    } else {
+      setOhError('שגיאה בביטול — נסה שוב')
+    }
+    setOhSaving(false)
   }
 
   if (deleted) return null
@@ -131,6 +198,15 @@ export function ListingCard({
           <p className="text-xs font-semibold text-gray-800 mt-0.5">
             {listing.price_on_request ? 'מחיר לפי פנייה' : formatPrice(listing.price)}
           </p>
+          {/* Open house date badge */}
+          {ohSaved && (
+            <button
+              onClick={() => setOhOpen(true)}
+              className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded-full px-2 py-0.5 font-medium hover:bg-orange-100 transition-colors"
+            >
+              🏡 בית פתוח: {formatOpenHouseDate(ohSaved)}
+            </button>
+          )}
         </div>
 
         {/* Primary CTA */}
@@ -169,6 +245,17 @@ export function ListingCard({
         >
           ביקורים
         </Link>
+        {/* Open house button — prominent when no date is set */}
+        <button
+          onClick={() => setOhOpen(true)}
+          className={`text-xs rounded-lg px-3 py-1.5 font-medium transition-colors ${
+            ohSaved
+              ? 'border border-orange-200 text-orange-700 hover:bg-orange-50'
+              : 'bg-orange-50 hover:bg-orange-100 text-orange-700'
+          }`}
+        >
+          🏡 {ohSaved ? 'ערוך בית פתוח' : 'הוסף בית פתוח'}
+        </button>
         <Link
           href={`/flyer/${listing.id}`}
           target="_blank"
@@ -224,6 +311,75 @@ export function ListingCard({
         onCancel={() => setDeleteOpen(false)}
       />
     </div>
+
+    {/* ── Open house modal ── */}
+    {ohOpen && (
+      <div
+        className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4"
+        onClick={e => { if (e.target === e.currentTarget) setOhOpen(false) }}
+      >
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-5" dir="rtl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-900">🏡 בית פתוח</h2>
+            <button onClick={() => setOhOpen(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          </div>
+
+          <p className="text-xs text-gray-500">
+            {listing.ai_title || listing.title || 'נכס'} · {address || '—'}
+          </p>
+
+          {ohError && (
+            <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 border border-red-200">
+              {ohError}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">תאריך ושעת התחלה</label>
+              <input
+                type="datetime-local"
+                value={ohDate}
+                onChange={e => setOhDate(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="text-sm font-medium text-gray-700">שעת סיום <span className="text-gray-400 font-normal">(אופציונלי)</span></label>
+              <input
+                type="datetime-local"
+                value={ohEnd}
+                onChange={e => setOhEnd(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-400">
+            באנר ספירה לאחור יופיע בדף הנכס, וכל מי שנרשם לבית הפתוח יכנס ללידים שלך אוטומטית.
+          </p>
+
+          <div className="flex gap-3 pt-1">
+            {ohSaved && (
+              <button
+                onClick={() => void clearOpenHouse()}
+                disabled={ohSaving}
+                className="text-sm text-red-500 hover:text-red-700 font-medium px-3 py-2.5 transition-colors disabled:opacity-50"
+              >
+                בטל בית פתוח
+              </button>
+            )}
+            <button
+              onClick={() => void saveOpenHouse()}
+              disabled={ohSaving || !ohDate}
+              className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+            >
+              {ohSaving ? 'שומר...' : 'שמור'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   )
 }
