@@ -64,15 +64,21 @@ export default function SettingsPage() {
     setSaving(false)
   }
 
+  const inputStyle: React.CSSProperties = {
+    border: '2px solid #111',
+    background: '#f7f5f2',
+    borderRadius: '8px',
+  }
+
   if (!agency) return (
     <div className="max-w-xl space-y-6 animate-pulse">
-      <div className="h-7 w-40 bg-gray-200 rounded" />
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-4">
-        <div className="h-14 w-28 bg-gray-200 rounded-lg" />
+      <div className="h-7 w-40 rounded" style={{ background: '#e5e5e5' }} />
+      <div className="p-5 space-y-4" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
+        <div className="h-14 w-28 rounded-lg" style={{ background: '#e5e5e5' }} />
         {[...Array(5)].map((_, i) => (
           <div key={i} className="space-y-1.5">
-            <div className="h-3 w-20 bg-gray-200 rounded" />
-            <div className="h-10 bg-gray-100 rounded-xl" />
+            <div className="h-3 w-20 rounded" style={{ background: '#e5e5e5' }} />
+            <div className="h-10 rounded-xl" style={{ background: '#f3f4f6' }} />
           </div>
         ))}
       </div>
@@ -81,31 +87,32 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-xl space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">הגדרות סוכנות</h1>
+      <h1 className="text-xl font-bold" style={{ color: '#111' }}>הגדרות סוכנות</h1>
 
       <form onSubmit={(e) => void handleSave(e)} className="space-y-5">
 
         {/* Logo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">לוגו</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#111' }}>לוגו</label>
           <div className="flex items-center gap-4">
             {form.logo_url ? (
-              <img src={form.logo_url} alt="לוגו" className="h-14 w-auto object-contain rounded-lg border border-gray-200 bg-white p-1" />
+              <img src={form.logo_url} alt="לוגו" className="h-14 w-auto object-contain rounded-lg p-1" style={{ border: '2px solid #111', background: '#fff' }} />
             ) : (
-              <div className="h-14 w-14 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 text-xl">🏢</div>
+              <div className="h-14 w-14 rounded-lg flex items-center justify-center text-xl" style={{ border: '2px dashed #111', color: '#aaa' }}>🏢</div>
             )}
             <div>
               <button
                 type="button"
                 onClick={() => logoInputRef.current?.click()}
                 disabled={logoUploading}
-                className="text-sm bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                className="text-sm px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+                style={{ background: '#f7f5f2', border: '2px solid #111', color: '#111' }}
               >
                 {logoUploading ? 'מעלה...' : 'בחר קובץ'}
               </button>
               {form.logo_url && (
                 <button type="button" onClick={() => setForm(f => ({ ...f, logo_url: '' }))}
-                  className="mr-2 text-sm text-red-500 hover:text-red-700">הסר</button>
+                  className="mr-2 text-sm hover:underline" style={{ color: '#c0392b' }}>הסר</button>
               )}
               <input ref={logoInputRef} type="file" accept="image/*" className="hidden"
                 onChange={(e) => { if (e.target.files?.[0]) void uploadLogo(e.target.files[0]) }} />
@@ -115,34 +122,35 @@ export default function SettingsPage() {
 
         {/* Name */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">שם הסוכנות</label>
+          <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>שם הסוכנות</label>
           <input
             value={form.name}
             onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
             required
-            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 text-sm focus:outline-none"
+            style={inputStyle}
           />
         </div>
 
         {/* Slug (read-only) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            סאב-דומיין <span className="text-gray-400 font-normal">(קבוע)</span>
+          <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
+            סאב-דומיין <span className="font-normal" style={{ color: '#aaa' }}>(קבוע)</span>
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-sm bg-gray-100 border border-gray-200 rounded-xl px-4 py-2.5 text-gray-600 flex-1 font-mono" dir="ltr">
+            <span className="text-sm flex-1 font-mono px-4 py-2.5" style={{ background: '#f7f5f2', border: '2px solid #111', borderRadius: '8px', color: '#888' }} dir="ltr">
               {agency.slug}
             </span>
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs mt-1" style={{ color: '#aaa' }}>
             הסאב-דומיין משמש לניתוב: {agency.slug}.yourdomain.com
           </p>
         </div>
 
         {/* Custom domain */}
         <div>
-          <label htmlFor="custom-domain" className="block text-sm font-medium text-gray-700 mb-1">
-            דומיין מותאם אישית <span className="text-gray-400 font-normal">(אופציונלי)</span>
+          <label htmlFor="custom-domain" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
+            דומיין מותאם אישית <span className="font-normal" style={{ color: '#aaa' }}>(אופציונלי)</span>
           </label>
           <input
             id="custom-domain"
@@ -151,11 +159,12 @@ export default function SettingsPage() {
             onChange={e => setForm(f => ({ ...f, custom_domain: e.target.value }))}
             placeholder="listings.my-agency.co.il"
             dir="ltr"
-            className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2.5 text-sm font-mono focus:outline-none"
+            style={inputStyle}
           />
-          <div className="text-xs text-gray-400 mt-1.5 space-y-1">
+          <div className="text-xs mt-1.5 space-y-1" style={{ color: '#aaa' }}>
             <p>כדי לחבר דומיין משלכם:</p>
-            <p>1. הוסיפו רשומת CNAME אצל ספק הדומיין שמצביעה אל <code className="bg-gray-100 px-1 rounded" dir="ltr">cname.vercel-dns.com</code></p>
+            <p>1. הוסיפו רשומת CNAME אצל ספק הדומיין שמצביעה אל <code className="px-1 rounded" style={{ background: '#f3f4f6' }} dir="ltr">cname.vercel-dns.com</code></p>
             <p>2. הזינו את הדומיין כאן ושמרו — דפי הנכסים שלכם יוגשו ממנו אוטומטית</p>
           </div>
         </div>
@@ -163,21 +172,21 @@ export default function SettingsPage() {
         {/* Colors */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">צבע ראשי</label>
-            <div className="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2">
+            <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>צבע ראשי</label>
+            <div className="flex items-center gap-2 px-3 py-2" style={{ border: '2px solid #111', borderRadius: '8px', background: '#f7f5f2' }}>
               <input type="color" value={form.primary_color}
                 onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
                 className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-              <span className="text-sm font-mono text-gray-600">{form.primary_color}</span>
+              <span className="text-sm font-mono" style={{ color: '#888' }}>{form.primary_color}</span>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">צבע משני</label>
-            <div className="flex items-center gap-2 border border-gray-300 rounded-xl px-3 py-2">
+            <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>צבע משני</label>
+            <div className="flex items-center gap-2 px-3 py-2" style={{ border: '2px solid #111', borderRadius: '8px', background: '#f7f5f2' }}>
               <input type="color" value={form.secondary_color}
                 onChange={e => setForm(f => ({ ...f, secondary_color: e.target.value }))}
                 className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-              <span className="text-sm font-mono text-gray-600">{form.secondary_color}</span>
+              <span className="text-sm font-mono" style={{ color: '#888' }}>{form.secondary_color}</span>
             </div>
           </div>
         </div>
@@ -185,17 +194,19 @@ export default function SettingsPage() {
         {/* Contact */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">מייל ליצירת קשר</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>מייל ליצירת קשר</label>
             <input type="email" value={form.contact_email}
               onChange={e => setForm(f => ({ ...f, contact_email: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 text-sm focus:outline-none"
+              style={inputStyle}
               placeholder="office@agency.co.il" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">טלפון</label>
+            <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>טלפון</label>
             <input type="tel" value={form.contact_phone}
               onChange={e => setForm(f => ({ ...f, contact_phone: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2.5 text-sm focus:outline-none"
+              style={inputStyle}
               placeholder="03-1234567" dir="ltr" />
           </div>
         </div>
@@ -211,12 +222,17 @@ export default function SettingsPage() {
           <span className="text-white font-semibold">{form.name || 'שם הסוכנות'}</span>
         </div>
 
-        {saveError && <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{saveError}</p>}
+        {saveError && (
+          <p className="text-sm rounded-lg p-3" style={{ color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca' }}>
+            {saveError}
+          </p>
+        )}
 
         <button
           type="submit"
           disabled={saving}
-          className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+          className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm disabled:opacity-50"
+          style={{ background: '#111', color: '#f7f5f2' }}
         >
           {saving ? 'שומר...' : saved ? '✓ נשמר' : 'שמור שינויים'}
         </button>
