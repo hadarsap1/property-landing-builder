@@ -70,7 +70,7 @@ export default function HomePage() {
             className="font-display font-black tracking-tighter"
             style={{ fontSize: '1.15rem', color: '#f0ede8', letterSpacing: '-0.04em' }}
           >
-            Prop<span style={{ color: '#e8ff47' }}>Builder</span>
+            Prop<span style={{ color: '#ff5500' }}>Builder</span>
           </span>
           <div className="flex items-center gap-4">
             <Link
@@ -85,7 +85,7 @@ export default function HomePage() {
               href="/builder"
               className="text-sm font-bold px-5 py-2.5 rounded-xl transition-all hover:opacity-90"
               style={{
-                background: '#e8ff47',
+                background: '#ff5500',
                 color: '#080808',
               }}
             >
@@ -130,7 +130,7 @@ export default function HomePage() {
             width: '60vw',
             height: '60vw',
             borderRadius: '50%',
-            background: 'radial-gradient(ellipse, rgba(232,255,71,0.06) 0%, transparent 60%)',
+            background: 'radial-gradient(ellipse, rgba(255,85,0,0.08) 0%, transparent 60%)',
             pointerEvents: 'none',
           }}
         />
@@ -141,7 +141,7 @@ export default function HomePage() {
           <p
             className="font-body text-sm font-semibold mb-8"
             style={{
-              color: '#e8ff47',
+              color: '#ff5500',
               letterSpacing: '0.12em',
               textTransform: 'uppercase',
             }}
@@ -164,7 +164,7 @@ export default function HomePage() {
             <span
               style={{
                 color: 'transparent',
-                WebkitTextStroke: '2px #e8ff47',
+                WebkitTextStroke: '2px #ff5500',
               }}
             >
               ראויה לדף
@@ -192,9 +192,9 @@ export default function HomePage() {
               href="/builder"
               className="inline-flex items-center gap-3 font-bold text-base px-8 py-4 rounded-2xl transition-all hover:opacity-90 hover:-translate-y-0.5"
               style={{
-                background: '#e8ff47',
+                background: '#ff5500',
                 color: '#080808',
-                boxShadow: '0 0 40px rgba(232,255,71,0.25)',
+                boxShadow: '0 0 40px rgba(255,85,0,0.3)',
               }}
             >
               בנו את הדף שלכם — חינם ←
@@ -220,7 +220,7 @@ export default function HomePage() {
               <div key={s.label}>
                 <p
                   className="font-display font-black"
-                  style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#e8ff47', lineHeight: 1 }}
+                  style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', color: '#ff5500', lineHeight: 1 }}
                 >
                   {s.val}
                   {s.unit && (
@@ -294,12 +294,12 @@ export default function HomePage() {
                 borderRadius: '20px',
                 padding: '48px',
                 background: 'rgba(232,255,71,0.04)',
-                border: '1px solid rgba(232,255,71,0.18)',
+                border: '1px solid rgba(255,85,0,0.25)',
               }}
             >
               <p
                 className="text-xs font-bold tracking-widest uppercase mb-6"
-                style={{ color: '#e8ff47' }}
+                style={{ color: '#ff5500' }}
               >
                 מה אתם עושים עם PropBuilder
               </p>
@@ -317,7 +317,7 @@ export default function HomePage() {
                   >
                     <span
                       className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{ background: '#e8ff47', color: '#080808' }}
+                      style={{ background: '#ff5500', color: '#080808' }}
                     >
                       ✓
                     </span>
@@ -374,7 +374,7 @@ export default function HomePage() {
                   style={{
                     fontSize: 'clamp(3rem, 5vw, 4.5rem)',
                     lineHeight: 1,
-                    color: i === 0 ? '#e8ff47' : 'rgba(255,255,255,0.08)',
+                    color: i === 0 ? '#ff5500' : 'rgba(255,255,255,0.08)',
                     transition: 'color 200ms',
                     width: '90px',
                   }}
@@ -451,7 +451,7 @@ export default function HomePage() {
               </p>
               <span
                 className="inline-flex items-center gap-2 text-sm font-bold transition-colors"
-                style={{ color: '#e8ff47' }}
+                style={{ color: '#ff5500' }}
               >
                 בנו דף מכירה ←
               </span>
@@ -486,7 +486,7 @@ export default function HomePage() {
               </p>
               <span
                 className="inline-flex items-center gap-2 text-sm font-bold transition-colors"
-                style={{ color: '#e8ff47' }}
+                style={{ color: '#ff5500' }}
               >
                 בנו דף השכרה ←
               </span>
@@ -502,14 +502,14 @@ export default function HomePage() {
           borderRadius: '24px',
           padding: '56px 48px',
           background: 'rgba(232,255,71,0.05)',
-          border: '1px solid rgba(232,255,71,0.14)',
+          border: '1px solid rgba(255,85,0,0.2)',
         }}
       >
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center gap-8">
           <div className="flex-1">
             <p
               className="text-xs font-bold tracking-widest uppercase mb-3"
-              style={{ color: '#e8ff47' }}
+              style={{ color: '#ff5500' }}
             >
               לסוכנויות נדל״ן
             </p>
@@ -533,7 +533,7 @@ export default function HomePage() {
               <Link
                 href="/pricing"
                 className="px-6 py-3 rounded-xl text-sm font-bold transition-all hover:opacity-90"
-                style={{ background: '#e8ff47', color: '#080808' }}
+                style={{ background: '#ff5500', color: '#080808' }}
               >
                 ראו מחירים ←
               </Link>
@@ -552,9 +552,9 @@ export default function HomePage() {
                 key={f}
                 className="px-3 py-1.5 rounded-full font-medium"
                 style={{
-                  background: 'rgba(232,255,71,0.08)',
-                  color: 'rgba(232,255,71,0.7)',
-                  border: '1px solid rgba(232,255,71,0.14)',
+                  background: 'rgba(255,85,0,0.08)',
+                  color: 'rgba(255,115,50,0.8)',
+                  border: '1px solid rgba(255,85,0,0.2)',
                 }}
               >
                 {f}
@@ -584,7 +584,7 @@ export default function HomePage() {
             transform: 'translate(-50%, -50%)',
             width: '70vw',
             height: '40vw',
-            background: 'radial-gradient(ellipse, rgba(232,255,71,0.08) 0%, transparent 65%)',
+            background: 'radial-gradient(ellipse, rgba(255,85,0,0.08) 0%, transparent 65%)',
             pointerEvents: 'none',
           }}
         />
@@ -606,7 +606,7 @@ export default function HomePage() {
           >
             5 דקות.
             <br />
-            <span style={{ color: '#e8ff47' }}>דף שמוכר.</span>
+            <span style={{ color: '#ff5500' }}>דף שמוכר.</span>
           </h2>
           <p
             className="text-base mb-10"
@@ -618,9 +618,9 @@ export default function HomePage() {
             href="/builder"
             className="inline-flex items-center gap-3 font-bold text-lg px-10 py-5 rounded-2xl transition-all hover:opacity-90 hover:-translate-y-0.5"
             style={{
-              background: '#e8ff47',
+              background: '#ff5500',
               color: '#080808',
-              boxShadow: '0 0 60px rgba(232,255,71,0.3)',
+              boxShadow: '0 0 60px rgba(255,85,0,0.35)',
             }}
           >
             בנו את הדף שלכם — חינם ←
