@@ -337,14 +337,8 @@ export default function BuilderClient({
 
   if (!hydrated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <svg className="animate-spin h-8 w-8 text-blue-500" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-          </svg>
-          <span className="text-sm text-gray-500">טוען...</span>
-        </div>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f7f5f2' }}>
+        <span className="text-sm font-medium" style={{ color: '#999' }}>טוען...</span>
       </div>
     )
   }
@@ -353,44 +347,47 @@ export default function BuilderClient({
 
   if (isWelcomeScreen) {
     return (
-      <div dir="rtl" lang="he" className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-50 flex items-center justify-center px-4 py-12">
+      <div dir="rtl" lang="he" className="min-h-screen flex items-center justify-center px-4 py-12" style={{ background: '#f7f5f2' }}>
         <div className="w-full max-w-lg">
-          <div className="text-center mb-8">
-            <div className="text-4xl mb-3">🏠</div>
-            <h1 className="text-2xl font-bold text-gray-900">Property Landing Builder</h1>
-            <p className="text-gray-500 mt-1 text-sm">צור דף נחיתה מקצועי לנכס תוך דקות</p>
+          <div className="mb-10">
+            <span className="font-display font-black text-2xl" style={{ letterSpacing: '-0.03em', color: '#111' }}>
+              Prop<span style={{ color: '#c0392b' }}>Builder</span>
+            </span>
+            <h1 className="font-display font-black text-3xl mt-4 mb-2" style={{ letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+              בנו את הדף שלכם
+            </h1>
+            <p className="text-sm" style={{ color: '#777' }}>דף נחיתה מקצועי לנכס — תוך דקות</p>
           </div>
 
           {step === 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-              <h2 className="text-lg font-semibold text-gray-800 text-center">איך תרצה להתחיל?</h2>
+            <div className="space-y-3">
               <button
                 type="button"
                 onClick={() => setStep(-1)}
-                className="w-full text-right flex items-start gap-4 p-4 border-2 border-blue-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 rounded-xl transition-all group"
+                className="w-full text-right flex items-start gap-5 p-5 rounded-lg transition-all hover:opacity-80"
+                style={{ border: '2px solid #111', background: '#111', color: '#f7f5f2' }}
               >
-                <span className="text-2xl mt-0.5">📋</span>
                 <div>
-                  <div className="font-semibold text-gray-900 group-hover:text-blue-700">טען ממודעה קיימת</div>
-                  <div className="text-sm text-gray-500 mt-0.5">העתק מיד2, מדלן, או כל מודעה — הפרטים ימולאו אוטומטית</div>
+                  <div className="font-bold text-base">טענו ממודעה קיימת</div>
+                  <div className="text-sm mt-0.5" style={{ color: 'rgba(247,245,242,0.55)' }}>העתיקו מיד2, מדלן, או כל מודעה — הפרטים ימולאו אוטומטית</div>
                 </div>
               </button>
               <button
                 type="button"
                 onClick={() => goToStep(1)}
-                className="w-full text-right flex items-start gap-4 p-4 border-2 border-gray-200 hover:border-gray-400 bg-white hover:bg-gray-50 rounded-xl transition-all group"
+                className="w-full text-right flex items-start gap-5 p-5 rounded-lg transition-all hover:opacity-80"
+                style={{ border: '2px solid #111', background: 'transparent', color: '#111' }}
               >
-                <span className="text-2xl mt-0.5">✏️</span>
                 <div>
-                  <div className="font-semibold text-gray-900">התחל מאפס</div>
-                  <div className="text-sm text-gray-500 mt-0.5">מלא את הפרטים שלב אחרי שלב</div>
+                  <div className="font-bold text-base">התחילו מאפס</div>
+                  <div className="text-sm mt-0.5" style={{ color: '#888' }}>מלאו את הפרטים שלב אחרי שלב</div>
                 </div>
               </button>
             </div>
           )}
 
           {step === -1 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div className="rounded-lg p-6" style={{ border: '2px solid #111', background: '#fff' }}>
               <ImportListing
                 onImport={(partial) => { onChange(partial); goToStep(1) }}
                 onSkip={() => goToStep(1)}
@@ -406,65 +403,45 @@ export default function BuilderClient({
   // ── Wizard (steps 1–9) ─────────────────────────────────────────────────
 
   return (
-    <div dir="rtl" lang="he" className="bg-gray-50 lg:h-screen lg:overflow-hidden lg:grid lg:grid-cols-[500px_1fr]">
+    <div dir="rtl" lang="he" style={{ background: '#f7f5f2' }} className="lg:h-screen lg:overflow-hidden lg:grid lg:grid-cols-[500px_1fr]">
 
-      {/* ── Wizard panel ────────────────────────────────────────── */}
-      <div className="lg:flex lg:flex-col lg:h-screen lg:overflow-hidden lg:border-l lg:border-gray-200">
+      {/* ── Wizard panel ── */}
+      <div className="lg:flex lg:flex-col lg:h-screen lg:overflow-hidden" style={{ borderLeft: '2px solid #111' }}>
 
-        {/* Progress bar */}
-        <div className="fixed top-0 right-0 left-0 z-50 lg:static lg:z-auto bg-white border-b border-gray-200 shadow-sm flex-shrink-0">
+        {/* Progress header */}
+        <div className="fixed top-0 right-0 left-0 z-50 lg:static lg:z-auto flex-shrink-0" style={{ background: '#f7f5f2', borderBottom: '2px solid #111' }}>
           <div className="px-4 py-3">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-gray-700">
-                שלב {step} מתוך {TOTAL_STEPS} — {STEP_NAMES[step]}
+              <span className="text-sm font-bold" style={{ color: '#111' }}>
+                {step} / {TOTAL_STEPS} — {STEP_NAMES[step]}
               </span>
-              <span className="text-xs text-gray-400 flex items-center gap-1.5">
-                {saveStatus === 'saving' && (
-                  <><span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse inline-block" />שומר...</>
-                )}
-                {saveStatus === 'saved' && (
-                  <><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />נשמר</>
-                )}
-                {saveStatus === 'error' && (
-                  <span className="text-red-500 font-medium" title={saveError ?? ''}>
-                    ⚠ שגיאה בשמירה{saveError ? `: ${saveError}` : ''}
-                  </span>
-                )}
-                {(saveStatus === 'idle' || saveStatus === 'pending') && (
-                  <span>{Math.round(progress)}%</span>
-                )}
+              <span className="text-xs flex items-center gap-1.5" style={{ color: '#999' }}>
+                {saveStatus === 'saving' && <><span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse inline-block" />שומר...</>}
+                {saveStatus === 'saved' && <><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />נשמר</>}
+                {saveStatus === 'error' && <span className="font-medium" style={{ color: '#c0392b' }} title={saveError ?? ''}>שגיאה בשמירה</span>}
+                {(saveStatus === 'idle' || saveStatus === 'pending') && <span>{Math.round(progress)}%</span>}
               </span>
             </div>
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
+            {/* Progress bar */}
+            <div className="h-1 rounded-full overflow-hidden" style={{ background: 'rgba(0,0,0,0.1)' }}>
+              <div className="h-full rounded-full transition-all duration-300" style={{ width: `${progress}%`, background: '#c0392b' }} />
             </div>
-            <div
-              className="flex gap-1 mt-2 overflow-x-auto pb-0.5"
-              style={{ scrollbarWidth: 'none' }}
-            >
+            {/* Step pills */}
+            <div className="flex gap-1 mt-2 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none' }}>
               {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
                 <button
                   key={s}
                   ref={s === step ? activePillRef : null}
                   type="button"
                   onClick={() => goToStep(s)}
-                  className={`flex-shrink-0 flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full transition-all whitespace-nowrap focus:outline-none ${
-                    s === step
-                      ? 'bg-blue-600 text-white shadow-sm'
-                      : s < step
-                      ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                      : 'bg-gray-100 text-gray-400 hover:bg-gray-200 hover:text-gray-600'
-                  }`}
+                  className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md transition-all whitespace-nowrap focus:outline-none"
+                  style={{
+                    background: s === step ? '#111' : s < step ? 'rgba(0,0,0,0.08)' : 'transparent',
+                    color: s === step ? '#f7f5f2' : s < step ? '#555' : '#bbb',
+                    border: s === step ? '1px solid #111' : '1px solid transparent',
+                  }}
                 >
-                  <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] leading-none font-bold flex-shrink-0 ${
-                    s === step ? 'bg-white text-blue-600' : s < step ? 'bg-blue-400 text-white' : 'bg-gray-300 text-gray-500'
-                  }`}>
-                    {s}
-                  </span>
-                  {STEP_NAMES[s]}
+                  {s}. {STEP_NAMES[s]}
                 </button>
               ))}
             </div>
@@ -474,7 +451,7 @@ export default function BuilderClient({
         {/* Step content */}
         <div className="min-h-screen lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
           <div className="px-4 pt-28 pb-32 lg:pt-5 lg:pb-5">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-7">
+            <div className="rounded-lg p-5 sm:p-7" style={{ background: '#fff', border: '2px solid #111' }}>
               {step === 1 && <Step1 project={project} onChange={onChange} />}
               {step === 2 && <Step2 project={project} onChange={onChange} />}
               {step === 3 && <Step3 project={project} onChange={onChange} agencyId={agencyId || personalUserId} />}
@@ -489,26 +466,28 @@ export default function BuilderClient({
         </div>
 
         {/* Nav footer */}
-        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 bg-white border-t border-gray-200 shadow-lg flex-shrink-0">
-          <div className="px-4 py-4 flex items-center justify-between">
+        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 flex-shrink-0" style={{ background: '#f7f5f2', borderTop: '2px solid #111' }}>
+          <div className="px-4 py-3 flex items-center justify-between">
             <button
               type="button"
               onClick={() => step === 1 ? setStep(0) : goToStep(step - 1)}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-60"
+              style={{ color: '#555' }}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
               הקודם
             </button>
-            <span className="text-xs text-gray-400">{step} / {TOTAL_STEPS}</span>
+            <span className="text-xs" style={{ color: '#bbb' }}>{step} / {TOTAL_STEPS}</span>
             {step < TOTAL_STEPS ? (
               <button
                 type="button"
                 onClick={() => goToStep(step + 1)}
                 disabled={isNextDisabled()}
                 title={nextButtonTitle()}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium px-5 py-2 rounded-lg transition-colors disabled:cursor-not-allowed"
+                className="flex items-center gap-2 text-sm font-bold px-5 py-2 rounded-lg transition-opacity hover:opacity-85 disabled:opacity-30 disabled:cursor-not-allowed"
+                style={{ background: '#111', color: '#f7f5f2' }}
               >
                 הבא
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -522,22 +501,16 @@ export default function BuilderClient({
         </div>
       </div>
 
-      {/* ── Live preview iframe ────────────────────────────────── */}
+      {/* ── Live preview iframe ── */}
       <div className="hidden lg:flex lg:flex-col lg:h-screen" dir="ltr">
-        <div dir="rtl" className="flex items-center gap-2 px-4 py-2.5 bg-gray-100 border-b border-gray-200 flex-shrink-0">
-          <span className="text-sm">👁️</span>
-          <span className="text-sm font-medium text-gray-700">תצוגה מקדימה חיה</span>
-          <span className="me-auto flex items-center gap-1.5 text-xs text-gray-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block animate-pulse" />
-            מתעדכן בזמן אמת
+        <div dir="rtl" className="flex items-center gap-3 px-4 py-2.5 flex-shrink-0" style={{ background: '#f7f5f2', borderBottom: '2px solid #111' }}>
+          <span className="text-sm font-semibold" style={{ color: '#111' }}>תצוגה מקדימה חיה</span>
+          <span className="mr-auto flex items-center gap-1.5 text-xs" style={{ color: '#aaa' }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
+            בזמן אמת
           </span>
-          <a
-            href="/preview/local"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-blue-600 hover:text-blue-800 hover:underline"
-          >
-            פתח בטאב חדש ↗
+          <a href="/preview/local" target="_blank" rel="noopener noreferrer" className="text-xs underline" style={{ color: '#c0392b' }}>
+            פתח בטאב ↗
           </a>
         </div>
         <iframe
