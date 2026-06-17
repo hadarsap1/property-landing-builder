@@ -28,31 +28,31 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4" dir="rtl">
+    <main className="min-h-screen flex items-center justify-center px-4" style={{ background: '#f7f5f2' }} dir="rtl">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-gray-900">PropBuilder</Link>
-          <p className="text-sm text-gray-500 mt-2">איפוס סיסמה</p>
+          <Link href="/" className="text-2xl font-bold" style={{ color: '#111' }}>PropBuilder</Link>
+          <p className="text-sm mt-2" style={{ color: '#888' }}>איפוס סיסמה</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 space-y-5">
+        <div className="rounded-2xl p-8 space-y-5" style={{ background: '#fff', border: '2px solid #111' }}>
           {done ? (
             <div className="text-center space-y-3">
               <div className="text-4xl">📧</div>
-              <p className="font-semibold text-gray-800">אם המייל קיים במערכת, שלחנו קישור לאיפוס</p>
-              <p className="text-sm text-gray-500">בדוק את תיבת הדואר שלך (כולל ספאם). הקישור תקף לשעה אחת.</p>
-              <Link href="/auth/login?mode=commercial" className="block text-sm text-blue-600 hover:underline mt-4">
+              <p className="font-semibold" style={{ color: '#111' }}>אם המייל קיים במערכת, שלחנו קישור לאיפוס</p>
+              <p className="text-sm" style={{ color: '#888' }}>בדוק את תיבת הדואר שלך (כולל ספאם). הקישור תקף לשעה אחת.</p>
+              <Link href="/auth/login?mode=commercial" className="block text-sm hover:underline mt-4" style={{ color: '#c0392b' }}>
                 חזרה לכניסה
               </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm" style={{ color: '#888' }}>
                 הזן את כתובת המייל שלך ונשלח לך קישור לאיפוס הסיסמה.
               </p>
 
               <div className="space-y-1">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">כתובת מייל</label>
+                <label htmlFor="email" className="text-sm font-medium" style={{ color: '#111' }}>כתובת מייל</label>
                 <input
                   id="email"
                   type="email"
@@ -62,24 +62,26 @@ export default function ForgotPasswordPage() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder="agent@agency.co.il"
-                  className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none"
+                  style={{ border: '2px solid #111', background: '#f7f5f2' }}
                 />
               </div>
 
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-2">{error}</p>
+                <p className="text-sm rounded-xl px-4 py-2" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>{error}</p>
               )}
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+                className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm"
+                style={{ background: loading ? '#888' : '#c0392b', color: '#fff' }}
               >
                 {loading ? 'שולח...' : 'שלח קישור לאיפוס'}
               </button>
 
-              <p className="text-center text-xs text-gray-400">
-                <Link href="/auth/login?mode=commercial" className="text-blue-600 hover:underline">
+              <p className="text-center text-xs">
+                <Link href="/auth/login?mode=commercial" className="hover:underline" style={{ color: '#c0392b' }}>
                   חזרה לכניסה
                 </Link>
               </p>
