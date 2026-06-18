@@ -215,22 +215,22 @@ export default function Step4({ project, onChange }: StepProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-800">תמונות ומדיה</h2>
+      <h2 className="text-2xl font-bold" style={{ color: '#111' }}>תמונות ומדיה</h2>
 
-      {/* Photo tips */}
-      <div className="rounded-xl border border-amber-200 bg-amber-50 overflow-hidden">
+      <div className="rounded-lg overflow-hidden" style={{ border: '1px solid #ddd' }}>
         <button
           type="button"
           onClick={() => setTipsOpen((p) => !p)}
-          className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold text-amber-800"
+          className="w-full flex items-center justify-between px-4 py-3 text-sm font-semibold"
+          style={{ background: '#f7f5f2', color: '#111' }}
         >
           <span>💡 טיפים לצילום נכס מקצועי</span>
-          <span className={`transition-transform text-amber-600 ${tipsOpen ? 'rotate-180' : ''}`}>▼</span>
+          <span className={`transition-transform ${tipsOpen ? 'rotate-180' : ''}`} style={{ color: '#888' }}>▼</span>
         </button>
         {tipsOpen && (
-          <ul className="px-4 pb-4 space-y-2.5">
+          <ul className="px-4 pb-4 space-y-2.5" style={{ background: '#fff' }}>
             {PHOTO_TIPS.map((t, i) => (
-              <li key={i} className="flex items-start gap-2.5 text-sm text-amber-900">
+              <li key={i} className="flex items-start gap-2.5 text-sm" style={{ color: '#555' }}>
                 <span className="mt-0.5 shrink-0">{t.icon}</span>
                 <span>{t.tip}</span>
               </li>
@@ -241,10 +241,10 @@ export default function Step4({ project, onChange }: StepProps) {
 
       {/* Drop zone */}
       {project.images.length >= 10 ? (
-        <div className="border-2 border-dashed border-gray-200 rounded-xl p-8 text-center bg-gray-50 opacity-50 cursor-not-allowed select-none">
+        <div className="border-2 border-dashed rounded-lg p-8 text-center opacity-50 cursor-not-allowed select-none" style={{ borderColor: '#ddd', background: '#f7f5f2' }}>
           <div className="text-4xl mb-2">🖼️</div>
-          <p className="text-gray-500 font-medium">הגעת למקסימום — 10/10 תמונות</p>
-          <p className="text-sm text-gray-400 mt-1">הסר תמונה כדי להוסיף חדשה</p>
+          <p className="font-medium" style={{ color: '#888' }}>הגעת למקסימום — 10/10 תמונות</p>
+          <p className="text-sm mt-1" style={{ color: '#aaa' }}>הסר תמונה כדי להוסיף חדשה</p>
         </div>
       ) : (
         <div
@@ -252,13 +252,12 @@ export default function Step4({ project, onChange }: StepProps) {
           onDragLeave={() => setDragOver(false)}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-            dragOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
-          }`}
+          className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors"
+          style={{ borderColor: dragOver ? '#111' : '#aaa', background: dragOver ? '#f0eeeb' : '#f7f5f2' }}
         >
           <div className="text-4xl mb-2">🖼️</div>
-          <p className="text-gray-600 font-medium">גרור תמונות לכאן או לחץ לבחירה</p>
-          <p className="text-sm text-gray-400 mt-1">
+          <p className="font-medium" style={{ color: '#111' }}>גרור תמונות לכאן או לחץ לבחירה</p>
+          <p className="text-sm mt-1" style={{ color: '#888' }}>
             JPG, PNG, WebP | עד 10 תמונות
             {project.images.length > 0 && ` (${project.images.length}/10 נבחרו)`}
           </p>
@@ -301,7 +300,7 @@ export default function Step4({ project, onChange }: StepProps) {
 
                 {isUploading && (
                   <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-                    <svg className="animate-spin h-6 w-6 text-blue-600" viewBox="0 0 24 24" fill="none">
+                    <svg className="animate-spin h-6 w-6" style={{ color: '#c0392b' }} viewBox="0 0 24 24" fill="none">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
                     </svg>
@@ -398,7 +397,7 @@ export default function Step4({ project, onChange }: StepProps) {
 
       {/* Min-image warning */}
       {project.images.length === 0 && (
-        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-800">
+        <div className="flex items-start gap-3 rounded-lg px-4 py-3 text-sm" style={{ background: '#f7f5f2', border: '1px solid #ddd', color: '#555' }}>
           <span className="text-lg leading-none mt-0.5">📷</span>
           <p>
             <span className="font-semibold">לא הועלו תמונות.</span>
@@ -407,7 +406,7 @@ export default function Step4({ project, onChange }: StepProps) {
         </div>
       )}
       {project.images.length > 0 && project.images.length < 3 && (
-        <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 text-sm text-blue-800">
+        <div className="flex items-start gap-3 rounded-lg px-4 py-3 text-sm" style={{ background: '#f7f5f2', border: '1px solid #ddd', color: '#555' }}>
           <span className="text-lg leading-none mt-0.5">💡</span>
           <p>יש לך {project.images.length} תמונה. הוספת לפחות 3 תמונות משפרת משמעותית את שיעור הפניות.</p>
         </div>
@@ -415,7 +414,7 @@ export default function Step4({ project, onChange }: StepProps) {
 
       {/* Gallery type */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">סוג גלריה</label>
+        <label className="block text-sm font-medium mb-2" style={{ color: '#111' }}>סוג גלריה</label>
         <div className="space-y-2">
           {GALLERY_OPTIONS.map((opt) => (
             <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
@@ -425,9 +424,8 @@ export default function Step4({ project, onChange }: StepProps) {
                 value={opt.value}
                 checked={project.galleryType === opt.value}
                 onChange={() => onChange({ galleryType: opt.value })}
-                className="text-blue-600"
               />
-              <span className="text-gray-700">{opt.label}</span>
+              <span style={{ color: '#111' }}>{opt.label}</span>
             </label>
           ))}
         </div>
@@ -435,16 +433,17 @@ export default function Step4({ project, onChange }: StepProps) {
 
       {/* Video URL */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
           קישור לסרטון{' '}
-          <span className="text-gray-400 font-normal">(YouTube / Vimeo — אופציונלי)</span>
+          <span className="font-normal" style={{ color: '#888' }}>(YouTube / Vimeo — אופציונלי)</span>
         </label>
         <input
           type="url"
           value={project.videoUrl}
           onChange={(e) => onChange({ videoUrl: e.target.value })}
           placeholder="https://youtube.com/watch?v=..."
-          className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2.5 text-sm focus:outline-none rounded-lg"
+          style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
           dir="ltr"
         />
       </div>

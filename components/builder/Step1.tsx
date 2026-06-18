@@ -75,10 +75,11 @@ interface ComboboxProps {
   disabled?: boolean
   loading?: boolean
   inputClassName?: string
+  inputStyle?: React.CSSProperties
   id?: string
 }
 
-function Combobox({ value, onChange, options, placeholder, disabled, loading, inputClassName, id }: ComboboxProps) {
+function Combobox({ value, onChange, options, placeholder, disabled, loading, inputClassName, inputStyle, id }: ComboboxProps) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState(value)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -122,9 +123,10 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
         }}
         onFocus={() => { if (query.length >= 1) setOpen(true) }}
         className={inputClassName}
+        style={inputStyle}
       />
       {loading && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#aaa' }} aria-hidden="true">
           <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
@@ -135,7 +137,8 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
         <ul
           id={listboxId}
           role="listbox"
-          className="absolute z-50 right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg max-h-48 overflow-y-auto"
+          className="absolute z-50 right-0 left-0 top-full mt-1 max-h-48 overflow-y-auto"
+          style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}
           dir="rtl"
         >
           {filtered.map((opt) => (
@@ -143,7 +146,8 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
               <button
                 type="button"
                 onMouseDown={(e) => { e.preventDefault(); select(opt) }}
-                className="w-full text-right px-4 py-2.5 text-sm hover:bg-blue-50 hover:text-blue-700 transition-colors"
+                className="w-full text-right px-4 py-2.5 text-sm hover:bg-gray-100 transition-colors"
+                style={{ color: '#111' }}
               >
                 {opt}
               </button>
@@ -153,7 +157,8 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
       )}
       {isOpen && !loading && filtered.length === 0 && (
         <div
-          className="absolute z-50 right-0 left-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg p-3 text-sm text-gray-400 text-right"
+          className="absolute z-50 right-0 left-0 top-full mt-1 p-3 text-sm text-right"
+          style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px', color: '#aaa' }}
           dir="rtl"
         >
           לא נמצאו תוצאות
@@ -203,13 +208,13 @@ export default function Step1({ project, onChange }: StepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">פרטי הנכס</h2>
-        <p className="text-xs text-gray-400 mt-1">שדות המסומנים ב-* הם חובה</p>
+        <h2 className="text-2xl font-bold" style={{ color: '#111' }}>פרטי הנכס</h2>
+        <p className="text-xs mt-1" style={{ color: '#aaa' }}>שדות המסומנים ב-* הם חובה</p>
       </div>
 
       {/* Listing type */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">סוג העסקה</label>
+        <label className="block text-sm font-medium mb-3" style={{ color: '#111' }}>סוג העסקה</label>
         <div className="grid grid-cols-2 gap-3">
           {([
             { value: 'sale', emoji: '🏷️', label: 'למכירה' },
@@ -221,11 +226,12 @@ export default function Step1({ project, onChange }: StepProps) {
                 key={opt.value}
                 type="button"
                 onClick={() => onChange({ listingType: opt.value, furniture: '' })}
-                className={`flex flex-col items-center gap-2 py-5 rounded-2xl border-2 transition-all font-semibold text-sm ${
-                  active
-                    ? 'border-blue-500 bg-blue-50 text-blue-600'
-                    : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300'
-                }`}
+                className="flex flex-col items-center gap-2 py-5 rounded-lg border-2 transition-all font-semibold text-sm"
+                style={{
+                  border: '2px solid #111',
+                  background: active ? '#111' : '#f7f5f2',
+                  color: active ? '#f7f5f2' : '#555',
+                }}
               >
                 <span className="text-3xl">{opt.emoji}</span>
                 {opt.label}
@@ -237,7 +243,7 @@ export default function Step1({ project, onChange }: StepProps) {
 
       {/* Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
           שם/כותרת הנכס <Required />
         </label>
         <input
@@ -246,16 +252,17 @@ export default function Step1({ project, onChange }: StepProps) {
           value={project.title}
           onChange={(e) => onChange({ title: e.target.value })}
           placeholder={isRent ? 'לדוגמה: דירת 3 חדרים מרווחת בלב הצפון' : 'לדוגמה: דירת 4 חדרים עם נוף לים'}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+          style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         />
         {!project.title.trim() && (
-          <p className="text-xs text-amber-600 mt-1">יש להזין כותרת לנכס כדי להמשיך</p>
+          <p className="text-xs mt-1" style={{ color: '#c0392b' }}>יש להזין כותרת לנכס כדי להמשיך</p>
         )}
       </div>
 
       {/* City (required) */}
       <div>
-        <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="city" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
           עיר <Required />
         </label>
         <Combobox
@@ -264,18 +271,17 @@ export default function Step1({ project, onChange }: StepProps) {
           onChange={(v) => onChange({ city: v, street: '' })}
           options={ISRAELI_CITIES}
           placeholder="תל אביב"
-          inputClassName={`w-full border rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            !project.city.trim() ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
-          }`}
+          inputClassName="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+          inputStyle={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         />
         {!project.city.trim() && (
-          <p className="text-xs text-orange-500 mt-1">חובה לבחור עיר כדי להמשיך</p>
+          <p className="text-xs mt-1" style={{ color: '#c0392b' }}>חובה לבחור עיר כדי להמשיך</p>
         )}
       </div>
 
       {/* Street — enabled after city is set */}
       <div>
-        <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-1">רחוב</label>
+        <label htmlFor="street" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>רחוב</label>
         <Combobox
           id="street"
           value={project.street}
@@ -284,29 +290,31 @@ export default function Step1({ project, onChange }: StepProps) {
           placeholder={project.city ? 'הרצל 12' : 'בחר עיר תחילה'}
           disabled={!project.city.trim()}
           loading={streetsLoading}
-          inputClassName="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+          inputClassName="w-full px-3 py-2 rounded-lg text-sm focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+          inputStyle={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         />
         {project.city && (
-          <p className="text-xs text-gray-400 mt-1">הקלד לפחות 2 אותיות לחיפוש רחוב</p>
+          <p className="text-xs mt-1" style={{ color: '#aaa' }}>הקלד לפחות 2 אותיות לחיפוש רחוב</p>
         )}
       </div>
 
       {/* Neighborhood */}
       <div>
-        <label htmlFor="neighborhood" className="block text-sm font-medium text-gray-700 mb-1">שכונה</label>
+        <label htmlFor="neighborhood" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>שכונה</label>
         <input
           id="neighborhood"
           type="text"
           value={project.neighborhood}
           onChange={(e) => onChange({ neighborhood: e.target.value })}
           placeholder="פלורנטין"
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+          style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         />
       </div>
 
       {/* Price */}
       <div>
-        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="price" className="block text-sm font-medium mb-2" style={{ color: '#111' }}>
           {isRent ? 'מחיר שכירות לחודש' : 'מחיר מכירה'}
         </label>
         <div className="flex items-center gap-3 mb-3">
@@ -315,15 +323,15 @@ export default function Step1({ project, onChange }: StepProps) {
             id="priceOnRequest"
             checked={project.priceOnRequest}
             onChange={(e) => onChange({ priceOnRequest: e.target.checked, price: e.target.checked ? null : project.price })}
-            className="w-4 h-4 text-blue-600 rounded"
+            className="w-4 h-4 rounded"
           />
-          <label htmlFor="priceOnRequest" className="text-sm text-gray-700">
+          <label htmlFor="priceOnRequest" className="text-sm" style={{ color: '#111' }}>
             לא להציג מחיר בדף
           </label>
         </div>
         {!project.priceOnRequest && (
           <div className="relative">
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">₪</span>
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 font-medium" style={{ color: '#555' }}>₪</span>
             <input
               id="price"
               type="number"
@@ -331,24 +339,23 @@ export default function Step1({ project, onChange }: StepProps) {
               onChange={(e) => onChange({ price: e.target.value ? Number(e.target.value) : null })}
               placeholder={isRent ? '5,500' : '2,500,000'}
               min={0}
-              className={`w-full border rounded-lg pr-8 pl-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                !project.priceOnRequest && !project.price ? 'border-orange-300 bg-orange-50/40' : 'border-gray-300'
-              }`}
+              className="w-full pr-8 pl-3 py-2 rounded-lg text-sm focus:outline-none"
+              style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
             />
             {isRent && (
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">לחודש</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#888' }}>לחודש</span>
             )}
           </div>
         )}
         {!project.priceOnRequest && !project.price && (
-          <p className="text-xs text-orange-500 mt-1">הזן מחיר או סמן &quot;לא להציג מחיר בדף&quot;</p>
+          <p className="text-xs mt-1" style={{ color: '#c0392b' }}>הזן מחיר או סמן &quot;לא להציג מחיר בדף&quot;</p>
         )}
       </div>
 
       {/* Furniture — rent only */}
       {isRent && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">ריהוט</label>
+          <label className="block text-sm font-medium mb-2" style={{ color: '#111' }}>ריהוט</label>
           <div className="grid grid-cols-3 gap-2">
             {([
               { value: 'none', label: 'ללא ריהוט' },
@@ -361,11 +368,12 @@ export default function Step1({ project, onChange }: StepProps) {
                   key={opt.value}
                   type="button"
                   onClick={() => onChange({ furniture: opt.value })}
-                  className={`py-2.5 px-2 rounded-lg text-sm font-medium transition-all border ${
-                    active
-                      ? 'border-blue-500 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 bg-gray-50 text-gray-600 hover:border-gray-300'
-                  }`}
+                  className="py-2.5 px-2 rounded-lg text-sm font-medium transition-all"
+                  style={{
+                    border: '2px solid #111',
+                    background: active ? '#111' : '#f7f5f2',
+                    color: active ? '#f7f5f2' : '#555',
+                  }}
                 >
                   {opt.label}
                 </button>
@@ -378,8 +386,8 @@ export default function Step1({ project, onChange }: StepProps) {
       {/* Areas */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="built-area" className="block text-sm font-medium text-gray-700 mb-1">
-            שטח בנוי <span className="text-gray-400 font-normal">מ״ר</span>
+          <label htmlFor="built-area" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
+            שטח בנוי <span className="font-normal" style={{ color: '#888' }}>מ״ר</span>
           </label>
           <input
             id="built-area"
@@ -388,13 +396,14 @@ export default function Step1({ project, onChange }: StepProps) {
             onChange={(e) => onChange({ builtArea: e.target.value ? Number(e.target.value) : null })}
             placeholder="90"
             min={0}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+            style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
           />
         </div>
         <div>
-          <label htmlFor="garden-area" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="garden-area" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
             גינה/מרפסת{' '}
-            <span className="text-gray-400 font-normal">מ״ר</span>
+            <span className="font-normal" style={{ color: '#888' }}>מ״ר</span>
           </label>
           <input
             id="garden-area"
@@ -403,19 +412,21 @@ export default function Step1({ project, onChange }: StepProps) {
             onChange={(e) => onChange({ gardenArea: e.target.value ? Number(e.target.value) : null })}
             placeholder="20"
             min={0}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+            style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
           />
         </div>
       </div>
 
       {/* Rooms */}
       <div>
-        <label htmlFor="rooms" className="block text-sm font-medium text-gray-700 mb-1">מספר חדרים</label>
+        <label htmlFor="rooms" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>מספר חדרים</label>
         <select
           id="rooms"
           value={project.rooms ?? ''}
           onChange={(e) => onChange({ rooms: e.target.value ? Number(e.target.value) : null })}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
+          style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         >
           <option value="">בחר...</option>
           {ROOM_OPTIONS.map((r) => (

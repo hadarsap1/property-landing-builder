@@ -207,10 +207,10 @@ export default function BrokerHelpPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center gap-3">
-        <h1 className="text-xl font-bold text-gray-900">מרכז עזרה — סוכנים</h1>
-        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">עברית</span>
+        <h1 className="text-xl font-bold" style={{ color: '#111' }}>מרכז עזרה — סוכנים</h1>
+        <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>עברית</span>
       </div>
-      <div className="text-sm text-gray-500 flex items-center gap-1 flex-wrap">
+      <div className="text-sm flex items-center gap-1 flex-wrap" style={{ color: '#888' }}>
         <span>מצאת בעיה? לא מצאת תשובה?</span>
         <ContactForm source="broker-help" />
       </div>
@@ -221,11 +221,10 @@ export default function BrokerHelpPage() {
           <button
             key={s.id}
             onClick={() => { setActiveSection(s.id); setOpenItem(null) }}
-            className={`text-right px-4 py-3 rounded-xl border text-sm font-medium transition-colors ${
-              activeSection === s.id
-                ? 'bg-blue-50 border-blue-200 text-blue-700'
-                : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
-            }`}
+            className="text-right px-4 py-3 rounded-xl text-sm font-medium transition-colors"
+            style={activeSection === s.id
+              ? { background: '#fef2f2', border: '2px solid #c0392b', color: '#c0392b' }
+              : { background: '#fff', border: '2px solid #111', color: '#111' }}
           >
             <span className="text-base ml-1">{s.icon}</span>
             {s.title}
@@ -234,27 +233,27 @@ export default function BrokerHelpPage() {
       </div>
 
       {/* Active section */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+      <div className="overflow-hidden" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
+        <div className="px-5 py-4 flex items-center gap-2" style={{ borderBottom: '1px solid #e5e5e5' }}>
           <span className="text-lg">{section.icon}</span>
-          <h2 className="font-semibold text-gray-900">{section.title}</h2>
+          <h2 className="font-semibold" style={{ color: '#111' }}>{section.title}</h2>
         </div>
-        <div className="divide-y divide-gray-100">
+        <div>
           {section.items.map((item, i) => {
             const key = `${section.id}-${i}`
             const isOpen = openItem === key
             return (
-              <div key={key}>
+              <div key={key} style={{ borderBottom: '1px solid #e5e5e5' }}>
                 <button
                   onClick={() => toggleItem(key)}
-                  className="w-full text-right flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition-colors gap-3"
+                  className="w-full text-right flex items-center justify-between px-5 py-4 transition-colors gap-3 hover:bg-gray-50"
                 >
-                  <span className="text-sm font-medium text-gray-800">{item.q}</span>
-                  <span className={`text-gray-400 shrink-0 text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`}>▼</span>
+                  <span className="text-sm font-medium" style={{ color: '#111' }}>{item.q}</span>
+                  <span className={`shrink-0 text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#aaa' }}>▼</span>
                 </button>
                 {isOpen && (
                   <div className="px-5 pb-4">
-                    <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl px-4 py-3">
+                    <p className="text-sm leading-relaxed rounded-xl px-4 py-3" style={{ color: '#888', background: '#f7f5f2' }}>
                       {item.a}
                     </p>
                   </div>
@@ -266,11 +265,11 @@ export default function BrokerHelpPage() {
       </div>
 
       {/* Tutorial video placeholder */}
-      <div className="bg-gradient-to-l from-blue-50 to-indigo-50 rounded-2xl border border-blue-100 p-6 flex items-center gap-4">
+      <div className="rounded-2xl p-6 flex items-center gap-4" style={{ background: '#f7f5f2', border: '2px solid #111' }}>
         <div className="text-4xl shrink-0">🎬</div>
         <div>
-          <h3 className="font-semibold text-gray-900 text-sm">סרטוני הדרכה</h3>
-          <p className="text-sm text-gray-500 mt-0.5">
+          <h3 className="font-semibold text-sm" style={{ color: '#111' }}>סרטוני הדרכה</h3>
+          <p className="text-sm mt-0.5" style={{ color: '#888' }}>
             סרטוני וידאו קצרים להדרכה יתווספו בקרוב. בינתיים צור איתנו קשר לעזרה אישית.
           </p>
           <div className="mt-2">
@@ -280,8 +279,8 @@ export default function BrokerHelpPage() {
       </div>
 
       {/* Shortcuts */}
-      <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
-        <h2 className="font-semibold text-gray-900 text-sm">קיצורי דרך שימושיים</h2>
+      <div className="p-5 space-y-3" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
+        <h2 className="font-semibold text-sm" style={{ color: '#111' }}>קיצורי דרך שימושיים</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
           {[
             { label: 'נכסים', href: '/dashboard' },
@@ -295,9 +294,10 @@ export default function BrokerHelpPage() {
             <Link
               key={link.href}
               href={link.href}
-              className="flex items-center gap-2 text-blue-600 hover:underline"
+              className="flex items-center gap-2 hover:underline"
+              style={{ color: '#c0392b' }}
             >
-              <span className="text-gray-400">←</span>
+              <span style={{ color: '#aaa' }}>←</span>
               {link.label}
             </Link>
           ))}
