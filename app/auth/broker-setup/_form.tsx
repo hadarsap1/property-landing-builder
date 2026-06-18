@@ -34,22 +34,22 @@ export default function BrokerSetupForm({ name, email }: { name: string; email: 
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4" dir="rtl">
+    <main className="min-h-screen flex items-center justify-center px-4" style={{ background: '#f7f5f2' }} dir="rtl">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="text-4xl mb-3">🏢</div>
-          <h1 className="text-2xl font-bold text-gray-900">הגדרת חשבון סוכנות</h1>
-          <p className="text-sm text-gray-500 mt-2">מחובר כ-{name} ({email})</p>
+          <h1 className="text-2xl font-bold" style={{ color: '#111' }}>הגדרת חשבון סוכנות</h1>
+          <p className="text-sm mt-2" style={{ color: '#888' }}>מחובר כ-{name} ({email})</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 space-y-5">
+        <div className="rounded-2xl p-8 space-y-5" style={{ background: '#fff', border: '2px solid #111' }}>
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 border border-red-200">{error}</div>
+            <div className="text-sm rounded-xl px-4 py-3" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>{error}</div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1">
-              <label htmlFor="agencyName" className="text-sm font-medium text-gray-700">שם הסוכנות</label>
+              <label htmlFor="agencyName" className="text-sm font-medium" style={{ color: '#111' }}>שם הסוכנות</label>
               <input
                 id="agencyName"
                 type="text"
@@ -57,20 +57,22 @@ export default function BrokerSetupForm({ name, email }: { name: string; email: 
                 value={agencyName}
                 onChange={(e) => setAgencyName(e.target.value)}
                 placeholder="סוכנות נדל״ן מצוינת"
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none"
+                style={{ border: '2px solid #111', background: '#f7f5f2' }}
               />
             </div>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+              className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm"
+              style={{ background: loading ? '#888' : '#c0392b', color: '#fff' }}
             >
               {loading ? 'יוצר חשבון...' : 'צור חשבון סוכנות'}
             </button>
           </form>
 
-          <p className="text-center text-xs text-gray-500">ניסיון חינם ל-14 ימים · ללא כרטיס אשראי</p>
+          <p className="text-center text-xs" style={{ color: '#888' }}>ניסיון חינם ל-14 ימים · ללא כרטיס אשראי</p>
         </div>
       </div>
     </main>

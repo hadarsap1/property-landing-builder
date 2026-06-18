@@ -15,14 +15,14 @@ const STATUS_LABELS: Record<Lead['status'], string> = {
   closed: 'סגור',
 }
 
-const STATUS_COLORS: Record<Lead['status'], string> = {
-  new: 'bg-blue-100 text-blue-700',
-  contacted: 'bg-yellow-100 text-yellow-700',
-  visited: 'bg-purple-100 text-purple-700',
-  serious: 'bg-orange-100 text-orange-700',
-  irrelevant: 'bg-gray-100 text-gray-400',
-  offer_made: 'bg-green-100 text-green-700',
-  closed: 'bg-gray-200 text-gray-500',
+const STATUS_STYLES: Record<Lead['status'], React.CSSProperties> = {
+  new: { background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' },
+  contacted: { background: '#fefce8', color: '#a16207', border: '1px solid #fde047' },
+  visited: { background: '#faf5ff', color: '#7e22ce', border: '1px solid #d8b4fe' },
+  serious: { background: '#fff7ed', color: '#c2410c', border: '1px solid #fdba74' },
+  irrelevant: { background: '#f9fafb', color: '#9ca3af', border: '1px solid #e5e7eb' },
+  offer_made: { background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' },
+  closed: { background: '#f3f4f6', color: '#6b7280', border: '1px solid #d1d5db' },
 }
 
 const SOURCE_LABELS: Record<Lead['source'], string> = {
@@ -119,18 +119,25 @@ export default function LeadsPage() {
   const activeLeads = leads.filter(l => activePipeline.includes(l.status))
   const otherLeads = leads.filter(l => !activePipeline.includes(l.status))
 
+  const inputStyle: React.CSSProperties = {
+    border: '2px solid #111',
+    background: '#f7f5f2',
+    borderRadius: '8px',
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-xl font-bold text-gray-900">לידים וקונים</h1>
-          <p className="text-xs text-gray-400 mt-0.5">לידים מנכסים + קונים פוטנציאליים</p>
+          <h1 className="text-xl font-bold" style={{ color: '#111' }}>לידים וקונים</h1>
+          <p className="text-xs mt-0.5" style={{ color: '#aaa' }}>לידים מנכסים + קונים פוטנציאליים</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">{leads.length} סה&quot;כ</span>
+          <span className="text-sm" style={{ color: '#888' }}>{leads.length} סה&quot;כ</span>
           <button
             onClick={() => setShowModal(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            className="text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+            style={{ background: '#c0392b', color: '#fff' }}
           >
             + קונה חדש
           </button>
@@ -141,9 +148,8 @@ export default function LeadsPage() {
       <div className="flex gap-2 overflow-x-auto pb-1">
         <button
           onClick={() => setStatusFilter('')}
-          className={`shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-            statusFilter === '' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
+          className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
+          style={statusFilter === '' ? { background: '#111', color: '#f7f5f2' } : { background: '#f3f4f6', color: '#6b7280' }}
         >
           הכל
         </button>
@@ -151,9 +157,8 @@ export default function LeadsPage() {
           <button
             key={s}
             onClick={() => setStatusFilter(s === statusFilter ? '' : s)}
-            className={`shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors ${
-              statusFilter === s ? 'bg-gray-900 text-white' : `${STATUS_COLORS[s]} hover:opacity-80`
-            }`}
+            className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
+            style={statusFilter === s ? { background: '#111', color: '#f7f5f2' } : STATUS_STYLES[s]}
           >
             {STATUS_LABELS[s]}
           </button>
@@ -165,16 +170,17 @@ export default function LeadsPage() {
       ) : fetchError ? (
         <div className="text-center py-20">
           <div className="text-3xl mb-3">⚠️</div>
-          <p className="text-sm text-red-600">{fetchError}</p>
+          <p className="text-sm" style={{ color: '#c0392b' }}>{fetchError}</p>
           <button
             onClick={() => setStatusFilter(s => s)}
-            className="mt-4 text-sm text-blue-600 hover:underline"
+            className="mt-4 text-sm hover:underline"
+            style={{ color: '#c0392b' }}
           >
             נסה שוב
           </button>
         </div>
       ) : leads.length === 0 ? (
-        <div className="text-center py-20 text-gray-400">
+        <div className="text-center py-20" style={{ color: '#aaa' }}>
           <div className="text-4xl mb-3">📬</div>
           <p className="text-sm">אין לידים עדיין. הם יופיעו כשמישהו ישאיר פרטים בעמוד הנכס,</p>
           <p className="text-sm">או לחץ &quot;+ קונה חדש&quot; להוסיף קונה שהתקשר אליך ישירות.</p>
@@ -183,20 +189,20 @@ export default function LeadsPage() {
         <div className="space-y-6">
           {activeLeads.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#888' }}>
                 פייפליין ({activeLeads.length})
               </h2>
-              <div className="divide-y divide-gray-100 bg-white rounded-2xl border border-gray-200 overflow-hidden">
+              <div className="overflow-hidden" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
                 {activeLeads.map(l => <LeadRow key={l.id} lead={l} />)}
               </div>
             </section>
           )}
           {otherLeads.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#888' }}>
                 ארכיון ({otherLeads.length})
               </h2>
-              <div className="divide-y divide-gray-100 bg-white rounded-2xl border border-gray-200 overflow-hidden opacity-75">
+              <div className="overflow-hidden opacity-75" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
                 {otherLeads.map(l => <LeadRow key={l.id} lead={l} />)}
               </div>
             </section>
@@ -210,15 +216,15 @@ export default function LeadsPage() {
           className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center px-4"
           onClick={e => { if (e.target === e.currentTarget) setShowModal(false) }}
         >
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-5 overflow-y-auto max-h-[calc(100vh-2rem)]" dir="rtl">
+          <div className="w-full max-w-md p-6 space-y-5 overflow-y-auto max-h-[calc(100vh-2rem)]" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }} dir="rtl">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-bold text-gray-900">קונה פוטנציאלי חדש</h2>
-              <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+              <h2 className="text-lg font-bold" style={{ color: '#111' }}>קונה פוטנציאלי חדש</h2>
+              <button onClick={() => setShowModal(false)} className="text-xl leading-none" style={{ color: '#888' }}>×</button>
             </div>
-            <p className="text-xs text-gray-500">מישהו שהתקשר לשאול על נכסים — לא בהכרח נכס ספציפי</p>
+            <p className="text-xs" style={{ color: '#888' }}>מישהו שהתקשר לשאול על נכסים — לא בהכרח נכס ספציפי</p>
 
             {formError && (
-              <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 border border-red-200">
+              <div className="text-sm rounded-xl px-4 py-3" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>
                 {formError}
               </div>
             )}
@@ -226,86 +232,93 @@ export default function LeadsPage() {
             <form onSubmit={(e) => void handleCreate(e)} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
-                  <label className="text-xs font-medium text-gray-700">שם</label>
+                  <label className="text-xs font-medium" style={{ color: '#111' }}>שם</label>
                   <input
                     type="text"
                     value={form.name}
                     onChange={setField('name')}
                     placeholder="ישראל ישראלי"
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={inputStyle}
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-700">טלפון</label>
+                  <label className="text-xs font-medium" style={{ color: '#111' }}>טלפון</label>
                   <input
                     type="tel"
                     value={form.phone}
                     onChange={setField('phone')}
                     placeholder="05X-XXX-XXXX"
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={inputStyle}
                     dir="ltr"
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-700">מייל</label>
+                  <label className="text-xs font-medium" style={{ color: '#111' }}>מייל</label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={setField('email')}
                     placeholder="buyer@email.com"
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={inputStyle}
                     dir="ltr"
                   />
                 </div>
               </div>
 
-              <div className="border-t border-gray-100 pt-4 space-y-3">
-                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">מה הקונה מחפש</p>
+              <div className="pt-4 space-y-3" style={{ borderTop: '1px solid #e5e5e5' }}>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#888' }}>מה הקונה מחפש</p>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-700">תקציב (₪)</label>
+                  <label className="text-xs font-medium" style={{ color: '#111' }}>תקציב (₪)</label>
                   <input
                     type="number"
                     value={form.budget}
                     onChange={setField('budget')}
                     placeholder="3000000"
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={inputStyle}
                     dir="ltr"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-700">חדרים מינימום</label>
+                    <label className="text-xs font-medium" style={{ color: '#111' }}>חדרים מינימום</label>
                     <input
                       type="number"
                       step="0.5"
                       value={form.rooms_min}
                       onChange={setField('rooms_min')}
                       placeholder="3"
-                      className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm focus:outline-none"
+                      style={inputStyle}
                       dir="ltr"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-medium text-gray-700">חדרים מקסימום</label>
+                    <label className="text-xs font-medium" style={{ color: '#111' }}>חדרים מקסימום</label>
                     <input
                       type="number"
                       step="0.5"
                       value={form.rooms_max}
                       onChange={setField('rooms_max')}
                       placeholder="5"
-                      className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 text-sm focus:outline-none"
+                      style={inputStyle}
                       dir="ltr"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-gray-700">אזורים מבוקשים</label>
+                  <label className="text-xs font-medium" style={{ color: '#111' }}>אזורים מבוקשים</label>
                   <input
                     type="text"
                     value={form.desired_areas}
                     onChange={setField('desired_areas')}
                     placeholder="תל אביב, רמת גן, גבעתיים"
-                    className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 text-sm focus:outline-none"
+                    style={inputStyle}
                   />
                 </div>
               </div>
@@ -314,14 +327,16 @@ export default function LeadsPage() {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="flex-1 border border-gray-300 text-gray-700 text-sm font-medium py-2.5 rounded-xl hover:bg-gray-50 transition-colors"
+                  className="flex-1 text-sm font-medium py-2.5 rounded-xl transition-colors"
+                  style={{ border: '2px solid #111', color: '#111', background: '#f7f5f2' }}
                 >
                   ביטול
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors"
+                  className="flex-1 text-sm font-semibold py-2.5 rounded-xl transition-colors disabled:opacity-50"
+                  style={{ background: '#c0392b', color: '#fff' }}
                 >
                   {saving ? 'שומר...' : 'הוסף קונה'}
                 </button>
@@ -336,18 +351,18 @@ export default function LeadsPage() {
 
 function LeadsSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden animate-pulse">
+    <div className="overflow-hidden animate-pulse" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
       {[...Array(5)].map((_, i) => (
-        <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-0">
-          <div className="w-9 h-9 rounded-full bg-gray-200 shrink-0" />
+        <div key={i} className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid #e5e5e5' }}>
+          <div className="w-9 h-9 rounded-full shrink-0" style={{ background: '#e5e5e5' }} />
           <div className="flex-1 space-y-2">
             <div className="flex gap-2">
-              <div className="w-24 h-3.5 bg-gray-200 rounded" />
-              <div className="w-14 h-3.5 bg-gray-100 rounded" />
+              <div className="w-24 h-3.5 rounded" style={{ background: '#e5e5e5' }} />
+              <div className="w-14 h-3.5 rounded" style={{ background: '#f3f4f6' }} />
             </div>
-            <div className="w-36 h-3 bg-gray-100 rounded" />
+            <div className="w-36 h-3 rounded" style={{ background: '#f3f4f6' }} />
           </div>
-          <div className="w-12 h-3 bg-gray-100 rounded shrink-0" />
+          <div className="w-12 h-3 rounded shrink-0" style={{ background: '#f3f4f6' }} />
         </div>
       ))}
     </div>
@@ -358,31 +373,34 @@ function LeadRow({ lead }: { lead: LeadWithListing }) {
   const since = new Date(lead.created_at).toLocaleDateString('he-IL')
   const isCandidate = !lead.listing_id
   return (
-    <div className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors">
+    <div className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-gray-50" style={{ borderBottom: '1px solid #e5e5e5' }}>
       <Link
         href={`/dashboard/leads/${lead.id}`}
         className="flex items-center gap-3 flex-1 min-w-0"
       >
-        <div className={`w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm shrink-0 ${
-          isCandidate ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
-        }`}>
+        <div
+          className="w-9 h-9 rounded-full flex items-center justify-center font-semibold text-sm shrink-0"
+          style={isCandidate
+            ? { background: '#faf5ff', color: '#7e22ce' }
+            : { background: '#eff6ff', color: '#1d4ed8' }}
+        >
           {lead.name ? lead.name.charAt(0).toUpperCase() : '?'}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-medium text-gray-900 text-sm">{lead.name || 'אנונימי'}</span>
-            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[lead.status]}`}>
+            <span className="font-medium text-sm" style={{ color: '#111' }}>{lead.name || 'אנונימי'}</span>
+            <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={STATUS_STYLES[lead.status]}>
               {STATUS_LABELS[lead.status]}
             </span>
             {isCandidate ? (
-              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-50 text-purple-600">
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: '#faf5ff', color: '#7e22ce', border: '1px solid #d8b4fe' }}>
                 קונה
               </span>
             ) : (
-              <span className="text-xs text-gray-400">{SOURCE_LABELS[lead.source]}</span>
+              <span className="text-xs" style={{ color: '#aaa' }}>{SOURCE_LABELS[lead.source]}</span>
             )}
           </div>
-          <p className="text-xs text-gray-500 truncate">
+          <p className="text-xs truncate" style={{ color: '#888' }}>
             {[lead.phone, lead.email].filter(Boolean).join(' · ') || '—'}
             {isCandidate && lead.desired_areas && ` · ${lead.desired_areas}`}
           </p>
@@ -391,14 +409,15 @@ function LeadRow({ lead }: { lead: LeadWithListing }) {
       {lead.listing_id && lead.listing_title && (
         <Link
           href={`/dashboard/listings/${lead.listing_id}/edit`}
-          className="shrink-0 max-w-[180px] text-xs bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg px-2.5 py-1.5 font-medium transition-colors flex items-center gap-1"
+          className="shrink-0 max-w-[180px] text-xs rounded-lg px-2.5 py-1.5 font-medium transition-colors flex items-center gap-1"
+          style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}
           title={lead.listing_title}
         >
           <span>🏠</span>
           <span className="truncate">{lead.listing_title}</span>
         </Link>
       )}
-      <span className="text-xs text-gray-400 shrink-0">{since}</span>
+      <span className="text-xs shrink-0" style={{ color: '#aaa' }}>{since}</span>
     </div>
   )
 }

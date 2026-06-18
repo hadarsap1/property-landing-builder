@@ -19,28 +19,28 @@ export default async function SetPasswordPage({
   const agent = await getAgentByInviteToken(token)
   if (!agent) {
     return (
-      <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4" dir="rtl">
+      <main className="min-h-screen flex items-center justify-center px-4" style={{ background: '#f7f5f2' }} dir="rtl">
         <div className="text-center max-w-sm">
           <div className="text-4xl mb-4">⏰</div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">קישור לא תקף</h1>
-          <p className="text-gray-600">קישור ההזמנה פג תוקף או כבר נוצל. בקש מהמנהל לשלוח הזמנה חדשה.</p>
+          <h1 className="text-xl font-bold mb-2" style={{ color: '#111' }}>קישור לא תקף</h1>
+          <p style={{ color: '#888' }}>קישור ההזמנה פג תוקף או כבר נוצל. בקש מהמנהל לשלוח הזמנה חדשה.</p>
         </div>
       </main>
     )
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 px-4" dir="rtl">
+    <main className="min-h-screen flex items-center justify-center px-4" style={{ background: '#f7f5f2' }} dir="rtl">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="text-3xl mb-3">👋</div>
-          <h1 className="text-2xl font-bold text-gray-900">ברוך הבא, {agent.name}</h1>
-          <p className="text-sm text-gray-500 mt-1">הגדר סיסמה להמשיך</p>
+          <h1 className="text-2xl font-bold" style={{ color: '#111' }}>ברוך הבא, {agent.name}</h1>
+          <p className="text-sm mt-1" style={{ color: '#888' }}>הגדר סיסמה להמשיך</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+        <div className="rounded-2xl p-8" style={{ background: '#fff', border: '2px solid #111' }}>
           {error && (
-            <div className="bg-red-50 text-red-700 text-sm rounded-lg px-4 py-3 border border-red-200 mb-5">
+            <div className="text-sm rounded-lg px-4 py-3 mb-5" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>
               {ERROR_MESSAGES[error] ?? 'אירעה שגיאה. נסה שוב.'}
             </div>
           )}
@@ -48,12 +48,12 @@ export default async function SetPasswordPage({
           <form action={setPasswordAction} className="space-y-5">
             <input type="hidden" name="token" value={token} />
 
-            <div className="bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-600">
-              כניסה בתור: <span className="font-medium">{agent.email}</span>
+            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#f7f5f2', color: '#888' }}>
+              כניסה בתור: <span className="font-medium" style={{ color: '#111' }}>{agent.email}</span>
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="text-sm font-medium" style={{ color: '#111' }}>
                 סיסמה חדשה
               </label>
               <input
@@ -63,13 +63,14 @@ export default async function SetPasswordPage({
                 autoComplete="new-password"
                 required
                 minLength={8}
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none"
+                style={{ border: '2px solid #111', background: '#f7f5f2' }}
                 placeholder="מינימום 8 תווים"
               />
             </div>
 
             <div className="space-y-1">
-              <label htmlFor="confirm" className="text-sm font-medium text-gray-700">
+              <label htmlFor="confirm" className="text-sm font-medium" style={{ color: '#111' }}>
                 אימות סיסמה
               </label>
               <input
@@ -78,13 +79,15 @@ export default async function SetPasswordPage({
                 type="password"
                 autoComplete="new-password"
                 required
-                className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none"
+                style={{ border: '2px solid #111', background: '#f7f5f2' }}
               />
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+              className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm"
+              style={{ background: '#c0392b', color: '#fff' }}
             >
               הגדר סיסמה וכנס
             </button>

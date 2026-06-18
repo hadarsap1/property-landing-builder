@@ -14,9 +14,9 @@ const AIR_LABEL: Record<string, string> = { N: 'צפון', S: 'דרום', E: 'מ
 
 function FieldBadge({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
-      <span className="text-xs text-blue-500 font-medium">{label}</span>
-      <span className="text-sm text-gray-800 font-semibold">{value}</span>
+    <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
+      <span className="text-xs font-medium" style={{ color: '#888' }}>{label}</span>
+      <span className="text-sm font-semibold" style={{ color: '#111' }}>{value}</span>
     </div>
   );
 }
@@ -46,7 +46,6 @@ function listingToProject(listing: ImportedListing): Partial<PropertyProject> {
   if (listing.bathrooms != null) partial.bathrooms = listing.bathrooms;
   if (listing.rawStory) partial.rawStory = listing.rawStory;
 
-  // Auto-build mapQuery
   if (listing.street || listing.city) {
     partial.mapQuery = `${listing.street ?? ''}, ${listing.city ?? ''}, ישראל`.replace(/^, /, '');
   }
@@ -87,7 +86,7 @@ function buildPreview(listing: ImportedListing): { label: string; value: string 
   return items;
 }
 
-export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
+export default function ImportListing({ onImport, onSkip }: Props) {
   const [text, setText] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -127,14 +126,14 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">📋 טען ממודעה קיימת</h2>
-        <p className="text-sm text-gray-500">
+        <h2 className="text-xl font-bold mb-1" style={{ color: '#111' }}>טען ממודעה קיימת</h2>
+        <p className="text-sm" style={{ color: '#888' }}>
           העתק את טקסט המודעה מיד2, מדלן, או כל אתר אחר, והדבק כאן.
         </p>
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium" style={{ color: '#111' }}>
           תוכן המודעה
         </label>
         <textarea
@@ -142,36 +141,28 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
           onChange={(e) => { setText(e.target.value); setResult(null); setError(''); }}
           rows={10}
           disabled={loading}
-          placeholder={`לדוגמה:
-
-דירת 4 חדרים למכירה בהרצליה פיתוח, רח׳ הנשיאים 12
-קומה 5 מתוך 8, מעלית, חניה מקורה, מחסן, ממ"ד
-שטח: 102 מ"ר + מרפסת 15 מ"ר
-מחיר: 3,200,000 ₪
-בניין משנת 2008, שיפוץ 2022
-3 חדרי שינה, 2 שירותים
-כיוונים: דרום-מערב
-...`}
-          className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400 leading-relaxed"
+          placeholder={`לדוגמה:\n\nדירת 4 חדרים למכירה בהרצליה פיתוח, רח׳ הנשיאים 12\nקומה 5 מתוך 8, מעלית, חניה מקורה, מחסן, ממ"ד\nשטח: 102 מ"ר + מרפסת 15 מ"ר\nמחיר: 3,200,000 ₪\n...`}
+          className="w-full px-4 py-3 text-sm resize-none focus:outline-none leading-relaxed rounded-lg disabled:opacity-50"
+          style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         />
-        <p className="text-xs text-gray-400">
+        <p className="text-xs" style={{ color: '#aaa' }}>
           ככל שתדביק יותר טקסט, כך יזוהו יותר שדות אוטומטית
         </p>
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-4 py-3 text-sm">
+        <div className="rounded-lg px-4 py-3 text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b' }}>
           {error}
         </div>
       )}
 
-      {/* Parse button */}
       {!result && (
         <button
           type="button"
           onClick={handleParse}
           disabled={loading || text.trim().length < 20}
-          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-semibold py-3 rounded-xl transition-colors disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 font-semibold py-3 rounded-lg transition-opacity hover:opacity-85 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{ background: '#111' }}
         >
           {loading ? (
             <>
@@ -187,20 +178,19 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
         </button>
       )}
 
-      {/* Results preview */}
       {result && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <span className="text-green-600 text-lg">✅</span>
-            <span className="font-semibold text-gray-800">
+            <span className="text-lg" style={{ color: '#16a34a' }}>✅</span>
+            <span className="font-semibold" style={{ color: '#111' }}>
               זיהיתי {fieldCount} שדות מהמודעה
             </span>
           </div>
 
           {result.title && (
-            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-              <span className="text-xs text-gray-500 block mb-0.5">כותרת</span>
-              <span className="font-semibold text-gray-900">{result.title}</span>
+            <div className="rounded-lg px-4 py-3" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
+              <span className="text-xs block mb-0.5" style={{ color: '#888' }}>כותרת</span>
+              <span className="font-semibold" style={{ color: '#111' }}>{result.title}</span>
             </div>
           )}
 
@@ -211,13 +201,13 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
           </div>
 
           {result.rawStory && (
-            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-3">
-              <span className="text-xs text-gray-500 block mb-1">תיאור שיועבר לשלב &quot;הסיפור&quot;</span>
-              <p className="text-sm text-gray-700 line-clamp-3 leading-relaxed">{result.rawStory}</p>
+            <div className="rounded-lg px-4 py-3" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
+              <span className="text-xs block mb-1" style={{ color: '#888' }}>תיאור שיועבר לשלב &quot;הסיפור&quot;</span>
+              <p className="text-sm line-clamp-3 leading-relaxed" style={{ color: '#555' }}>{result.rawStory}</p>
             </div>
           )}
 
-          <p className="text-xs text-gray-400">
+          <p className="text-xs" style={{ color: '#aaa' }}>
             כל השדות ניתנים לעריכה בשלבים הבאים
           </p>
 
@@ -225,14 +215,16 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
             <button
               type="button"
               onClick={handleConfirm}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-xl transition-colors"
+              className="flex-1 font-semibold py-3 rounded-lg transition-opacity hover:opacity-85 text-white"
+              style={{ background: '#c0392b' }}
             >
               אשר והמשך ←
             </button>
             <button
               type="button"
               onClick={() => { setResult(null); setText(''); }}
-              className="px-4 py-3 border border-gray-300 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors text-sm"
+              className="px-4 py-3 rounded-lg transition-opacity hover:opacity-70 text-sm"
+              style={{ border: '2px solid #111', color: '#111' }}
             >
               נסה שוב
             </button>
@@ -240,12 +232,12 @@ export default function ImportListing({ onImport, onSkip, agencyId }: Props) {
         </div>
       )}
 
-      {/* Skip */}
-      <div className="border-t border-gray-100 pt-4 text-center">
+      <div className="pt-4 text-center" style={{ borderTop: '1px solid #ddd' }}>
         <button
           type="button"
           onClick={onSkip}
-          className="text-sm text-gray-400 hover:text-gray-600 underline underline-offset-2 transition-colors"
+          className="text-sm underline underline-offset-2 transition-opacity hover:opacity-60"
+          style={{ color: '#aaa' }}
         >
           התחל מאפס בלי לייבא מודעה
         </button>

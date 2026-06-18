@@ -57,8 +57,8 @@ export default function Step6({ project, onChange }: StepProps) {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold text-gray-800">בחר תבנית עיצוב</h2>
-        <p className="text-sm text-gray-500 mt-1">ניתן לשנות בכל עת — השינוי מופיע בתצוגה המקדימה מיד</p>
+        <h2 className="text-2xl font-bold" style={{ color: '#111' }}>בחר תבנית עיצוב</h2>
+        <p className="text-sm mt-1" style={{ color: '#888' }}>ניתן לשנות בכל עת — השינוי מופיע בתצוגה המקדימה מיד</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -69,14 +69,13 @@ export default function Step6({ project, onChange }: StepProps) {
               key={t.id}
               type="button"
               onClick={() => onChange({ template: t.id })}
-              className={`rounded-xl border-2 p-3 text-right transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                selected
-                  ? 'border-blue-600 shadow-md ring-2 ring-blue-200 bg-blue-50/30'
-                  : 'border-gray-200 hover:border-blue-300 bg-white'
-              }`}
+              className="rounded-lg p-3 text-right transition-all focus:outline-none"
+              style={{
+                border: selected ? '2px solid #111' : '2px solid #ddd',
+                background: selected ? '#f7f5f2' : '#fff',
+              }}
             >
-              {/* Color palette strip */}
-              <div className="flex gap-1 mb-3 rounded-lg overflow-hidden h-8">
+              <div className="flex gap-1 mb-3 rounded overflow-hidden h-8">
                 {t.colors.map((color, i) => (
                   <div
                     key={color}
@@ -85,17 +84,17 @@ export default function Step6({ project, onChange }: StepProps) {
                   />
                 ))}
               </div>
-              <p className="text-sm font-semibold text-gray-800">{t.nameHe}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{t.desc}</p>
+              <p className="text-sm font-semibold" style={{ color: '#111' }}>{t.nameHe}</p>
+              <p className="text-xs mt-0.5" style={{ color: '#888' }}>{t.desc}</p>
               {selected && (
-                <p className="text-xs text-blue-600 mt-1 font-medium">✓ נבחר</p>
+                <p className="text-xs mt-1 font-medium" style={{ color: '#c0392b' }}>✓ נבחר</p>
               )}
             </button>
           );
         })}
       </div>
 
-      <p className="text-xs text-gray-400 text-center">
+      <p className="text-xs text-center" style={{ color: '#aaa' }}>
         צבע הדגש וסוג הגופן ניתנים להתאמה בשלב הבא
       </p>
     </div>

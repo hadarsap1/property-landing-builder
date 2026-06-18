@@ -42,10 +42,11 @@ export default function TeamPage() {
   return (
     <div className="max-w-2xl space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-900">ניהול צוות</h1>
+        <h1 className="text-xl font-bold" style={{ color: '#111' }}>ניהול צוות</h1>
         <button
           onClick={() => { setShowInvite(true); setInviteLink(null) }}
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          className="text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
+          style={{ background: '#111', color: '#f7f5f2' }}
         >
           + הזמן נציג
         </button>
@@ -60,20 +61,21 @@ export default function TeamPage() {
       )}
 
       {inviteLink && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-sm">
-          <p className="font-medium text-green-800 mb-2">קישור הזמנה נוצר</p>
+        <div className="rounded-xl p-4 text-sm" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+          <p className="font-medium mb-2" style={{ color: '#166534' }}>קישור הזמנה נוצר</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 bg-white border border-green-200 rounded-lg px-3 py-1.5 text-green-700 text-xs truncate" dir="ltr">
+            <code className="flex-1 rounded-lg px-3 py-1.5 text-xs truncate" style={{ background: '#fff', border: '1px solid #bbf7d0', color: '#166534' }} dir="ltr">
               {inviteLink}
             </code>
             <button
               onClick={() => void navigator.clipboard.writeText(inviteLink)}
-              className="shrink-0 text-xs bg-green-100 hover:bg-green-200 text-green-700 px-3 py-1.5 rounded-lg transition-colors"
+              className="shrink-0 text-xs px-3 py-1.5 rounded-lg transition-colors"
+              style={{ background: '#dcfce7', color: '#166534' }}
             >
               העתק
             </button>
           </div>
-          <p className="text-green-600 text-xs mt-2">
+          <p className="text-xs mt-2" style={{ color: '#166534' }}>
             {process.env.NEXT_PUBLIC_EMAIL_CONFIGURED ? 'הקישור נשלח גם במייל.' : 'EMAIL_SERVER לא מוגדר — שלח את הקישור ידנית.'}
           </p>
         </div>
@@ -81,24 +83,24 @@ export default function TeamPage() {
 
       {/* Agent list */}
       {loading ? (
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden animate-pulse">
+        <div className="overflow-hidden animate-pulse" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-0">
-              <div className="w-10 h-10 rounded-full bg-gray-200 shrink-0" />
+            <div key={i} className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid #e5e5e5' }}>
+              <div className="w-10 h-10 rounded-full shrink-0" style={{ background: '#e5e5e5' }} />
               <div className="flex-1 space-y-2">
                 <div className="flex gap-2">
-                  <div className="w-24 h-3.5 bg-gray-200 rounded" />
-                  <div className="w-14 h-3.5 bg-gray-100 rounded" />
+                  <div className="w-24 h-3.5 rounded" style={{ background: '#e5e5e5' }} />
+                  <div className="w-14 h-3.5 rounded" style={{ background: '#f3f4f6' }} />
                 </div>
-                <div className="w-36 h-3 bg-gray-100 rounded" />
+                <div className="w-36 h-3 rounded" style={{ background: '#f3f4f6' }} />
               </div>
             </div>
           ))}
         </div>
       ) : agents.length === 0 ? (
-        <p className="text-gray-400 text-sm text-center py-10">אין נציגים עדיין</p>
+        <p className="text-sm text-center py-10" style={{ color: '#aaa' }}>אין נציגים עדיין</p>
       ) : (
-        <div className="divide-y divide-gray-100 bg-white rounded-2xl border border-gray-200 overflow-hidden">
+        <div className="overflow-hidden" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
           {agents.map((agent) => (
             <AgentRow key={agent.id} agent={agent} onDelete={(id, name, lc, ld) => setDeleteTarget({ id, name, listing_count: lc, lead_count: ld })} />
           ))}
@@ -134,31 +136,32 @@ function AgentRow({
 }) {
   const isPending = !!agent.invitation_expires_at
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid #e5e5e5' }}>
       {agent.photo_url ? (
         <img src={agent.photo_url} alt={agent.name} className="w-10 h-10 rounded-full object-cover shrink-0" />
       ) : (
-        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-semibold text-sm shrink-0">
+        <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm shrink-0" style={{ background: '#f7f5f2', border: '2px solid #111', color: '#111' }}>
           {agent.name.charAt(0).toUpperCase()}
         </div>
       )}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-medium text-gray-900 text-sm">{agent.name}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+          <span className="font-medium text-sm" style={{ color: '#111' }}>{agent.name}</span>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#f7f5f2', color: '#888', border: '1px solid #e5e5e5' }}>
             {ROLE_LABELS[agent.role]}
           </span>
           {isPending && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700">
+            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#fefce8', color: '#a16207', border: '1px solid #fde047' }}>
               ממתין לאישור
             </span>
           )}
         </div>
-        <p className="text-xs text-gray-500 truncate">{agent.email}</p>
+        <p className="text-xs truncate" style={{ color: '#888' }}>{agent.email}</p>
       </div>
       <button
         onClick={() => onDelete(agent.id, agent.name, agent.listing_count ?? 0, agent.lead_count ?? 0)}
-        className="shrink-0 text-xs text-red-400 hover:text-red-600 px-2 py-1 rounded transition-colors"
+        className="shrink-0 text-xs px-2 py-1 rounded transition-colors hover:underline"
+        style={{ color: '#c0392b' }}
       >
         הסר
       </button>
@@ -196,60 +199,77 @@ function InviteForm({
     setSaving(false)
   }
 
+  const inputStyle: React.CSSProperties = {
+    border: '2px solid #111',
+    background: '#f7f5f2',
+    borderRadius: '8px',
+  }
+
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm space-y-4">
+    <div className="p-5 space-y-4" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-gray-900">הזמן נציג חדש</h2>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl leading-none">✕</button>
+        <h2 className="font-semibold" style={{ color: '#111' }}>הזמן נציג חדש</h2>
+        <button onClick={onClose} className="text-xl leading-none" style={{ color: '#888' }}>✕</button>
       </div>
 
-      {error && <p className="text-sm text-red-600 bg-red-50 rounded-lg p-3">{error}</p>}
+      {error && (
+        <p className="text-sm rounded-lg p-3" style={{ color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca' }}>
+          {error}
+        </p>
+      )}
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">שם מלא</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: '#111' }}>שם מלא</label>
             <input required value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              className="w-full px-3 py-2 text-sm focus:outline-none"
+              style={inputStyle} />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">מייל</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: '#111' }}>מייל</label>
             <input required type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" dir="ltr" />
+              className="w-full px-3 py-2 text-sm focus:outline-none"
+              style={inputStyle} dir="ltr" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">טלפון</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: '#111' }}>טלפון</label>
             <input type="tel" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" dir="ltr" />
+              className="w-full px-3 py-2 text-sm focus:outline-none"
+              style={inputStyle} dir="ltr" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">תפקיד</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: '#111' }}>תפקיד</label>
             <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white">
+              className="w-full px-3 py-2 text-sm focus:outline-none"
+              style={{ ...inputStyle, background: '#f7f5f2' }}>
               <option value="agent">נציג</option>
               <option value="admin">מנהל</option>
             </select>
           </div>
           <div className="col-span-2">
-            <label className="block text-xs font-medium text-gray-600 mb-1">
-              תפקיד — <span className="font-normal text-gray-400">{ROLE_DESC[form.role as keyof typeof ROLE_DESC]}</span>
+            <label className="block text-xs font-medium mb-1" style={{ color: '#111' }}>
+              תפקיד — <span className="font-normal" style={{ color: '#aaa' }}>{ROLE_DESC[form.role as keyof typeof ROLE_DESC]}</span>
             </label>
           </div>
           <div className="col-span-2">
-            <label className="block text-xs font-medium text-gray-600 mb-1">קישור Calendly (אופציונלי)</label>
+            <label className="block text-xs font-medium mb-1" style={{ color: '#111' }}>קישור Calendly (אופציונלי)</label>
             <input type="url" value={form.calendly_url} onChange={e => setForm(f => ({ ...f, calendly_url: e.target.value }))}
               placeholder="https://calendly.com/your-name"
-              className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" dir="ltr" />
+              className="w-full px-3 py-2 text-sm focus:outline-none"
+              style={inputStyle} dir="ltr" />
           </div>
         </div>
 
         <div className="flex gap-3 pt-1">
           <button type="button" onClick={onClose}
-            className="flex-1 border border-gray-300 text-gray-700 text-sm font-medium py-2 rounded-xl hover:bg-gray-50 transition-colors">
+            className="flex-1 text-sm font-medium py-2 rounded-xl transition-colors"
+            style={{ border: '2px solid #111', color: '#111', background: '#f7f5f2' }}>
             ביטול
           </button>
           <button type="submit" disabled={saving}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white text-sm font-semibold py-2 rounded-xl transition-colors">
+            className="flex-1 text-sm font-semibold py-2 rounded-xl transition-colors disabled:opacity-50"
+            style={{ background: '#111', color: '#f7f5f2' }}>
             {saving ? 'שולח...' : 'שלח הזמנה'}
           </button>
         </div>

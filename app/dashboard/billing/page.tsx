@@ -9,12 +9,12 @@ interface SubState {
   active: boolean
 }
 
-const STATUS_LABELS: Record<string, { text: string; cls: string }> = {
-  trialing: { text: 'תקופת ניסיון', cls: 'bg-blue-100 text-blue-700' },
-  active:   { text: 'פעיל',         cls: 'bg-green-100 text-green-700' },
-  past_due: { text: 'תשלום נכשל',   cls: 'bg-red-100 text-red-600' },
-  canceled: { text: 'בוטל',         cls: 'bg-gray-100 text-gray-500' },
-  unpaid:   { text: 'לא שולם',      cls: 'bg-red-100 text-red-600' },
+const STATUS_LABELS: Record<string, { text: string; style: React.CSSProperties }> = {
+  trialing: { text: 'תקופת ניסיון', style: { background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' } },
+  active:   { text: 'פעיל',         style: { background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' } },
+  past_due: { text: 'תשלום נכשל',   style: { background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' } },
+  canceled: { text: 'בוטל',         style: { background: '#f9fafb', color: '#6b7280', border: '1px solid #e5e7eb' } },
+  unpaid:   { text: 'לא שולם',      style: { background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' } },
 }
 
 export default function BillingPage() {
@@ -75,20 +75,20 @@ export default function BillingPage() {
 
   return (
     <div dir="rtl" className="max-w-2xl space-y-6">
-      <h1 className="text-xl font-bold text-gray-900">חיוב ומנוי</h1>
+      <h1 className="text-xl font-bold" style={{ color: '#111' }}>חיוב ומנוי</h1>
 
       {/* Current status */}
       {state && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+        <div className="p-5 space-y-3" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
           <div className="flex items-center justify-between">
-            <span className="font-semibold text-gray-800">סטטוס נוכחי</span>
-            <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${badge.cls}`}>
+            <span className="font-semibold" style={{ color: '#111' }}>סטטוס נוכחי</span>
+            <span className="text-xs font-medium px-2.5 py-1 rounded-full" style={badge.style}>
               {badge.text}
             </span>
           </div>
 
           {status === 'trialing' && trialDaysLeft !== null && (
-            <p className="text-sm text-blue-700 bg-blue-50 rounded-xl px-4 py-3">
+            <p className="text-sm rounded-xl px-4 py-3" style={{ color: '#1d4ed8', background: '#eff6ff', border: '1px solid #bfdbfe' }}>
               {trialDaysLeft > 0
                 ? `נותרו ${trialDaysLeft} ימים בתקופת הניסיון. לאחר מכן יידרש מנוי.`
                 : 'תקופת הניסיון הסתיימה. רכוש מנוי כדי להמשיך.'}
@@ -96,27 +96,27 @@ export default function BillingPage() {
           )}
 
           {status === 'past_due' && (
-            <p className="text-sm text-red-700 bg-red-50 rounded-xl px-4 py-3">
+            <p className="text-sm rounded-xl px-4 py-3" style={{ color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca' }}>
               התשלום האחרון נכשל. עדכן אמצעי תשלום כדי לשמור על הגישה.
             </p>
           )}
 
           {status === 'canceled' && (
-            <p className="text-sm text-gray-600 bg-gray-50 rounded-xl px-4 py-3">
+            <p className="text-sm rounded-xl px-4 py-3" style={{ color: '#888', background: '#f7f5f2', border: '1px solid #e5e5e5' }}>
               המנוי בוטל. רכוש מנוי חדש כדי לחדש גישה.
             </p>
           )}
 
           {sub?.plan && (
-            <div className="text-sm text-gray-600 flex gap-4">
-              <span>תוכנית: <strong>{sub.plan === 'monthly' ? 'חודשי' : 'שנתי'}</strong></span>
+            <div className="text-sm flex gap-4" style={{ color: '#888' }}>
+              <span>תוכנית: <strong style={{ color: '#111' }}>{sub.plan === 'monthly' ? 'חודשי' : 'שנתי'}</strong></span>
               {sub.current_period_end && (
                 <span>
-                  חידוש: <strong>{new Date(sub.current_period_end).toLocaleDateString('he-IL')}</strong>
+                  חידוש: <strong style={{ color: '#111' }}>{new Date(sub.current_period_end).toLocaleDateString('he-IL')}</strong>
                 </span>
               )}
               {sub.cancel_at_period_end && (
-                <span className="text-orange-600">יבוטל בתאריך הסיום</span>
+                <span style={{ color: '#c0392b' }}>יבוטל בתאריך הסיום</span>
               )}
             </div>
           )}
@@ -125,7 +125,8 @@ export default function BillingPage() {
             <button
               onClick={() => void handlePortal()}
               disabled={portalLoading}
-              className="text-sm text-blue-600 hover:underline disabled:opacity-50"
+              className="text-sm hover:underline disabled:opacity-50"
+              style={{ color: '#c0392b' }}
             >
               {portalLoading ? 'פותח...' : 'נהל מנוי / עדכן תשלום ↗'}
             </button>
@@ -135,8 +136,8 @@ export default function BillingPage() {
 
       {/* Plan selector — shown when not active */}
       {(!state?.active || status === 'trialing') && (
-        <div className="bg-white rounded-2xl border border-gray-200 p-5 space-y-5">
-          <h2 className="font-semibold text-gray-800">
+        <div className="p-5 space-y-5" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
+          <h2 className="font-semibold" style={{ color: '#111' }}>
             {status === 'trialing' ? 'בחר תוכנית לאחר הניסיון' : 'רכוש מנוי'}
           </h2>
 
@@ -147,19 +148,18 @@ export default function BillingPage() {
                 key={key}
                 type="button"
                 onClick={() => setSelectedPlan(key as 'monthly' | 'yearly')}
-                className={`rounded-2xl border-2 p-4 text-right transition-all ${
-                  selectedPlan === key
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className="rounded-2xl p-4 text-right transition-all"
+                style={selectedPlan === key
+                  ? { border: '2px solid #111', background: '#f7f5f2' }
+                  : { border: '2px solid #e5e5e5', background: '#fff' }}
               >
-                <div className="font-semibold text-gray-900">{plan.label}</div>
-                <div className="text-xl font-bold text-gray-900 mt-1">
+                <div className="font-semibold" style={{ color: '#111' }}>{plan.label}</div>
+                <div className="text-xl font-bold mt-1" style={{ color: '#111' }}>
                   ₪{plan.priceIls.toLocaleString('he-IL')}
-                  <span className="text-sm font-normal text-gray-500"> {plan.period}</span>
+                  <span className="text-sm font-normal" style={{ color: '#888' }}> {plan.period}</span>
                 </div>
                 {plan.savingPct > 0 && (
-                  <div className="text-xs font-semibold text-green-600 mt-1 bg-green-50 inline-block px-2 py-0.5 rounded-full">
+                  <div className="text-xs font-semibold mt-1 inline-block px-2 py-0.5 rounded-full" style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
                     חסכון {plan.savingPct}%
                   </div>
                 )}
@@ -174,33 +174,35 @@ export default function BillingPage() {
               value={discountCode}
               onChange={e => setDiscountCode(e.target.value.toUpperCase())}
               placeholder="קוד הנחה (אופציונלי)"
-              className="flex-1 border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-1 px-4 py-2.5 text-sm focus:outline-none"
+              style={{ border: '2px solid #111', background: '#f7f5f2', borderRadius: '8px' }}
               dir="ltr"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-3">{error}</p>
+            <p className="text-sm rounded-xl px-4 py-3" style={{ color: '#991b1b', background: '#fef2f2', border: '1px solid #fecaca' }}>{error}</p>
           )}
 
           <button
             onClick={() => void handleSubscribe()}
             disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-bold py-3.5 rounded-xl transition-colors"
+            className="w-full font-bold py-3.5 rounded-xl transition-colors disabled:opacity-50"
+            style={{ background: '#c0392b', color: '#fff' }}
           >
             {loading ? 'מעבד...' : `עבור לתשלום — ${PLANS[selectedPlan].label}`}
           </button>
 
-          <p className="text-xs text-center text-gray-400">
+          <p className="text-xs text-center" style={{ color: '#aaa' }}>
             תשלום מאובטח דרך Stripe · ביטול בכל עת
           </p>
         </div>
       )}
 
       {/* Feature list */}
-      <div className="bg-gray-50 rounded-2xl border border-gray-100 p-5">
-        <h3 className="font-semibold text-gray-700 mb-3 text-sm">המנוי כולל:</h3>
-        <ul className="space-y-2 text-sm text-gray-600">
+      <div className="p-5" style={{ background: '#f7f5f2', border: '2px solid #111', borderRadius: '8px' }}>
+        <h3 className="font-semibold mb-3 text-sm" style={{ color: '#111' }}>המנוי כולל:</h3>
+        <ul className="space-y-2 text-sm" style={{ color: '#888' }}>
           {[
             'נכסים ללא הגבלה',
             'מיתוג הסוכנות על כל דפי הנחיתה',
@@ -210,7 +212,7 @@ export default function BillingPage() {
             'קישור מוכר + סל שינויים ממתינים',
           ].map(f => (
             <li key={f} className="flex items-center gap-2">
-              <span className="text-green-500">✓</span>
+              <span style={{ color: '#166534' }}>✓</span>
               {f}
             </li>
           ))}

@@ -48,37 +48,21 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
         {/* ── Branding panel (left, desktop only) ── */}
         <div
           className="hidden md:flex md:w-[52%] flex-col justify-between px-14 py-12 relative overflow-hidden"
-          style={{ background: 'linear-gradient(150deg, #1c1826 0%, #100e18 100%)' }}
+          style={{ background: '#111' }}
           dir="rtl"
         >
-          <div
-            className="absolute pointer-events-none"
-            style={{
-              inset: 0,
-              background: 'radial-gradient(ellipse at 30% 60%, rgba(212,168,83,0.08) 0%, transparent 65%)',
-            }}
-          />
-          <div
-            className="absolute pointer-events-none opacity-[0.04]"
-            style={{
-              inset: 0,
-              backgroundImage: 'radial-gradient(rgba(255,255,255,0.8) 1px, transparent 1px)',
-              backgroundSize: '28px 28px',
-            }}
-          />
-
           <div className="relative">
-            <Link href="/" className="text-2xl font-bold text-white tracking-tight">
-              Prop<span style={{ color: '#d4a853' }}>Builder</span>
+            <Link href="/" className="text-2xl font-bold tracking-tight" style={{ color: '#f7f5f2' }}>
+              Prop<span style={{ color: '#c0392b' }}>Builder</span>
             </Link>
           </div>
 
           <div className="relative space-y-8">
             <div>
-              <h2 className="text-3xl font-bold text-white leading-tight mb-2">
+              <h2 className="text-3xl font-bold leading-tight mb-2" style={{ color: '#f7f5f2' }}>
                 הצטרפו לאלפי
               </h2>
-              <p className="text-xl font-semibold" style={{ color: '#d4a853' }}>
+              <p className="text-xl font-semibold" style={{ color: '#c0392b' }}>
                 סוכנים ומתווכים מצליחים
               </p>
             </div>
@@ -104,8 +88,8 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                 <li key={title} className="flex items-start gap-4">
                   <span className="text-2xl mt-0.5 shrink-0">{icon}</span>
                   <div>
-                    <p className="text-white font-semibold text-sm">{title}</p>
-                    <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>{desc}</p>
+                    <p className="font-semibold text-sm" style={{ color: '#f7f5f2' }}>{title}</p>
+                    <p className="text-sm" style={{ color: 'rgba(247,245,242,0.55)' }}>{desc}</p>
                   </div>
                 </li>
               ))}
@@ -116,28 +100,28 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
             <div
               className="rounded-2xl p-5"
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: '1px solid rgba(255,255,255,0.09)',
+                background: 'rgba(247,245,242,0.05)',
+                border: '1px solid rgba(247,245,242,0.12)',
               }}
             >
               <div className="flex items-center gap-2 mb-2">
                 {['★', '★', '★', '★', '★'].map((s, i) => (
-                  <span key={i} style={{ color: '#d4a853' }} className="text-sm">{s}</span>
+                  <span key={i} style={{ color: '#c0392b' }} className="text-sm">{s}</span>
                 ))}
               </div>
-              <p className="text-sm text-white/70 leading-relaxed mb-3">
+              <p className="text-sm leading-relaxed mb-3" style={{ color: 'rgba(247,245,242,0.7)' }}>
                 &quot;תוך שבוע הכפלנו את הלידים שלנו. הממשק פשוט, העברית מושלמת.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #d4a853, #b8892e)' }}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                  style={{ background: '#c0392b', color: '#fff' }}
                 >
                   מ
                 </div>
                 <div>
-                  <p className="text-white text-xs font-semibold">מיכל לוי</p>
-                  <p className="text-white/40 text-xs">סוכנת נדל&quot;ן, חיפה</p>
+                  <p className="text-xs font-semibold" style={{ color: '#f7f5f2' }}>מיכל לוי</p>
+                  <p className="text-xs" style={{ color: 'rgba(247,245,242,0.4)' }}>סוכנת נדל&quot;ן, חיפה</p>
                 </div>
               </div>
             </div>
@@ -145,22 +129,22 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
         </div>
 
         {/* ── Form panel ── */}
-        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-gray-50 min-h-screen md:min-h-0" dir="rtl">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 min-h-screen md:min-h-0" style={{ background: '#f7f5f2' }} dir="rtl">
           <div className="mb-6 md:hidden text-center">
-            <Link href="/" className="text-2xl font-bold text-gray-900">PropBuilder</Link>
+            <Link href="/" className="text-2xl font-bold" style={{ color: '#111' }}>PropBuilder</Link>
           </div>
 
           <div className="w-full max-w-sm">
             <div className="text-center mb-6 hidden md:block">
-              <p className="text-sm text-gray-500">הרשמה לחשבון מקצועי</p>
+              <p className="text-sm" style={{ color: '#888' }}>הרשמה לחשבון מקצועי</p>
             </div>
             <div className="text-center mb-6 md:hidden">
-              <p className="text-sm text-gray-500">הרשמה לחשבון מקצועי</p>
+              <p className="text-sm" style={{ color: '#888' }}>הרשמה לחשבון מקצועי</p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 space-y-5">
+            <div className="rounded-2xl p-8 space-y-5" style={{ background: '#fff', border: '2px solid #111' }}>
               {error && (
-                <div className="bg-red-50 text-red-700 text-sm rounded-xl px-4 py-3 border border-red-200">
+                <div className="text-sm rounded-xl px-4 py-3" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>
                   {error}
                 </div>
               )}
@@ -168,9 +152,9 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
               <GoogleSignInButton callbackUrl="/auth/broker-setup" label="הרשמה עם Google" />
 
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400">או עם מייל וסיסמה</span>
-                <div className="flex-1 h-px bg-gray-200" />
+                <div className="flex-1 h-px" style={{ background: '#e5e5e5' }} />
+                <span className="text-xs" style={{ color: '#aaa' }}>או עם מייל וסיסמה</span>
+                <div className="flex-1 h-px" style={{ background: '#e5e5e5' }} />
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -182,7 +166,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                   { id: 'confirm',     label: 'אימות סיסמה',  type: 'password', placeholder: 'הקלד שוב',             ac: 'new-password', ltr: true  },
                 ] as const).map(({ id, label, type, placeholder, ac, ltr }) => (
                   <div key={id} className="space-y-1">
-                    <label htmlFor={id} className="text-sm font-medium text-gray-700">{label}</label>
+                    <label htmlFor={id} className="text-sm font-medium" style={{ color: '#111' }}>{label}</label>
                     <input
                       id={id}
                       type={type}
@@ -192,7 +176,8 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                       value={form[id]}
                       onChange={set(id)}
                       placeholder={placeholder}
-                      className="w-full border border-gray-300 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full rounded-lg px-4 py-2.5 text-sm focus:outline-none"
+                      style={{ border: '2px solid #111', background: '#f7f5f2' }}
                     />
                   </div>
                 ))}
@@ -202,36 +187,37 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                     type="checkbox"
                     checked={agreedToTerms}
                     onChange={e => setAgreedToTerms(e.target.checked)}
-                    className="mt-0.5 shrink-0 accent-blue-600"
+                    className="mt-0.5 shrink-0"
                   />
-                  <span className="text-xs text-gray-500 leading-relaxed">
+                  <span className="text-xs leading-relaxed" style={{ color: '#888' }}>
                     קראתי ואני מסכים/ה ל
-                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mx-1">תנאי השימוש</a>
+                    <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:underline mx-1" style={{ color: '#c0392b' }}>תנאי השימוש</a>
                     ול
-                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mr-1">מדיניות הפרטיות</a>
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline mr-1" style={{ color: '#c0392b' }}>מדיניות הפרטיות</a>
                   </span>
                 </label>
 
                 <button
                   type="submit"
                   disabled={loading || !agreedToTerms}
-                  className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-2.5 rounded-xl transition-colors text-sm"
+                  className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm"
+                  style={{ background: loading || !agreedToTerms ? '#888' : '#c0392b', color: '#fff' }}
                 >
                   {loading ? 'יוצר חשבון...' : 'צור חשבון'}
                 </button>
               </form>
 
-              <p className="text-center text-xs text-gray-500">
+              <p className="text-center text-xs" style={{ color: '#888' }}>
                 ניסיון חינם ל-{trialDays} ימים · ללא כרטיס אשראי
               </p>
-              <p className="text-center text-xs text-gray-400">
+              <p className="text-center text-xs" style={{ color: '#aaa' }}>
                 כבר יש לך חשבון?{' '}
-                <Link href="/auth/login?mode=commercial" className="text-blue-600 hover:underline">כניסה</Link>
+                <Link href="/auth/login?mode=commercial" className="hover:underline" style={{ color: '#c0392b' }}>כניסה</Link>
               </p>
             </div>
           </div>
 
-          <p className="mt-8 text-xs text-gray-400 text-center">
+          <p className="mt-8 text-xs text-center" style={{ color: '#aaa' }}>
             © {new Date().getFullYear()} PropBuilder · כל הזכויות שמורות
           </p>
         </div>
