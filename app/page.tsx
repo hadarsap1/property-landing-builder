@@ -58,7 +58,7 @@ export default function HomePage() {
             maxWidth: '900px',
           }}
         >
-          הדירה שלך{' '}
+          הבית שלך{' '}
           <span style={{ color: ACCENT }}>ראויה</span>{' '}
           לדף שמוכר
         </h1>
