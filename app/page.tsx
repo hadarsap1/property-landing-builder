@@ -59,7 +59,7 @@ export default function HomePage() {
           }}
         >
           הבית שלך{' '}
-          <span style={{ color: ACCENT }}>ראויה</span>{' '}
+          <span style={{ color: ACCENT }}>ראוי</span>{' '}
           לדף שמוכר
         </h1>
 
