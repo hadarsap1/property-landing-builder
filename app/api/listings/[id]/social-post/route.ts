@@ -4,6 +4,7 @@ import { auth } from '@/auth'
 import { getListingById } from '@/lib/db/queries/listings'
 import type { Listing } from '@/lib/db/types'
 import type { Session } from 'next-auth'
+import { kvRateLimit } from '@/lib/rate-limit'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -29,17 +30,8 @@ function canAccess(listing: Listing, session: Session | null): boolean {
 }
 
 async function isAgencyRateLimited(agencyId: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const today = new Date().toISOString().slice(0, 10)
-    const key = `ai_rl:social:${agencyId}:${today}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, 86_400)
-    return count > 100
-  } catch {
-    return false
-  }
+  const today = new Date().toISOString().slice(0, 10)
+  return kvRateLimit(`ai_rl:social:${agencyId}:${today}`, 100, 86_400)
 }
 
 function buildPropertyDescription(l: Listing): string {

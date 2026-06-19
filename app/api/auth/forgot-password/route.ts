@@ -4,26 +4,16 @@ import { sendPasswordResetEmail } from '@/lib/email'
 import { ensureSchema } from '@/lib/db/ensure-schema'
 import type { Agent } from '@/lib/db/types'
 import crypto from 'crypto'
+import { kvRateLimitSoft, memRateLimit } from '@/lib/rate-limit'
 
-async function isRateLimited(ip: string): Promise<boolean> {
-  if (!process.env.KV_URL) {
-    console.warn('[forgot-password] KV_URL not configured — password-reset rate limiting is disabled')
-    return false
-  }
-  try {
-    const { kv } = await import('@vercel/kv')
-    const key = `pwd_reset_rl:${ip}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, 3600)
-    return count > 5 // 5 reset requests per IP per hour
-  } catch {
-    return false
-  }
+async function isForgotPasswordRateLimited(ip: string): Promise<boolean> {
+  if (memRateLimit(`pwd_reset:${ip}`, 5, 3_600_000)) return true
+  return kvRateLimitSoft(`pwd_reset_rl:${ip}`, 5, 3600)
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (await isRateLimited(ip)) {
+  if (await isForgotPasswordRateLimited(ip)) {
     // Always return 200 to not reveal email existence
     return NextResponse.json({ ok: true })
   }

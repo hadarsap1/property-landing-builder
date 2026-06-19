@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { sendAdminNotificationEmail } from '@/lib/email'
+import { kvRateLimit } from '@/lib/rate-limit'
 
 function isAllowedOrigin(req: NextRequest): boolean {
   const origin = req.headers.get('origin')
@@ -16,6 +17,12 @@ function isAllowedOrigin(req: NextRequest): boolean {
 export async function POST(req: NextRequest): Promise<NextResponse> {
   if (!isAllowedOrigin(req)) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+  const contactHour = new Date().toISOString().slice(0, 13)
+  if (await kvRateLimit(`contact_rl:${ip}:${contactHour}`, 5, 3600)) {
+    return NextResponse.json({ error: 'Too many requests' }, { status: 429 })
   }
 
   const body = (await req.json()) as {
@@ -38,8 +45,6 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   const userName  = session?.user?.name  ?? body.name  ?? null
   const userType  = session?.user?.userType
     ?? (session?.user?.agencyId ? 'commercial' : session?.user?.personalUserId ? 'personal' : null)
-
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
 
   const subject = `[פנייה] ${body.source ?? 'תמיכה'} — ${userName ?? userEmail ?? 'אנונימי'}`
   const text = [

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { getValidSellerToken } from '@/lib/db/queries/seller-tokens'
+import { kvRateLimitSoft } from '@/lib/rate-limit'
 
 const MIME_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
@@ -10,17 +11,8 @@ const MIME_EXT: Record<string, string> = {
 }
 
 async function isTokenUploadRateLimited(tokenId: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const today = new Date().toISOString().slice(0, 10)
-    const key = `rl:seller_uploads:${tokenId}:${today}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, 86_400)
-    return count > 20 // 20 uploads per seller token per day
-  } catch {
-    return false
-  }
+  const today = new Date().toISOString().slice(0, 10)
+  return kvRateLimitSoft(`rl:seller_uploads:${tokenId}:${today}`, 20, 86_400)
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

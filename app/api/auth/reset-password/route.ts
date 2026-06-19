@@ -1,23 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sql } from '@/lib/db'
 import bcrypt from 'bcryptjs'
+import { kvRateLimitSoft, memRateLimit } from '@/lib/rate-limit'
 
-async function isRateLimited(ip: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const key = `pwd_consume_rl:${ip}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, 3600)
-    return count > 10 // 10 attempts per IP per hour
-  } catch {
-    return false
-  }
+async function isResetPasswordRateLimited(ip: string): Promise<boolean> {
+  if (memRateLimit(`pwd_consume:${ip}`, 10, 3_600_000)) return true
+  return kvRateLimitSoft(`pwd_consume_rl:${ip}`, 10, 3600)
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (await isRateLimited(ip)) {
+  if (await isResetPasswordRateLimited(ip)) {
     return NextResponse.json({ error: 'יותר מדי ניסיונות. נסה שוב מאוחר יותר' }, { status: 429 })
   }
 

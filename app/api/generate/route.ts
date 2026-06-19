@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 import type { PropertyProject } from '@/types/project';
 import { auth } from '@/auth';
+import { kvRateLimit } from '@/lib/rate-limit'
 
 const MAX_STORY_CHARS = 2_000  // truncate rawStory before sending
 const MAX_TOKENS_OUTPUT = 640  // title+tagline+story+highlights well under this
@@ -12,17 +13,8 @@ interface GenerateRequestBody {
 }
 
 async function isAgencyRateLimited(agencyId: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const today = new Date().toISOString().slice(0, 10)
-    const key = `ai_rl:generate:${agencyId}:${today}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, 86_400)
-    return count > 50 // 50 generate calls per agency per day
-  } catch {
-    return false
-  }
+  const today = new Date().toISOString().slice(0, 10)
+  return kvRateLimit(`ai_rl:generate:${agencyId}:${today}`, 50, 86_400)
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

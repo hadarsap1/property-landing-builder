@@ -5,21 +5,10 @@ import { getListingById } from '@/lib/db/queries/listings'
 import { getAgencyById } from '@/lib/db/queries/agencies'
 import { sendLeadNotificationEmail } from '@/lib/email'
 import type { Lead } from '@/lib/db/types'
-
-const RATE_LIMIT_MAX = 5       // requests
-const RATE_LIMIT_WINDOW = 300  // seconds (5 min)
+import { kvRateLimitSoft } from '@/lib/rate-limit'
 
 async function isRateLimited(ip: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const key = `lead_rl:${ip}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, RATE_LIMIT_WINDOW)
-    return count > RATE_LIMIT_MAX
-  } catch {
-    return false // never block on KV errors
-  }
+  return kvRateLimitSoft(`lead_rl:${ip}`, 5, 300)
 }
 
 function isAllowedOrigin(req: NextRequest): boolean {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type { AnalyticsEvent } from '@/lib/db/types'
+import { kvRateLimitSoft } from '@/lib/rate-limit'
 
 interface TrackBody {
   event: string
@@ -17,16 +18,8 @@ function isUUID(v: unknown): v is string {
 }
 
 async function isTrackRateLimited(ip: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const key = `track_rl:${ip}:${new Date().toISOString().slice(0, 13)}` // per-hour window
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, 3600)
-    return count > 300 // 300 events/IP/hour
-  } catch {
-    return false
-  }
+  const hour = new Date().toISOString().slice(0, 13)
+  return kvRateLimitSoft(`track_rl:${ip}:${hour}`, 300, 3600)
 }
 
 // Events that map to analytics_events in Postgres

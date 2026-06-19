@@ -4,21 +4,12 @@ import { createAgency, generateUniqueAgencySlug } from '@/lib/db/queries/agencie
 import { upsertSubscription } from '@/lib/billing/access'
 import { PLAN_TRIAL_DAYS } from '@/lib/billing/config'
 import { sendAdminNotificationEmail } from '@/lib/email'
-
-const REGISTER_LIMIT_MAX = 5
-const REGISTER_LIMIT_WINDOW = 3600 // 1 hour
+import { kvRateLimitSoft, memRateLimit } from '@/lib/rate-limit'
 
 async function isRegisterRateLimited(ip: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const key = `rl:register:${ip}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, REGISTER_LIMIT_WINDOW)
-    return count > REGISTER_LIMIT_MAX
-  } catch {
-    return false
-  }
+  // In-memory guard runs regardless of KV (per server instance)
+  if (memRateLimit(`reg:${ip}`, 5, 3_600_000)) return true
+  return kvRateLimitSoft(`rl:register:${ip}`, 5, 3600)
 }
 
 export async function POST(req: NextRequest): Promise<NextResponse> {

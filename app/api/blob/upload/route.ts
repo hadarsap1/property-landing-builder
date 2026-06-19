@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { auth } from '@/auth'
+import { kvRateLimitSoft } from '@/lib/rate-limit'
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   const session = await auth()
@@ -11,6 +12,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
     return NextResponse.json({ error: 'Blob storage not configured' }, { status: 503 })
+  }
+
+  const today = new Date().toISOString().slice(0, 10)
+  if (await kvRateLimitSoft(`blob_upload:${userId}:${today}`, 100, 86_400)) {
+    return NextResponse.json({ error: 'Daily upload limit reached (100 per day)' }, { status: 429 })
   }
 
   const formData = await req.formData()
