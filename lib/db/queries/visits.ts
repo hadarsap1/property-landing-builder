@@ -19,6 +19,7 @@ export async function getVisitsByAgency(agencyId: string): Promise<(PropertyVisi
     JOIN listings l ON l.id = v.listing_id
     WHERE v.agency_id = ${agencyId}
     ORDER BY v.visit_at ASC
+    LIMIT 500
   `
   return rows
 }
@@ -34,6 +35,7 @@ export async function getUpcomingVisitsByAgency(agencyId: string): Promise<(Prop
       AND v.visit_at >= NOW() - INTERVAL '1 hour'
       AND v.status = 'scheduled'
     ORDER BY v.visit_at ASC
+    LIMIT 200
   `
   return rows
 }

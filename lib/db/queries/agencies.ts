@@ -73,6 +73,7 @@ export async function getAllAgenciesForDigest(): Promise<Array<Agency & { agents
     JOIN agents ag ON ag.agency_id = a.id
     WHERE ag.password_hash IS NOT NULL
     ORDER BY a.id
+    LIMIT 500
   `
   if (!agencyRows.length) return []
 

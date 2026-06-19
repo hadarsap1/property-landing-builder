@@ -142,7 +142,7 @@ export async function addLeadNote(data: {
 
 export async function getLeadNotes(leadId: string): Promise<LeadNote[]> {
   const { rows } = await sql<LeadNote>`
-    SELECT * FROM lead_notes WHERE lead_id = ${leadId} ORDER BY created_at DESC
+    SELECT * FROM lead_notes WHERE lead_id = ${leadId} ORDER BY created_at DESC LIMIT 200
   `
   return rows
 }
@@ -197,7 +197,8 @@ export async function getOpenHouseLeadsForTomorrow(
        AND l.email IS NOT NULL
        AND l.open_house_reminder_sent_at IS NULL
        AND li.open_house_date >= $1
-       AND li.open_house_date <= $2`,
+       AND li.open_house_date <= $2
+     LIMIT 1000`,
     [dayStart, dayEnd]
   )
   return rows

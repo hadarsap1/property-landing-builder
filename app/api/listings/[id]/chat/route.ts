@@ -2,6 +2,7 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { getListingById } from '@/lib/db/queries/listings'
 import type { Listing } from '@/lib/db/types'
+import { kvRateLimit } from '@/lib/rate-limit'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -114,27 +115,24 @@ function extractJson(text: string): { reply: string; followups: string[] } | nul
   return null
 }
 
-async function isIpRateLimited(ip: string): Promise<boolean> {
-  if (!process.env.KV_URL) return false
-  try {
-    const { kv } = await import('@vercel/kv')
-    const today = new Date().toISOString().slice(0, 10)
-    const key = `chat_rl:${ip}:${today}`
-    const count = await kv.incr(key)
-    if (count === 1) await kv.expire(key, 86_400)
-    return count > 50
-  } catch {
-    return false
-  }
+async function isIpRateLimited(ip: string, listingId: string): Promise<boolean> {
+  const today = new Date().toISOString().slice(0, 10)
+  // IP-level daily cap (50 messages/IP/day across all listings)
+  const ipLimited = await kvRateLimit(`chat_rl:${ip}:${today}`, 50, 86_400)
+  if (ipLimited) return true
+  // Per-listing daily cap (200 messages/listing/day) — prevents a viral listing
+  // from generating unbounded Haiku calls even with rotating IPs
+  const listingLimited = await kvRateLimit(`chat_listing_rl:${listingId}:${today}`, 200, 86_400)
+  return listingLimited
 }
 
 export async function POST(req: NextRequest, { params }: RouteContext) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
-  if (await isIpRateLimited(ip)) {
+  const { id } = await params
+
+  if (await isIpRateLimited(ip, id)) {
     return NextResponse.json({ error: 'rate_limited' }, { status: 429 })
   }
-
-  const { id } = await params
   const listing = await getListingById(id)
   if (!listing || listing.status === 'paused' || listing.status === 'sold') {
     return NextResponse.json({ error: 'not_found' }, { status: 404 })
