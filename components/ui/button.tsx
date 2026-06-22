@@ -31,7 +31,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`font-semibold transition-colors ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
+      className={`font-semibold transition-[color,background-color,border-color,transform] active:scale-[0.96] ${VARIANT_CLASSES[variant]} ${SIZE_CLASSES[size]} ${className}`}
       {...props}
     />
   )

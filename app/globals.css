@@ -54,7 +54,11 @@ body {
   color: var(--pb-text);
   font-family: Arial, Helvetica, sans-serif;
   transition: background 0.25s ease, color 0.25s ease;
+  -webkit-font-smoothing: antialiased;
 }
+
+h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
+p { text-wrap: pretty; }
 
 .font-display { font-family: var(--font-frank, 'Frank Ruhl Libre', Georgia, serif); }
 .font-body    { font-family: var(--font-assistant, 'Assistant', 'Segoe UI', sans-serif); }

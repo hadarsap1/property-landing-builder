@@ -34,7 +34,7 @@ export default function HomePage() {
             <ThemeToggle />
             <Link
               href="/builder"
-              className="text-sm font-bold px-5 py-2.5 rounded-lg transition-all hover:opacity-80"
+              className="text-sm font-bold px-5 py-2.5 rounded-lg transition-[opacity,transform] hover:opacity-80 active:scale-[0.96]"
               style={{ background: INK, color: CREAM }}
             >
               בנו עכשיו ←
@@ -72,7 +72,7 @@ export default function HomePage() {
           <div className="flex-shrink-0 flex flex-col gap-2">
             <Link
               href="/builder"
-              className="inline-flex items-center justify-center font-bold text-base px-8 py-4 rounded-lg transition-all hover:opacity-85"
+              className="inline-flex items-center justify-center font-bold text-base px-8 py-4 rounded-lg transition-[opacity,transform] hover:opacity-85 active:scale-[0.96]"
               style={{ background: ACCENT, color: '#fff', whiteSpace: 'nowrap' }}
             >
               התחילו — חינם ←
@@ -91,7 +91,7 @@ export default function HomePage() {
             { val: 'חינם', label: 'לשימוש בסיסי' },
           ].map(s => (
             <div key={s.label}>
-              <p className="font-display font-black text-2xl sm:text-3xl" style={{ color: CREAM, letterSpacing: '-0.02em' }}>{s.val}</p>
+              <p className="font-display font-black text-2xl sm:text-3xl tabular-nums" style={{ color: CREAM, letterSpacing: '-0.02em' }}>{s.val}</p>
               <p className="text-xs mt-1" style={{ color: 'rgba(247,245,242,0.4)' }}>{s.label}</p>
             </div>
           ))}
@@ -206,7 +206,7 @@ export default function HomePage() {
               <Link
                 key={t.href}
                 href={t.href}
-                className="block p-10 rounded-lg transition-all hover:opacity-80"
+                className="block p-10 rounded-lg transition-[opacity,transform] hover:opacity-80 active:scale-[0.96]"
                 style={{ background: '#eceae6', border: `2px solid ${INK}` }}
               >
                 <h3 className="font-display font-black text-3xl mb-4" style={{ letterSpacing: '-0.02em' }}>{t.label}</h3>
@@ -233,10 +233,10 @@ export default function HomePage() {
               מיתוג הסוכנות על כל דף · ניהול צוות · מעקב לידים · יומן ביקורים · 14 ימי ניסיון חינם.
             </p>
             <div className="flex gap-3">
-              <Link href="/pricing" className="px-5 py-2.5 rounded-lg text-sm font-bold" style={{ background: ACCENT, color: '#fff' }}>
+              <Link href="/pricing" className="px-5 py-2.5 rounded-lg text-sm font-bold transition-[opacity,transform] hover:opacity-85 active:scale-[0.96]" style={{ background: ACCENT, color: '#fff' }}>
                 ראו מחירים ←
               </Link>
-              <Link href="/auth/login?mode=commercial" className="px-5 py-2.5 rounded-lg text-sm font-semibold" style={{ border: '1px solid rgba(247,245,242,0.2)', color: 'rgba(247,245,242,0.6)' }}>
+              <Link href="/auth/login?mode=commercial" className="px-5 py-2.5 rounded-lg text-sm font-semibold transition-[opacity,transform] hover:opacity-70 active:scale-[0.96]" style={{ border: '1px solid rgba(247,245,242,0.2)', color: 'rgba(247,245,242,0.6)' }}>
                 כניסה לחשבון
               </Link>
             </div>
@@ -268,7 +268,7 @@ export default function HomePage() {
           <div className="flex-shrink-0 flex flex-col items-start gap-3">
             <Link
               href="/builder"
-              className="inline-flex items-center font-bold text-lg px-10 py-4 rounded-lg transition-all hover:opacity-85"
+              className="inline-flex items-center font-bold text-lg px-10 py-4 rounded-lg transition-[opacity,transform] hover:opacity-85 active:scale-[0.96]"
               style={{ background: INK, color: CREAM }}
             >
               התחילו עכשיו — חינם ←

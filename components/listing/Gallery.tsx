@@ -65,7 +65,7 @@ function Lightbox({ images, index, onClose, onNavigate }: {
           >
             ‹
           </button>
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-black/40 px-3 py-1 rounded-full">
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/80 text-sm bg-black/40 px-3 py-1 rounded-full tabular-nums">
             {index + 1} / {images.length}
           </div>
         </>
@@ -119,7 +119,7 @@ export default function Gallery({ images, galleryType }: {
               src={img.dataUrl}
               alt={img.name}
               loading="lazy"
-              className="w-full aspect-video object-cover rounded-xl"
+              className="w-full aspect-video object-cover rounded-xl outline outline-1 outline-black/10 dark:outline-white/10"
             />
           </button>
         ))}
@@ -178,7 +178,7 @@ export default function Gallery({ images, galleryType }: {
         </>
       )}
       {/* Counter badge */}
-      <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+      <div className="absolute top-3 right-3 bg-black/50 text-white text-xs px-2 py-1 rounded-full tabular-nums">
         {current + 1} / {images.length}
       </div>
     </div>
