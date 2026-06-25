@@ -38,6 +38,7 @@ export interface PropertyProject {
   heroImageIndex: number;
   galleryType: 'grid' | 'manual-carousel' | 'auto-3s' | 'auto-5s' | 'auto-7s';
   videoUrl: string;
+  floorPlan: StoredImage | null;
 
   // Step 5
   showMap: boolean;

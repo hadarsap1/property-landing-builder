@@ -280,6 +280,18 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                     />
                   </div>
                 )}
+                {project.floorPlan && (
+                  <div className="mt-10">
+                    <h3 className="text-xl font-bold mb-4" style={{ color: theme.pageText }}>תוכנית דירה</h3>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={project.floorPlan.dataUrl}
+                      alt="תוכנית דירה"
+                      className="w-full rounded-xl object-contain outline outline-1 outline-black/10 dark:outline-white/10"
+                      style={{ maxHeight: '600px', background: theme.cardBg }}
+                    />
+                  </div>
+                )}
               </div>
             </section>
           );

@@ -83,6 +83,90 @@ const PHOTO_TIPS = [
   { icon: '⭐', tip: 'בחר כתמונה ראשית את הנוף/חדר הכי מרשים — היא תמשוך קוראים' },
 ]
 
+function FloorPlanUploader({ project, onChange }: StepProps) {
+  const [dragOver, setDragOver] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function processFile(file: File) {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return
+    setUploading(true)
+    try {
+      const dataUrl = await uploadImage(file)
+      const floorPlan: StoredImage = {
+        id: `fp-${Date.now()}`,
+        dataUrl,
+        name: file.name,
+      }
+      onChange({ floorPlan })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault()
+    setDragOver(false)
+    const file = e.dataTransfer.files[0]
+    if (file) void processFile(file)
+  }
+
+  if (project.floorPlan) {
+    return (
+      <div className="relative rounded-lg overflow-hidden border-2 border-dashed" style={{ borderColor: '#aaa' }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={project.floorPlan.dataUrl}
+          alt="תוכנית דירה"
+          className="w-full max-h-64 object-contain bg-white"
+        />
+        <button
+          type="button"
+          onClick={() => onChange({ floorPlan: null })}
+          className="absolute top-2 left-2 bg-red-500 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm leading-none"
+          aria-label="הסר תוכנית דירה"
+        >
+          ✕
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={handleDrop}
+      onClick={() => !uploading && fileInputRef.current?.click()}
+      className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors"
+      style={{ borderColor: dragOver ? '#111' : '#aaa', background: dragOver ? '#f0eeeb' : '#f7f5f2' }}
+    >
+      {uploading ? (
+        <div className="flex items-center justify-center gap-2 text-sm" style={{ color: '#888' }}>
+          <svg className="animate-spin h-5 w-5" style={{ color: '#c0392b' }} viewBox="0 0 24 24" fill="none">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+          </svg>
+          מעלה...
+        </div>
+      ) : (
+        <>
+          <div className="text-3xl mb-1">📐</div>
+          <p className="text-sm font-medium" style={{ color: '#111' }}>גרור תוכנית דירה או לחץ לבחירה</p>
+          <p className="text-xs mt-0.5" style={{ color: '#888' }}>JPG, PNG, WebP — תמונה אחת</p>
+        </>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => { if (e.target.files?.[0]) void processFile(e.target.files[0]) }}
+      />
+    </div>
+  )
+}
+
 export default function Step4({ project, onChange }: StepProps) {
   const [tipsOpen, setTipsOpen] = useState(false)
   const [dragOver, setDragOver] = useState(false)
@@ -429,6 +513,14 @@ export default function Step4({ project, onChange }: StepProps) {
             </label>
           ))}
         </div>
+      </div>
+
+      {/* Floor Plan */}
+      <div>
+        <label className="block text-sm font-medium mb-2" style={{ color: '#111' }}>
+          תוכנית דירה <span className="font-normal" style={{ color: '#888' }}>(אופציונלי)</span>
+        </label>
+        <FloorPlanUploader project={project} onChange={onChange} />
       </div>
 
       {/* Video URL */}

@@ -89,6 +89,7 @@ export function listingToProject(listing: Listing): PropertyProject {
     heroImageIndex: heroIdx,
     galleryType: galleryTypeToProject(listing.gallery_type, listing.carousel_speed),
     videoUrl: listing.video_url ?? '',
+    floorPlan: null,
 
     showMap: listing.show_map,
     mapQuery: listing.map_query_override ?? '',
