@@ -72,6 +72,7 @@ const DEFAULT_PROJECT: PropertyProject = {
   heroImageIndex: 0,
   galleryType: 'grid',
   videoUrl: '',
+  floorPlan: null,
   showMap: true,
   mapQuery: '',
   template: 'modern-blue',
