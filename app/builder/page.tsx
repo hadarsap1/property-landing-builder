@@ -173,7 +173,7 @@ export default function BuilderPage() {
         }
 
         if (!parsed.mapQuery && (parsed.street || parsed.city)) {
-          setProject((p) => ({ ...p, mapQuery: `${parsed.street}, ${parsed.city}, ישראל` }));
+          setProject((p) => ({ ...p, mapQuery: [parsed.street, parsed.city, 'ישראל'].filter(Boolean).join(', ') }));
         }
       } catch {
         // ignore malformed localStorage
@@ -259,7 +259,7 @@ export default function BuilderPage() {
         ('street' in partial || 'city' in partial) &&
         !('mapQuery' in partial)
       ) {
-        next.mapQuery = `${next.street}, ${next.city}, ישראל`;
+        next.mapQuery = [next.street, next.city, 'ישראל'].filter(Boolean).join(', ');
       }
       return next;
     });
@@ -499,7 +499,7 @@ export default function BuilderPage() {
                     }
                     goToStep(step + 1);
                   }}
-                  className={`flex items-center gap-2 text-white font-medium px-5 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center gap-2 font-medium px-5 py-2 rounded-lg transition-colors ${
                     isNextDisabled() ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'
                   }`}
                 >

@@ -23,6 +23,7 @@ export default function Step8({ project, onChange }: StepProps) {
   const [separateWA, setSeparateWA] = useState(
     waDigits.length > 0 && waDigits !== phoneDigits
   );
+  const [phoneTouched, setPhoneTouched] = useState(false);
 
   function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     const formatted = formatIsraeliPhone(e.target.value);
@@ -63,13 +64,14 @@ export default function Step8({ project, onChange }: StepProps) {
           type="tel"
           value={project.phone}
           onChange={handlePhoneChange}
+          onBlur={() => setPhoneTouched(true)}
           placeholder="050-123-4567"
           dir="ltr"
           className="w-full rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           style={{ background: 'var(--pb-surface)', border: '1px solid var(--pb-border)', color: 'var(--pb-text)' }}
         />
         {!project.phone.trim() ? (
-          <p className="text-xs text-amber-500 mt-1">יש להזין טלפון כדי להמשיך</p>
+          phoneTouched && <p className="text-xs text-amber-500 mt-1">יש להזין טלפון כדי להמשיך</p>
         ) : (
           <p className="text-xs mt-1" style={{ color: 'var(--pb-text2)' }}>כפתור ה-WhatsApp בדף ישתמש באותו מספר</p>
         )}

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import type { PropertyProject } from '@/types/project';
 
 interface StepProps {
@@ -21,6 +22,7 @@ const labelStyle = { color: 'var(--pb-text2)', fontSize: '0.875rem', fontWeight:
 
 export default function Step1({ project, onChange }: StepProps) {
   const isRent = project.listingType === 'rent';
+  const [titleTouched, setTitleTouched] = useState(false);
 
   return (
     <div className="space-y-6">
@@ -64,11 +66,12 @@ export default function Step1({ project, onChange }: StepProps) {
           type="text"
           value={project.title}
           onChange={(e) => onChange({ title: e.target.value })}
+          onBlur={() => setTitleTouched(true)}
           placeholder={isRent ? 'לדוגמה: דירת 3 חדרים מרווחת בלב הצפון' : 'לדוגמה: דירת 4 חדרים עם נוף לים'}
           className={inputCls}
           style={inputStyle}
         />
-        {!project.title.trim() && (
+        {titleTouched && !project.title.trim() && (
           <p className="text-xs text-amber-500 mt-1">יש להזין כותרת לנכס כדי להמשיך</p>
         )}
       </div>

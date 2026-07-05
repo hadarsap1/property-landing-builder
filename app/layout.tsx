@@ -90,6 +90,7 @@ export default function RootLayout({
   return (
     <html
       lang="he"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${frankRuhl.variable} ${assistant.variable} h-full antialiased`}
     >
       <head>
