@@ -97,3 +97,13 @@ body {
 .pb-s3 { animation: pb-up 0.7s 0.25s ease-out both; }
 .pb-s4 { animation: pb-up 0.7s 0.35s ease-out both; }
 .pb-s5 { animation: pb-up 0.7s 0.45s ease-out both; }
+
+/* Blog article prose */
+.prose-article { line-height: 1.8; font-size: 1.05rem; }
+.prose-article h2 { font-family: var(--font-frank, serif); font-weight: 800; font-size: 1.45rem; margin: 2rem 0 0.75rem; color: var(--pb-text); }
+.prose-article p { margin: 0 0 1.1rem; color: var(--pb-text2); }
+.prose-article ul { margin: 0 0 1.1rem 0; padding-right: 1.4rem; list-style: disc; color: var(--pb-text2); }
+.prose-article li { margin-bottom: 0.4rem; }
+.prose-article strong { color: var(--pb-text); font-weight: 700; }
+.prose-article a { color: var(--pb-accent); text-decoration: underline; }
+.prose-article blockquote { border-right: 3px solid var(--pb-gold); padding-right: 1rem; margin: 1.2rem 0; color: var(--pb-text2); font-style: italic; }

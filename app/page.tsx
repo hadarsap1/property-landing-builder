@@ -425,6 +425,68 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ── FAQ ─────────────────────────────────────────────── */}
+      <section
+        className="py-24 px-6 max-w-3xl mx-auto w-full"
+        itemScope
+        itemType="https://schema.org/FAQPage"
+      >
+        <h2
+          className="font-display font-black text-center mb-14"
+          style={{ fontSize: 'clamp(1.8rem, 4vw, 2.6rem)', color: G.text }}
+        >
+          שאלות נפוצות
+        </h2>
+        {[
+          {
+            q: 'מה זה דף נחיתה לנכס?',
+            a: 'דף נחיתה לנכס הוא עמוד אינטרנט ייעודי שמציג את הנכס שלכם — תמונות, מאפיינים, סיפור ופרטי קשר — בצורה מקצועית ומעוצבת. שולחים אותו בוואטסאפ לכל מתעניין במקום תמונות מפוזרות.',
+          },
+          {
+            q: 'איך למכור דירה בלי מתווך?',
+            a: 'אפשר למכור דירה בלי מתווך: צרו דף נחיתה מקצועי לנכס, פרסמו ביד2 ומדלן עם הקישור, ושלחו ישירות לרשת הקשרים שלכם בוואטסאפ. דף נחיתה מקצועי מגדיל את האמינות ומחסל שאלות חוזרות.',
+          },
+          {
+            q: 'כמה עולה ליצור דף נחיתה לדירה למכירה?',
+            a: 'Property Landing Builder הוא חינמי לחלוטין. יוצרים דף תוך 5 דקות, מקבלים קישור לשיתוף — ללא הרשמה, ללא תשלום, ללא הגבלת זמן.',
+          },
+          {
+            q: 'איך לשווק נכס בוואטסאפ בצורה מקצועית?',
+            a: 'הכינו דף נחיתה לנכס עם תמונות, מחיר, מאפיינים וסיפור קצר. שלחו את הקישור בקבוצות שכונה, לקונים פוטנציאליים וחברים. כשמישהו פותח את הקישור הוא רואה דף מקצועי — לא ערמת תמונות.',
+          },
+          {
+            q: 'האם ניתן להשתמש בדף נחיתה גם להשכרת דירה?',
+            a: 'בהחלט. Property Landing Builder תומך גם בדירות להשכרה. הדף מציג מחיר חודשי, תנאי שכירות ופרטי יצירת קשר — אידיאלי לשיתוף ביד2 ובוואטסאפ.',
+          },
+        ].map(({ q, a }) => (
+          <div
+            key={q}
+            className="mb-8 pb-8"
+            style={{ borderBottom: `1px solid ${G.border}` }}
+            itemScope
+            itemProp="mainEntity"
+            itemType="https://schema.org/Question"
+          >
+            <h3
+              className="text-lg font-bold mb-3"
+              style={{ color: G.text }}
+              itemProp="name"
+            >
+              {q}
+            </h3>
+            <div
+              itemScope
+              itemProp="acceptedAnswer"
+              itemType="https://schema.org/Answer"
+            >
+              <p className="text-base leading-relaxed" style={{ color: G.muted }} itemProp="text">
+                {a}
+              </p>
+            </div>
+          </div>
+        ))}
+      </section>
+
       {/* ── FOOTER ───────────────────────────────────────────── */}
       <footer
         className="text-center text-sm py-6"
@@ -433,6 +495,8 @@ export default function HomePage() {
         <p>
           Property Builder · {new Date().getFullYear()} ·{' '}
           <Link href="/manage" className="hover:underline transition-colors">ניהול נכס לפי קוד</Link>
+          {' · '}
+          <Link href="/blog" className="hover:underline transition-colors">מדריכים</Link>
           {' · '}
           <Link href="/terms" className="hover:underline transition-colors">תנאי שימוש</Link>
           {' · '}

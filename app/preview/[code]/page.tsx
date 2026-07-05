@@ -50,6 +50,16 @@ async function loadProject(code: string): Promise<PropertyProject | null> {
 
 // ── Metadata ──────────────────────────────────────────────────────────────────
 
+const BASE = 'https://property-landing-builder.vercel.app';
+
+function priceLabel(p: PropertyProject): string {
+  if (p.priceOnRequest) return 'מחיר לפי פנייה';
+  if (!p.price) return '';
+  return p.listingType === 'rent'
+    ? `₪${p.price.toLocaleString('he-IL')} לחודש`
+    : `₪${p.price.toLocaleString('he-IL')}`;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -58,13 +68,46 @@ export async function generateMetadata({
   const { code } = await params;
   const project = await loadProject(code);
   if (!project) return { title: 'נכס לא נמצא' };
+
   const title = project.aiTitle || project.title || 'נכס למכירה';
   const city = project.city ? `, ${project.city}` : '';
-  const desc = project.aiTagline || `${project.rooms ?? ''} חדרים${city}`;
+  const neighborhood = project.neighborhood ? ` — ${project.neighborhood}` : '';
+  const price = priceLabel(project);
+  const rooms = project.rooms ? `${project.rooms} חדרים` : '';
+  const desc =
+    project.aiTagline ||
+    [rooms, city ? `ב${project.city}` : '', price].filter(Boolean).join(' | ');
+
+  const pageUrl = `${BASE}/preview/${code}`;
+  const ogImage = `${BASE}/preview/${code}/opengraph-image`;
+  const heroUrl =
+    project.images?.[project.heroImageIndex ?? 0]?.blobUrl ??
+    project.images?.[0]?.blobUrl;
+
+  const isPublished = project.status === 'available' || project.status === 'sold' || project.status === 'rented';
+
   return {
-    title,
+    title: `${title}${neighborhood}${city}`,
     description: desc,
-    openGraph: { title, description: desc, type: 'website' },
+    ...(!isPublished ? { robots: { index: false, follow: false } } : {}),
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title: `${title} — ${price || (project.listingType === 'rent' ? 'להשכרה' : 'למכירה')}`,
+      description: desc,
+      type: 'website',
+      url: pageUrl,
+      locale: 'he_IL',
+      images: [
+        { url: ogImage, width: 1200, height: 630, alt: title },
+        ...(heroUrl ? [{ url: heroUrl, width: 1200, height: 800, alt: title }] : []),
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${title} — ${price || (project.listingType === 'rent' ? 'להשכרה' : 'למכירה')}`,
+      description: desc,
+      images: [ogImage],
+    },
   };
 }
 
@@ -78,8 +121,48 @@ export default async function PreviewPage({
   const { code } = await params;
   const project = await loadProject(code);
   if (!project) notFound();
+
+  const pageUrl = `${BASE}/preview/${code}`;
+  const title = project.aiTitle || project.title || 'נכס למכירה';
+  const price = priceLabel(project);
+  const heroUrl =
+    project.images?.[project.heroImageIndex ?? 0]?.blobUrl ??
+    project.images?.[0]?.blobUrl;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateListing',
+    name: title,
+    description: project.aiTagline || project.aiStory?.slice(0, 200) || '',
+    url: pageUrl,
+    ...(heroUrl ? { image: heroUrl } : {}),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: project.street || '',
+      addressLocality: project.city || '',
+      addressRegion: project.neighborhood || '',
+      addressCountry: 'IL',
+    },
+    ...(project.price && !project.priceOnRequest
+      ? {
+          offers: {
+            '@type': 'Offer',
+            price: project.price,
+            priceCurrency: 'ILS',
+            name: price,
+          },
+        }
+      : {}),
+    ...(project.rooms ? { numberOfRooms: project.rooms } : {}),
+    ...(project.builtArea ? { floorSize: { '@type': 'QuantitativeValue', value: project.builtArea, unitCode: 'MTK' } } : {}),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
+      />
       <ViewTracker projectCode={code} />
       <PreviewContent project={project} shareCode={code} />
     </>

@@ -3,8 +3,19 @@ import { sql, hasDb } from '@/lib/db';
 import ExamplesGallery, { type PublishedProject } from '@/components/examples/ExamplesGallery';
 
 export const metadata: Metadata = {
-  title: 'דוגמאות | Property Landing Builder',
-  description: 'ראה דפי נחיתה אמיתיים שנבנו עם המערכת — 5 סגנונות לבחירה',
+  title: 'דוגמאות — דפי נחיתה לנכסים',
+  description: 'גלה דפי נחיתה אמיתיים לדירות למכירה ולהשכרה בתל אביב, ירושלים, חיפה ועוד. 5 סגנונות עיצוב לבחירה. בנה את שלך חינם תוך דקות.',
+  keywords: [
+    'דף נחיתה דירה למכירה תל אביב',
+    'דף נחיתה דירה להשכרה',
+    'דוגמאות דפי נחיתה נכסים',
+    'דף שיווק נכס',
+  ],
+  openGraph: {
+    title: 'דוגמאות — דפי נחיתה לנכסים | Property Landing Builder',
+    description: 'גלה דפי נחיתה מקצועיים לדירות למכירה ולהשכרה. בנה את שלך חינם.',
+    type: 'website',
+  },
 };
 
 export const revalidate = 300; // refresh published projects every 5 min
