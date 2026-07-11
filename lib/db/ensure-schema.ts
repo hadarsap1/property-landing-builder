@@ -271,6 +271,13 @@ const SCHEMA_STATEMENTS = [
     used       boolean NOT NULL DEFAULT false,
     created_at timestamp NOT NULL DEFAULT now()
   )`,
+
+  // 006: listings paused by a subscription cancellation (restored on resubscribe)
+  `ALTER TABLE listings ADD COLUMN IF NOT EXISTS auto_paused boolean NOT NULL DEFAULT false`,
+
+  // 007: lead assignment to a team agent
+  `ALTER TABLE leads ADD COLUMN IF NOT EXISTS assigned_agent_id uuid REFERENCES agents(id) ON DELETE SET NULL`,
+  `CREATE INDEX IF NOT EXISTS idx_leads_assigned_agent ON leads(assigned_agent_id) WHERE assigned_agent_id IS NOT NULL`,
 ]
 
 export async function ensureSchema(): Promise<void> {
