@@ -4,6 +4,7 @@ import { getStripe } from '@/lib/billing/stripe'
 import { upsertSubscription } from '@/lib/billing/access'
 import { incrementDiscountUsage } from '@/lib/billing/discount-codes'
 import { sql } from '@/lib/db'
+import { ensureSchema } from '@/lib/db/ensure-schema'
 
 export const runtime = 'nodejs'
 
@@ -27,6 +28,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
+    // Self-migrating: the pause/unpause path writes listings.auto_paused
+    await ensureSchema()
     await handleEvent(event)
   } catch (err) {
     console.error('Webhook handler error', err)

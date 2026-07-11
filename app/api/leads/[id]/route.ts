@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { getLeadById, updateLeadStatus, updateLeadAssignee } from '@/lib/db/queries/leads'
 import { getAgentById } from '@/lib/db/queries/agents'
 import { sendLeadAssignedEmail } from '@/lib/email'
+import { ensureSchema } from '@/lib/db/ensure-schema'
 import type { Lead } from '@/lib/db/types'
 
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN ?? 'property-landing-builder.vercel.app'
@@ -42,6 +43,9 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
 
   // Assignment: agent must belong to the same agency (or null to unassign)
   if ('assigned_agent_id' in body) {
+    // Self-migrating: guarantees leads.assigned_agent_id exists even if no
+    // ensureSchema-calling page was visited since the deploy
+    await ensureSchema()
     const agentId = body.assigned_agent_id ?? null
     if (agentId !== null) {
       const agent = await getAgentById(agentId)
