@@ -51,10 +51,17 @@ export async function createLead(data: {
   return rows[0]
 }
 
-export async function getLeadsByAgency(
-  agencyId: string,
-  filters: { listingId?: string; status?: Lead['status']; limit?: number; offset?: number } = {}
-): Promise<LeadWithListing[]> {
+export interface LeadFilters {
+  listingId?: string
+  status?: Lead['status']
+  source?: Lead['source']
+  /** Case-insensitive substring match against name / phone / email */
+  search?: string
+  limit?: number
+  offset?: number
+}
+
+function leadConditions(agencyId: string, filters: LeadFilters) {
   const conditions: string[] = ['l.agency_id = $1']
   const values: (string | number | null)[] = [agencyId]
 
@@ -66,6 +73,23 @@ export async function getLeadsByAgency(
     values.push(filters.status)
     conditions.push(`l.status = $${values.length}`)
   }
+  if (filters.source) {
+    values.push(filters.source)
+    conditions.push(`l.source = $${values.length}`)
+  }
+  if (filters.search?.trim()) {
+    values.push(`%${filters.search.trim()}%`)
+    const p = `$${values.length}`
+    conditions.push(`(l.name ILIKE ${p} OR l.phone ILIKE ${p} OR l.email ILIKE ${p})`)
+  }
+  return { conditions, values }
+}
+
+export async function getLeadsByAgency(
+  agencyId: string,
+  filters: LeadFilters = {}
+): Promise<LeadWithListing[]> {
+  const { conditions, values } = leadConditions(agencyId, filters)
 
   const limit = filters.limit ?? 100
   const offset = filters.offset ?? 0
@@ -88,6 +112,42 @@ export async function getLeadsByAgency(
     values
   )
   return rows
+}
+
+/** All matching leads (no paging) — for CSV export. */
+export async function getAllLeadsByAgency(
+  agencyId: string,
+  filters: Omit<LeadFilters, 'limit' | 'offset'> = {}
+): Promise<LeadWithListing[]> {
+  return getLeadsByAgency(agencyId, { ...filters, limit: 10000, offset: 0 })
+}
+
+/** Lead counts per listing for the dashboard cards. */
+export async function getLeadCountsByListings(
+  listingIds: string[]
+): Promise<Record<string, number>> {
+  if (!listingIds.length) return {}
+  const { rows } = await db.query<{ listing_id: string; count: string }>(
+    `SELECT listing_id, COUNT(*) AS count
+     FROM leads
+     WHERE listing_id = ANY($1)
+     GROUP BY listing_id`,
+    [listingIds]
+  )
+  return Object.fromEntries(rows.map(r => [r.listing_id, parseInt(r.count, 10)]))
+}
+
+export async function updateLeadAssignee(
+  id: string,
+  agentId: string | null
+): Promise<Lead | null> {
+  const { rows } = await sql<Lead>`
+    UPDATE leads
+    SET assigned_agent_id = ${agentId}, last_interaction = now()
+    WHERE id = ${id}
+    RETURNING *
+  `
+  return rows[0] ?? null
 }
 
 export async function getLeadById(id: string): Promise<LeadWithListing | null> {

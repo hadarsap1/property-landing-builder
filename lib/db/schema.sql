@@ -49,6 +49,8 @@ CREATE TABLE IF NOT EXISTS listings (
   agent_id            uuid REFERENCES agents(id) ON DELETE SET NULL,
   slug                text NOT NULL,
   status              text NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'paused', 'sold')),
+  -- true when paused by a subscription cancellation (restored on resubscribe)
+  auto_paused         boolean NOT NULL DEFAULT false,
 
   -- Step 1: Basic Info
   listing_type        text NOT NULL DEFAULT 'sale' CHECK (listing_type IN ('sale', 'rent')),
@@ -185,6 +187,7 @@ CREATE TABLE IF NOT EXISTS leads (
   id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   listing_id        uuid NOT NULL REFERENCES listings(id) ON DELETE CASCADE,
   agency_id         uuid NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+  assigned_agent_id uuid REFERENCES agents(id) ON DELETE SET NULL,
   name              text,
   phone             text,
   email             text,
@@ -251,6 +254,7 @@ CREATE INDEX IF NOT EXISTS idx_pending_changes_status  ON pending_changes(status
 CREATE INDEX IF NOT EXISTS idx_leads_listing_id        ON leads(listing_id);
 CREATE INDEX IF NOT EXISTS idx_leads_agency_id         ON leads(agency_id);
 CREATE INDEX IF NOT EXISTS idx_leads_status            ON leads(status);
+CREATE INDEX IF NOT EXISTS idx_leads_assigned_agent    ON leads(assigned_agent_id) WHERE assigned_agent_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_lead_notes_lead_id      ON lead_notes(lead_id);
 CREATE INDEX IF NOT EXISTS idx_lead_notes_followup     ON lead_notes(follow_up_at) WHERE follow_up_done = false;
 CREATE INDEX IF NOT EXISTS idx_open_house_listing      ON open_house_registrations(listing_id);

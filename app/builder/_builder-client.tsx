@@ -384,11 +384,32 @@ export default function BuilderClient({
                   <div className="text-sm mt-0.5" style={{ color: '#888' }}>מלאו את הפרטים שלב אחרי שלב</div>
                 </div>
               </button>
+
+              <div className="text-center pt-2">
+                <a
+                  href={agencyId ? '/dashboard' : personalUserId ? '/personal' : '/'}
+                  className="text-sm transition-opacity hover:opacity-70"
+                  style={{ color: '#888' }}
+                >
+                  → {agencyId || personalUserId ? 'חזרה לנכסים שלי' : 'חזרה לדף הבית'}
+                </a>
+              </div>
             </div>
           )}
 
           {step === -1 && (
             <div className="rounded-lg p-6" style={{ border: '2px solid #111', background: '#fff' }}>
+              <button
+                type="button"
+                onClick={() => setStep(0)}
+                className="flex items-center gap-1.5 text-sm mb-4 transition-opacity hover:opacity-70"
+                style={{ color: '#888' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                חזרה לבחירה
+              </button>
               <ImportListing
                 onImport={(partial) => { onChange(partial); goToStep(1) }}
                 onSkip={() => goToStep(1)}

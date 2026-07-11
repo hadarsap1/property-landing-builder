@@ -55,6 +55,15 @@ function getInvoiceSubscriptionId(inv: Stripe.Invoice): string | null {
   return typeof sub === 'string' ? sub : sub.id
 }
 
+// Reactivate listings that were paused by a subscription cancellation —
+// but never ones the broker paused or marked sold themselves.
+async function restoreAutoPausedListings(agencyId: string): Promise<void> {
+  await sql`
+    UPDATE listings SET status = 'active', auto_paused = false
+    WHERE agency_id = ${agencyId} AND status = 'paused' AND auto_paused = true
+  `
+}
+
 async function handleEvent(event: Stripe.Event): Promise<void> {
   const stripe = getStripe()
 
@@ -77,6 +86,7 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
       if (cs.metadata?.discountCodeId) {
         await incrementDiscountUsage(cs.metadata.discountCodeId)
       }
+      await restoreAutoPausedListings(agencyId)
       break
     }
 
@@ -107,9 +117,10 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         status: 'canceled',
         cancelAtPeriodEnd: false,
       })
-      // Pause all active listings for this agency
+      // Pause all active listings for this agency, remembering which ones
+      // were auto-paused so a later resubscribe can restore exactly those
       await sql`
-        UPDATE listings SET status = 'paused'
+        UPDATE listings SET status = 'paused', auto_paused = true
         WHERE agency_id = ${agencyId} AND status = 'active'
       `
       break
@@ -127,6 +138,7 @@ async function handleEvent(event: Stripe.Event): Promise<void> {
         status: 'active',
         currentPeriodEnd: getSubPeriodEnd(sub),
       })
+      await restoreAutoPausedListings(agencyId)
       break
     }
 

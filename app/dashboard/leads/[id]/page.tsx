@@ -58,17 +58,21 @@ export default function LeadDetailPage() {
   const [noteText, setNoteText] = useState('')
   const [followUpDate, setFollowUpDate] = useState('')
   const [savingNote, setSavingNote] = useState(false)
+  const [team, setTeam] = useState<{ id: string; name: string }[]>([])
+  const [assigning, setAssigning] = useState(false)
 
   const load = useCallback(async () => {
     try {
-      const [leadRes, notesRes, visitsRes] = await Promise.all([
+      const [leadRes, notesRes, visitsRes, teamRes] = await Promise.all([
         fetch(`/api/leads/${id}`),
         fetch(`/api/leads/${id}/notes`),
         fetch(`/api/leads/${id}/visits`),
+        fetch('/api/agents'),
       ])
       if (leadRes.ok) setLead((await leadRes.json() as { lead: LeadWithListing }).lead)
       if (notesRes.ok) setNotes((await notesRes.json() as { notes: LeadNote[] }).notes)
       if (visitsRes.ok) setVisits((await visitsRes.json() as { visits: PropertyVisit[] }).visits)
+      if (teamRes.ok) setTeam((await teamRes.json() as { agents: { id: string; name: string }[] }).agents)
     } catch {
       // network failure — show what we have
     } finally {
@@ -77,6 +81,22 @@ export default function LeadDetailPage() {
   }, [id])
 
   useEffect(() => { void load() }, [load])
+
+  async function assign(agentId: string) {
+    setAssigning(true)
+    try {
+      const res = await fetch(`/api/leads/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assigned_agent_id: agentId || null }),
+      })
+      if (res.ok) {
+        setLead(prev => prev ? { ...prev, assigned_agent_id: agentId || null } : prev)
+      }
+    } finally {
+      setAssigning(false)
+    }
+  }
 
   async function changeStatus(status: Lead['status']) {
     const res = await fetch(`/api/leads/${id}`, {
@@ -218,6 +238,22 @@ export default function LeadDetailPage() {
           </div>
         </div>
       )}
+
+      {/* Assignment */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-2">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">נציג מטפל</p>
+        <select
+          value={lead.assigned_agent_id ?? ''}
+          disabled={assigning}
+          onChange={e => void assign(e.target.value)}
+          className="w-full sm:w-64 border border-gray-300 rounded-xl px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-60"
+        >
+          <option value="">ללא שיוך</option>
+          {team.map(a => (
+            <option key={a.id} value={a.id}>{a.name}</option>
+          ))}
+        </select>
+      </div>
 
       {/* Status selector */}
       <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">

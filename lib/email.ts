@@ -371,3 +371,44 @@ export async function sendInviteEmail({
     `,
   })
 }
+
+export async function sendLeadAssignedEmail({
+  to,
+  leadName,
+  leadPhone,
+  listingTitle,
+  leadUrl,
+}: {
+  to: string
+  leadName: string | null
+  leadPhone: string | null
+  listingTitle: string
+  leadUrl: string
+}): Promise<void> {
+  if (!process.env.EMAIL_SERVER || !process.env.EMAIL_FROM) {
+    console.info(`\n[lead-assigned] Lead "${leadName ?? '—'}" assigned — notify ${to}: ${leadUrl}`)
+    return
+  }
+
+  const transport = nodemailer.createTransport(process.env.EMAIL_SERVER)
+  await transport.sendMail({
+    from: process.env.EMAIL_FROM,
+    to,
+    subject: `ליד הוקצה אליך: ${leadName ?? 'אנונימי'} — ${listingTitle}`,
+    text: `ליד הוקצה אליך.\n\nשם: ${leadName ?? '—'}\nטלפון: ${leadPhone ?? '—'}\nנכס: ${listingTitle}\n\nלצפייה בליד:\n${leadUrl}`,
+    html: `
+      <div dir="rtl" style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto">
+        <h2 style="color:#1e3a5f">ליד הוקצה אליך</h2>
+        <table style="border-collapse:collapse;width:100%;margin:12px 0">
+          <tr><td style="padding:6px 0;color:#6b7280">שם</td><td style="padding:6px 0;font-weight:600">${escHtml(leadName) || '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280">טלפון</td><td style="padding:6px 0;font-weight:600">${escHtml(leadPhone) || '—'}</td></tr>
+          <tr><td style="padding:6px 0;color:#6b7280">נכס</td><td style="padding:6px 0;font-weight:600">${escHtml(listingTitle)}</td></tr>
+        </table>
+        <a href="${leadUrl}"
+           style="display:inline-block;background:#2563eb;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+          פתח את הליד
+        </a>
+      </div>
+    `,
+  })
+}

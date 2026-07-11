@@ -54,6 +54,9 @@ export default function LeadsPage() {
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<Lead['status'] | ''>('')
+  const [sourceFilter, setSourceFilter] = useState<Lead['source'] | ''>('')
+  const [search, setSearch] = useState('')
+  const [query, setQuery] = useState('') // debounced value actually sent
   const [showModal, setShowModal] = useState(false)
   const [form, setForm] = useState<NewCandidate>(EMPTY_CANDIDATE)
   const [saving, setSaving] = useState(false)
@@ -62,15 +65,24 @@ export default function LeadsPage() {
   useEffect(() => {
     setLoading(true)
     setFetchError(null)
-    const qs = statusFilter ? `?status=${statusFilter}` : ''
-    void fetch(`/api/leads${qs}`)
+    const p = new URLSearchParams()
+    if (statusFilter) p.set('status', statusFilter)
+    if (sourceFilter) p.set('source', sourceFilter)
+    if (query) p.set('q', query)
+    void fetch(`/api/leads?${p.toString()}`)
       .then((r) => {
         if (!r.ok) throw new Error('server error')
         return r.json()
       })
       .then((d: { leads: LeadWithListing[] }) => { setLeads(d.leads); setLoading(false) })
       .catch(() => { setFetchError('שגיאה בטעינת הלידים — נסה לרענן את הדף'); setLoading(false) })
-  }, [statusFilter])
+  }, [statusFilter, sourceFilter, query])
+
+  // Debounce the search box
+  useEffect(() => {
+    const t = setTimeout(() => setQuery(search.trim()), 350)
+    return () => clearTimeout(t)
+  }, [search])
 
   function setField(field: keyof NewCandidate) {
     return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
@@ -135,6 +147,19 @@ export default function LeadsPage() {
         <div className="flex items-center gap-3">
           <span className="text-sm" style={{ color: '#888' }}>{leads.length} סה&quot;כ</span>
           <button
+            onClick={() => {
+              const p = new URLSearchParams()
+              if (statusFilter) p.set('status', statusFilter)
+              if (sourceFilter) p.set('source', sourceFilter)
+              if (query) p.set('q', query)
+              window.location.href = `/api/leads/export?${p.toString()}`
+            }}
+            className="text-xs px-3 py-2 rounded-xl transition-colors"
+            style={{ border: '2px solid #111', color: '#111', background: 'transparent' }}
+          >
+            ⬇ ייצוא CSV
+          </button>
+          <button
             onClick={() => setShowModal(true)}
             className="text-sm font-semibold px-4 py-2 rounded-xl transition-colors"
             style={{ background: '#c0392b', color: '#fff' }}
@@ -163,6 +188,37 @@ export default function LeadsPage() {
             {STATUS_LABELS[s]}
           </button>
         ))}
+      </div>
+
+      {/* Search + source filter */}
+      <div className="space-y-3">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="חיפוש לפי שם, טלפון או מייל..."
+          className="w-full sm:max-w-sm px-4 py-2 text-sm focus:outline-none"
+          style={inputStyle}
+        />
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          <button
+            onClick={() => setSourceFilter('')}
+            className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
+            style={sourceFilter === '' ? { background: '#111', color: '#f7f5f2' } : { background: '#f3f4f6', color: '#6b7280' }}
+          >
+            כל המקורות
+          </button>
+          {(Object.keys(SOURCE_LABELS) as Lead['source'][]).map(src => (
+            <button
+              key={src}
+              onClick={() => setSourceFilter(src === sourceFilter ? '' : src)}
+              className="shrink-0 text-xs px-3 py-1.5 rounded-full font-medium transition-colors"
+              style={sourceFilter === src ? { background: '#111', color: '#f7f5f2' } : { background: '#f3f4f6', color: '#6b7280' }}
+            >
+              {SOURCE_LABELS[src]}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (

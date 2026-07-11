@@ -69,6 +69,8 @@ export interface Listing {
   agent_id: string | null
   slug: string
   status: 'active' | 'paused' | 'sold'
+  /** true when paused by a subscription cancellation (restored on resubscribe) */
+  auto_paused: boolean
 
   listing_type: 'sale' | 'rent'
   furniture: 'none' | 'partial' | 'full' | null
@@ -151,6 +153,7 @@ export interface Lead {
   id: string
   listing_id: string | null
   agency_id: string
+  assigned_agent_id: string | null
   name: string | null
   phone: string | null
   email: string | null
