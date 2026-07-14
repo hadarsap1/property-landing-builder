@@ -172,9 +172,20 @@ export async function GET(req: NextRequest) {
       email            text,
       source           text NOT NULL CHECK (source IN ('booking', 'open_house', 'whatsapp', 'direct')),
       status           text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'visited', 'serious', 'irrelevant', 'offer_made', 'closed')),
+      marketing_consent       boolean NOT NULL DEFAULT false,
+      marketing_consent_at    timestamp,
+      consent_source          text,
+      privacy_policy_version  text,
       created_at       timestamp NOT NULL DEFAULT now(),
       last_interaction timestamp
     )`,
+
+    // Consent evidence columns (spam-law תיקון 40) — idempotent upgrade for
+    // databases created before they existed
+    `ALTER TABLE leads ADD COLUMN IF NOT EXISTS marketing_consent boolean NOT NULL DEFAULT false`,
+    `ALTER TABLE leads ADD COLUMN IF NOT EXISTS marketing_consent_at timestamp`,
+    `ALTER TABLE leads ADD COLUMN IF NOT EXISTS consent_source text`,
+    `ALTER TABLE leads ADD COLUMN IF NOT EXISTS privacy_policy_version text`,
 
     `CREATE TABLE IF NOT EXISTS lead_notes (
       id             uuid PRIMARY KEY DEFAULT gen_random_uuid(),
