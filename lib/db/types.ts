@@ -154,6 +154,10 @@ export interface Lead {
   email: string | null
   source: 'booking' | 'open_house' | 'whatsapp' | 'direct'
   status: 'new' | 'contacted' | 'visited' | 'serious' | 'irrelevant' | 'offer_made' | 'closed'
+  marketing_consent: boolean
+  marketing_consent_at: Date | null
+  consent_source: string | null
+  privacy_policy_version: string | null
   created_at: Date
   last_interaction: Date | null
 }

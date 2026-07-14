@@ -73,3 +73,39 @@ body {
 .pb-s3 { animation: pb-up 0.7s 0.25s ease-out both; }
 .pb-s4 { animation: pb-up 0.7s 0.35s ease-out both; }
 .pb-s5 { animation: pb-up 0.7s 0.45s ease-out both; }
+
+/* ── Accessibility (רכיב נגישות + WCAG) ─────────────────────────────── */
+
+/* Visible keyboard focus everywhere (תקן 5568 — ניווט מקלדת) */
+:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Text scaling — Tailwind sizes are rem-based so root scaling applies */
+html.a11y-text-1 { font-size: 112.5%; }
+html.a11y-text-2 { font-size: 125%; }
+
+/* Boosted contrast */
+html.a11y-contrast body { filter: contrast(1.25); }
+
+/* Underline all links */
+html.a11y-underline a { text-decoration: underline !important; }
+
+/* Stop CSS animations & transitions (auto-galleries also respect this class) */
+html.a11y-no-motion *,
+html.a11y-no-motion *::before,
+html.a11y-no-motion *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* System-level reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -8,16 +8,27 @@ export async function createLead(data: {
   phone?: string | null
   email?: string | null
   source: Lead['source']
+  marketing_consent?: boolean
+  consent_source?: string | null
+  privacy_policy_version?: string | null
 }): Promise<Lead> {
+  const marketingConsent = data.marketing_consent ?? false
   const { rows } = await sql<Lead>`
-    INSERT INTO leads (listing_id, agency_id, name, phone, email, source)
+    INSERT INTO leads (
+      listing_id, agency_id, name, phone, email, source,
+      marketing_consent, marketing_consent_at, consent_source, privacy_policy_version
+    )
     VALUES (
       ${data.listing_id},
       ${data.agency_id},
       ${data.name ?? null},
       ${data.phone ?? null},
       ${data.email ?? null},
-      ${data.source}
+      ${data.source},
+      ${marketingConsent},
+      ${marketingConsent ? new Date().toISOString() : null},
+      ${data.consent_source ?? null},
+      ${data.privacy_policy_version ?? null}
     )
     RETURNING *
   `

@@ -310,6 +310,10 @@ export default function HomePage() {
           <Link href="/pricing" className="hover:underline transition-colors">מחירים לסוכנויות</Link>
           {' · '}
           <Link href="/terms" className="hover:underline transition-colors">תנאי שימוש</Link>
+          {' · '}
+          <Link href="/privacy" className="hover:underline transition-colors">מדיניות פרטיות</Link>
+          {' · '}
+          <Link href="/accessibility" className="hover:underline transition-colors">הצהרת נגישות</Link>
         </p>
       </footer>
     </div>
