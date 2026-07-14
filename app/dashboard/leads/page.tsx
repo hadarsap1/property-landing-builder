@@ -152,6 +152,14 @@ function LeadRow({ lead }: { lead: Lead }) {
             {STATUS_LABELS[lead.status]}
           </span>
           <span className="text-xs text-gray-400">{SOURCE_LABELS[lead.source]}</span>
+          {lead.marketing_consent && (
+            <span
+              className="text-xs px-2 py-0.5 rounded-full font-medium bg-emerald-50 text-emerald-700"
+              title={`אישר/ה קבלת דיוור שיווקי${lead.marketing_consent_at ? ` ב-${new Date(lead.marketing_consent_at).toLocaleDateString('he-IL')}` : ''}`}
+            >
+              ✓ דיוור
+            </span>
+          )}
         </div>
         <p className="text-xs text-gray-500 truncate">
           {[lead.phone, lead.email].filter(Boolean).join(' · ') || '—'}

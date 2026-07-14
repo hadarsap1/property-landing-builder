@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 export default function RegisterForm({ trialDays }: { trialDays: number }) {
   const router = useRouter()
   const [form, setForm] = useState({ name: '', agency_name: '', email: '', password: '', confirm: '' })
+  const [agree, setAgree] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -20,6 +21,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
     setError(null)
     if (form.password !== form.confirm) { setError('הסיסמאות אינן תואמות'); return }
     if (form.password.length < 8) { setError('הסיסמה חייבת להכיל לפחות 8 תווים'); return }
+    if (!agree) { setError('כדי להירשם יש לאשר את תנאי השימוש ומדיניות הפרטיות'); return }
 
     setLoading(true)
     try {
@@ -89,6 +91,21 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                 />
               </div>
             ))}
+
+            <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agree}
+                onChange={e => setAgree(e.target.checked)}
+                className="mt-0.5 w-4 h-4 rounded accent-blue-600"
+              />
+              <span>
+                קראתי ואני מאשר/ת את{' '}
+                <Link href="/terms" target="_blank" className="text-blue-600 hover:underline">תנאי השימוש</Link>
+                {' '}ואת{' '}
+                <Link href="/privacy" target="_blank" className="text-blue-600 hover:underline">מדיניות הפרטיות</Link>
+              </span>
+            </label>
 
             <button
               type="submit"

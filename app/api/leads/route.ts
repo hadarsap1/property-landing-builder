@@ -4,6 +4,7 @@ import { createLead, getLeadsByAgency } from '@/lib/db/queries/leads'
 import { getListingById } from '@/lib/db/queries/listings'
 import { getAgencyById } from '@/lib/db/queries/agencies'
 import { sendLeadNotificationEmail } from '@/lib/email'
+import { LEGAL } from '@/lib/legal'
 import type { Lead } from '@/lib/db/types'
 
 const RATE_LIMIT_MAX = 5       // requests
@@ -31,6 +32,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     phone?: string
     email?: string
     source?: string
+    privacy_ack?: boolean       // required: visitor approved the privacy policy
+    marketing_consent?: boolean // optional, separate opt-in for marketing (תיקון 40)
     _hp?: string  // honeypot — must be empty
   }
 
@@ -64,6 +67,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     ? (body.source as Lead['source'])
     : 'direct'
 
+  // תיקון 13 לחוק הגנת הפרטיות: אין לקבל פרטים בלי אישור מדיניות הפרטיות
+  if (source === 'direct' && !body.privacy_ack) {
+    return NextResponse.json({ error: 'יש לאשר את מדיניות הפרטיות' }, { status: 400 })
+  }
+
   const lead = await createLead({
     listing_id: body.listing_id,
     agency_id: body.agency_id,
@@ -71,6 +79,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     phone: body.phone ?? null,
     email: body.email ?? null,
     source,
+    marketing_consent: body.marketing_consent === true,
+    consent_source: 'landing_page_form',
+    privacy_policy_version: LEGAL.privacyPolicyVersion,
   })
 
   // Fire-and-forget email notification to agency contact

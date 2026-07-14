@@ -190,9 +190,21 @@ CREATE TABLE IF NOT EXISTS leads (
   email             text,
   source            text NOT NULL CHECK (source IN ('booking', 'open_house', 'whatsapp', 'direct')),
   status            text NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'visited', 'serious', 'irrelevant', 'offer_made', 'closed')),
+  -- Spam-law (תיקון 40) consent evidence: separate opt-in for marketing,
+  -- with when/where it was given and which privacy-policy version was shown
+  marketing_consent       boolean NOT NULL DEFAULT false,
+  marketing_consent_at    timestamp,
+  consent_source          text,
+  privacy_policy_version  text,
   created_at        timestamp NOT NULL DEFAULT now(),
   last_interaction  timestamp
 );
+
+-- Idempotent upgrade for databases created before the consent columns existed
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS marketing_consent boolean NOT NULL DEFAULT false;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS marketing_consent_at timestamp;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS consent_source text;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS privacy_policy_version text;
 
 -- Lead notes and follow-ups
 CREATE TABLE IF NOT EXISTS lead_notes (

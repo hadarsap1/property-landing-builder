@@ -8,20 +8,52 @@ export async function createLead(data: {
   phone?: string | null
   email?: string | null
   source: Lead['source']
+  marketing_consent?: boolean
+  consent_source?: string | null
+  privacy_policy_version?: string | null
 }): Promise<Lead> {
-  const { rows } = await sql<Lead>`
-    INSERT INTO leads (listing_id, agency_id, name, phone, email, source)
-    VALUES (
-      ${data.listing_id},
-      ${data.agency_id},
-      ${data.name ?? null},
-      ${data.phone ?? null},
-      ${data.email ?? null},
-      ${data.source}
-    )
-    RETURNING *
-  `
-  return rows[0]
+  const marketingConsent = data.marketing_consent ?? false
+  try {
+    const { rows } = await sql<Lead>`
+      INSERT INTO leads (
+        listing_id, agency_id, name, phone, email, source,
+        marketing_consent, marketing_consent_at, consent_source, privacy_policy_version
+      )
+      VALUES (
+        ${data.listing_id},
+        ${data.agency_id},
+        ${data.name ?? null},
+        ${data.phone ?? null},
+        ${data.email ?? null},
+        ${data.source},
+        ${marketingConsent},
+        ${marketingConsent ? new Date().toISOString() : null},
+        ${data.consent_source ?? null},
+        ${data.privacy_policy_version ?? null}
+      )
+      RETURNING *
+    `
+    return rows[0]
+  } catch (err) {
+    // Deploy-ordering guard: if the consent columns haven't been migrated yet
+    // (setup-db not run), fall back to the legacy insert so no lead is lost.
+    const msg = err instanceof Error ? err.message : String(err)
+    if (!/column .* does not exist/i.test(msg)) throw err
+    console.error('leads: consent columns missing — run /api/admin/setup-db. Falling back to legacy insert.')
+    const { rows } = await sql<Lead>`
+      INSERT INTO leads (listing_id, agency_id, name, phone, email, source)
+      VALUES (
+        ${data.listing_id},
+        ${data.agency_id},
+        ${data.name ?? null},
+        ${data.phone ?? null},
+        ${data.email ?? null},
+        ${data.source}
+      )
+      RETURNING *
+    `
+    return rows[0]
+  }
 }
 
 export async function getLeadsByAgency(

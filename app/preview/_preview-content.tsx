@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import type { PropertyProject, StoredImage } from '@/types/project';
+import AccessibilityWidget from '@/components/AccessibilityWidget';
 
 function useTrack(listingId?: string, agencyId?: string) {
   const sessionId = useRef<string>('')
@@ -91,12 +92,14 @@ const PARKING_LABEL: Record<string, string> = { covered: 'מקורה', outdoor: 
 
 // ── Gallery ───────────────────────────────────────────────────────────────────
 
-function Gallery({ images, galleryType, accent }: {
+function Gallery({ images, galleryType, accent, altBase }: {
   images: StoredImage[];
   galleryType: PropertyProject['galleryType'];
   accent: string;
+  altBase: string;
 }) {
   const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
   const isCarousel = galleryType !== 'grid';
   const isAuto = galleryType.startsWith('auto-');
   const intervalMs = isAuto
@@ -104,20 +107,26 @@ function Gallery({ images, galleryType, accent }: {
     : 0;
 
   useEffect(() => {
-    if (!isAuto || images.length <= 1) return;
-    const timer = setInterval(() => setCurrent((c) => (c + 1) % images.length), intervalMs);
+    if (!isAuto || paused || images.length <= 1) return;
+    const timer = setInterval(() => {
+      // Respect "stop animations" from the accessibility widget (WCAG 2.2.2)
+      if (document.documentElement.classList.contains('a11y-no-motion')) return;
+      setCurrent((c) => (c + 1) % images.length);
+    }, intervalMs);
     return () => clearInterval(timer);
-  }, [isAuto, intervalMs, images.length]);
+  }, [isAuto, paused, intervalMs, images.length]);
+
+  const altFor = (idx: number) => `${altBase} — תמונה ${idx + 1} מתוך ${images.length}`;
 
   if (!isCarousel) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {images.map((img) => (
+        {images.map((img, idx) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={img.id}
             src={img.dataUrl}
-            alt={img.name}
+            alt={altFor(idx)}
             className="w-full aspect-video object-cover rounded-xl"
           />
         ))}
@@ -132,12 +141,23 @@ function Gallery({ images, galleryType, accent }: {
         <img
           key={img.id}
           src={img.dataUrl}
-          alt={img.name}
+          alt={altFor(idx)}
           className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
             idx === current ? 'opacity-100' : 'opacity-0'
           }`}
         />
       ))}
+      {isAuto && images.length > 1 && (
+        <button
+          type="button"
+          onClick={() => setPaused((p) => !p)}
+          aria-pressed={paused}
+          aria-label={paused ? 'הפעלת החלפת תמונות אוטומטית' : 'עצירת החלפת תמונות אוטומטית'}
+          className="absolute bottom-3 right-3 bg-black/50 hover:bg-black/70 text-white w-9 h-9 rounded-full flex items-center justify-center text-sm transition-colors"
+        >
+          {paused ? '▶' : '⏸'}
+        </button>
+      )}
       {images.length > 1 && (
         <>
           <button
@@ -455,6 +475,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                     images={project.images}
                     galleryType={project.galleryType}
                     accent={accent}
+                    altBase={title}
                   />
                 )}
                 {project.videoUrl && (
@@ -568,6 +589,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                     agencyId={agencyId}
                     accent={accent}
                     heroText={theme.heroText}
+                    recipientName={agencyName ?? project.sellerName ?? null}
                   />
                 )}
               </div>
@@ -591,7 +613,18 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
         <a href="/terms" className="hover:underline" style={{ color: theme.mutedText }}>
           תנאי שימוש
         </a>
+        {' · '}
+        <a href="/privacy" className="hover:underline" style={{ color: theme.mutedText }}>
+          מדיניות פרטיות
+        </a>
+        {' · '}
+        <a href="/accessibility" className="hover:underline" style={{ color: theme.mutedText }}>
+          הצהרת נגישות
+        </a>
       </footer>
+
+      {/* ── Accessibility widget (רכיב נגישות) ───────────────────── */}
+      <AccessibilityWidget raised={Boolean(shareCode)} />
 
       {/* ── Floating share bar (public /preview/[code] only) ─────── */}
       {shareCode && shareUrl && (
@@ -659,13 +692,17 @@ function LeadCaptureForm({
   agencyId,
   accent,
   heroText,
+  recipientName,
 }: {
   listingId: string;
   agencyId: string;
   accent: string;
   heroText: string;
+  recipientName: string | null;
 }) {
   const [form, setForm] = useState({ name: '', phone: '', email: '', _hp: '' });
+  const [privacyAck, setPrivacyAck] = useState(false);
+  const [marketingOk, setMarketingOk] = useState(false);
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -674,6 +711,10 @@ function LeadCaptureForm({
     e.preventDefault();
     if (!form.name.trim() && !form.phone.trim()) {
       setError('נא למלא שם או טלפון');
+      return;
+    }
+    if (!privacyAck) {
+      setError('כדי לשלוח יש לאשר את מדיניות הפרטיות');
       return;
     }
     setSaving(true); setError(null);
@@ -688,6 +729,8 @@ function LeadCaptureForm({
           phone: form.phone.trim() || null,
           email: form.email.trim() || null,
           source: 'direct',
+          privacy_ack: privacyAck,
+          marketing_consent: marketingOk,
           _hp: form._hp,
         }),
       });
@@ -718,6 +761,7 @@ function LeadCaptureForm({
       </p>
       <input
         type="text"
+        aria-label="שם מלא"
         placeholder="שם מלא"
         value={form.name}
         onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
@@ -726,6 +770,7 @@ function LeadCaptureForm({
       />
       <input
         type="tel"
+        aria-label="טלפון"
         placeholder="טלפון"
         value={form.phone}
         onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
@@ -735,6 +780,7 @@ function LeadCaptureForm({
       />
       <input
         type="email"
+        aria-label="מייל (אופציונלי)"
         placeholder="מייל (אופציונלי)"
         value={form.email}
         onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
@@ -742,6 +788,41 @@ function LeadCaptureForm({
         style={{ color: heroText }}
         dir="ltr"
       />
+
+      {/* פירוט המידע הנאסף (תיקון 13) */}
+      <p className="text-xs opacity-90 leading-relaxed" style={{ color: heroText }}>
+        הפרטים שתמסור/י (שם, טלפון, מייל) יועברו ל{recipientName || 'מפרסם הנכס'} לצורך חזרה אליך בלבד.
+      </p>
+
+      {/* אישור מדיניות פרטיות — חובה לפני שליחה */}
+      <label className="flex items-start gap-2 text-xs cursor-pointer" style={{ color: heroText }}>
+        <input
+          type="checkbox"
+          checked={privacyAck}
+          onChange={e => setPrivacyAck(e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded accent-white"
+        />
+        <span>
+          קראתי ואני מאשר/ת את{' '}
+          <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline font-semibold">
+            מדיניות הפרטיות
+          </a>
+          {' '}<span aria-hidden="true">*</span>
+        </span>
+      </label>
+
+      {/* הסכמה נפרדת לדיוור שיווקי (תיקון 40) — לא מסומן מראש */}
+      <label className="flex items-start gap-2 text-xs cursor-pointer" style={{ color: heroText }}>
+        <input
+          type="checkbox"
+          checked={marketingOk}
+          onChange={e => setMarketingOk(e.target.checked)}
+          className="mt-0.5 w-4 h-4 rounded accent-white"
+        />
+        <span>
+          אני מאשר/ת קבלת עדכונים שיווקיים על נכסים מ{recipientName || 'מפרסם הנכס'} (לא חובה, ניתן להסרה בכל עת)
+        </span>
+      </label>
       {/* Honeypot — hidden from humans, filled by bots */}
       <input
         type="text"
