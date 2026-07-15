@@ -65,4 +65,5 @@ export interface StoredImage {
   dataUrl: string; // resized base64
   enhancedDataUrl?: string; // canvas-brightened version (browser only, not persisted)
   name: string;
+  alt?: string; // תיאור לתמונה — accessibility alt text written by the broker
 }
