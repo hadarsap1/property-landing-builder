@@ -388,6 +388,25 @@ export default function Step4({ project, onChange }: StepProps) {
                     </div>
                   </>
                 )}
+
+                {/* Alt text (נגישות) — required by תקן 5568; empty falls back to a generic description */}
+                {!isUploading && (
+                  <input
+                    type="text"
+                    value={img.alt ?? ''}
+                    onChange={(e) =>
+                      onChange({
+                        images: project.images.map((i) =>
+                          i.id === img.id ? { ...i, alt: e.target.value } : i
+                        ),
+                      })
+                    }
+                    onDragStart={(e) => { e.preventDefault(); e.stopPropagation() }}
+                    placeholder="תיאור התמונה (נגישות)"
+                    aria-label={`תיאור לתמונה ${idx + 1} עבור קוראי מסך`}
+                    className="w-full text-[11px] px-1.5 py-1 border-t border-gray-200 bg-white focus:outline-none focus:ring-1 focus:ring-blue-400"
+                  />
+                )}
               </div>
             )
           })}

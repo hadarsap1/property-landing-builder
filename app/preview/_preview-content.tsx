@@ -41,7 +41,7 @@ const THEMES: Record<TemplateId, TemplateTheme> = {
     pageText: '#1e293b',
     cardBg: '#ffffff',
     cardBorder: '#e2e8f0',
-    mutedText: '#64748b',
+    mutedText: '#5b6b80', // ≥4.5:1 on pageBg (WCAG AA)
   },
   'dark-luxury': {
     heroBg: 'linear-gradient(135deg,#0a0e1a 0%,#1a1f35 100%)',
@@ -59,7 +59,7 @@ const THEMES: Record<TemplateId, TemplateTheme> = {
     pageText: '#3d2b1f',
     cardBg: '#ffffff',
     cardBorder: '#e8d5c4',
-    mutedText: '#8b6f5e',
+    mutedText: '#7d6250', // ≥4.5:1 on pageBg (WCAG AA)
   },
   'nature-space': {
     heroBg: 'linear-gradient(135deg,#2d5a27 0%,#1a3518 100%)',
@@ -68,7 +68,7 @@ const THEMES: Record<TemplateId, TemplateTheme> = {
     pageText: '#1a3518',
     cardBg: '#ffffff',
     cardBorder: '#c8e6c4',
-    mutedText: '#5a7a56',
+    mutedText: '#527250', // ≥4.5:1 on pageBg (WCAG AA)
   },
   'urban-bold': {
     heroBg: 'linear-gradient(135deg,#2c1810 0%,#4a2c20 100%)',
@@ -116,7 +116,8 @@ function Gallery({ images, galleryType, accent, altBase }: {
     return () => clearInterval(timer);
   }, [isAuto, paused, intervalMs, images.length]);
 
-  const altFor = (idx: number) => `${altBase} — תמונה ${idx + 1} מתוך ${images.length}`;
+  const altFor = (idx: number) =>
+    images[idx]?.alt?.trim() || `${altBase} — תמונה ${idx + 1} מתוך ${images.length}`;
 
   if (!isCarousel) {
     return (
@@ -326,7 +327,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={heroImage.dataUrl}
-                alt={title}
+                alt={heroImage.alt?.trim() || title}
                 className="absolute inset-0 w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-black/55" />
