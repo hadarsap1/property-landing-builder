@@ -36,8 +36,8 @@ export default async function AdminListingsPage() {
     <div>
       <h1 className="text-2xl font-bold text-white mb-6">נכסים ({listings.length}+)</h1>
 
-      <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-        <table className="w-full text-sm">
+      <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-x-auto">
+        <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="text-gray-400 text-xs border-b border-gray-700">
               <th className="text-right px-5 py-3 font-medium">נכס</th>
