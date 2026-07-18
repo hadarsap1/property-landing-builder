@@ -180,7 +180,7 @@ export default async function AdminOverview() {
             <Link href="/admin/listings" className="text-xs text-blue-400 hover:underline">הכל</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[520px] text-sm">
               <thead>
                 <tr className="text-gray-500 text-xs border-b border-gray-700">
                   <th className="text-right pb-2 font-medium">כותרת</th>

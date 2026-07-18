@@ -30,15 +30,15 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col" dir="rtl">
-      <header className="bg-gray-800 border-b border-gray-700 h-14 flex items-center px-4 gap-4">
-        <span className="font-bold text-white text-base">⚡ Admin</span>
+      <header className="bg-gray-800 border-b border-gray-700 h-14 flex items-center px-4 gap-3">
+        <span className="font-bold text-white text-base shrink-0">⚡ Admin</span>
 
-        <nav className="flex gap-1 mr-4">
+        <nav className="flex gap-1 flex-1 min-w-0 overflow-x-auto">
           {ADMIN_NAV.map((n) => (
             <Link
               key={n.href}
               href={n.href}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm whitespace-nowrap shrink-0 transition-colors ${
                 isActive(n.href)
                   ? 'bg-gray-600 text-white font-semibold'
                   : 'text-gray-300 hover:bg-gray-700 hover:text-white'
@@ -50,8 +50,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           ))}
         </nav>
 
-        <div className="mr-auto flex items-center gap-3">
-          <span className="text-xs text-gray-400">{session.user?.email}</span>
+        <div className="shrink-0 flex items-center gap-3">
+          <span className="hidden sm:inline text-xs text-gray-400">{session.user?.email}</span>
           <form
             action={async () => {
               'use server'

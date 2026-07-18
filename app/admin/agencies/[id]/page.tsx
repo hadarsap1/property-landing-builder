@@ -201,7 +201,7 @@ export default async function AdminAgencyDetailPage({ params }: PageProps) {
             <span className="text-xs text-gray-500">{listings.length} נכסים</span>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[760px] text-sm">
               <thead>
                 <tr className="text-gray-400 text-xs border-b border-gray-700">
                   <th className="text-right px-4 py-2.5 font-medium">נכס</th>

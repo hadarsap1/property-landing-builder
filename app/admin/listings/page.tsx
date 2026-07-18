@@ -119,7 +119,7 @@ export default async function AdminListingsPage({
 
       <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[1000px] text-sm">
             <thead>
               <tr className="text-gray-400 text-xs border-b border-gray-700">
                 <th className="text-right px-4 py-3 font-medium">נכס</th>
