@@ -32,8 +32,8 @@ export default async function AdminAgenciesPage() {
       {agencies.length === 0 ? (
         <p className="text-gray-400">אין סוכנויות עדיין</p>
       ) : (
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-x-auto">
+          <table className="w-full min-w-[640px] text-sm">
             <thead>
               <tr className="text-gray-400 text-xs border-b border-gray-700">
                 <th className="text-right px-5 py-3 font-medium">שם</th>
