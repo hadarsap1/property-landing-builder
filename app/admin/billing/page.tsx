@@ -67,7 +67,7 @@ export default function AdminBillingPage() {
         <p className="text-gray-400">אין מנויים עדיין</p>
       ) : (
         <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="text-gray-400 text-xs border-b border-gray-700">
                 <th className="text-right px-5 py-3 font-medium">סוכנות</th>
