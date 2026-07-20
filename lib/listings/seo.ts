@@ -79,7 +79,10 @@ export function listingJsonLd(listing: Listing, agency: Agency | null, canonical
       '@type': 'Offer',
       price: listing.price,
       priceCurrency: 'ILS',
-      availability: 'https://schema.org/InStock',
+      availability:
+        listing.status === 'sold'
+          ? 'https://schema.org/SoldOut'
+          : 'https://schema.org/InStock',
       ...(listing.listing_type === 'rent'
         ? { businessFunction: 'http://purl.org/goodrelations/v1#LeaseOut' }
         : { businessFunction: 'http://purl.org/goodrelations/v1#Sell' }),
