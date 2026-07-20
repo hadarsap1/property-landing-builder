@@ -7,6 +7,7 @@ import { ensureSchema } from '@/lib/db/ensure-schema'
 import Link from 'next/link'
 import type { Listing } from '@/lib/db/types'
 import { DeleteAccountButton } from './_delete-account-button'
+import { SoldToggle } from './_sold-toggle'
 
 function statusLabel(s: Listing['status']) {
   if (s === 'active') return { text: 'פעיל', cls: 'bg-green-100 text-green-700' }
@@ -128,6 +129,7 @@ export default async function PersonalDashboard() {
                   >
                     {pending > 0 ? `${pending} שינויים` : 'מוכר'}
                   </Link>
+                  <SoldToggle id={listing.id} status={listing.status} />
                 </div>
               </div>
             )

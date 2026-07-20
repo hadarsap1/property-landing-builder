@@ -13,7 +13,7 @@ import StickyContactBar from '@/components/listing/StickyContactBar';
 import LeadCaptureForm from '@/components/listing/LeadCaptureForm';
 import ShareBar from '@/components/listing/ShareBar';
 
-export default function PreviewContent({ project, editHref, listingId, agencyId, agencyLogoUrl, agencyName, shareCode, calendlyUrl }: {
+export default function PreviewContent({ project, editHref, listingId, agencyId, agencyLogoUrl, agencyName, shareCode, calendlyUrl, sold = false }: {
   project: PropertyProject;
   editHref?: string;
   listingId?: string;
@@ -22,6 +22,9 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
   agencyName?: string | null;
   shareCode?: string;
   calendlyUrl?: string | null;
+  /** When true the listing is sold: contact & sharing are disabled and a
+   *  prominent "sold" treatment covers the page. */
+  sold?: boolean;
 }) {
   const theme = THEMES[project.template] ?? THEMES['modern-blue'];
   const fontFamily = FONT_FAMILY[project.fontStyle] ?? FONT_FAMILY['sans-serif'];
@@ -51,6 +54,24 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
 
   return (
     <div dir="rtl" lang="he" style={{ backgroundColor: theme.pageBg, color: theme.pageText, fontFamily }}>
+
+      {/* ── Sold banner ──────────────────────────────────────────────
+          Sticky so it stays visible while scrolling. On agency pages the
+          branded navbar is already sticky at top-0, so keep this one in
+          normal flow there to avoid two elements pinned to the same spot. */}
+      {sold && (
+        <div
+          className={`${agencyLogoUrl ? 'relative' : 'sticky top-0'} z-[60] flex items-center justify-center gap-3 bg-red-700 text-white text-center px-5 py-3 shadow-lg`}
+          role="status"
+        >
+          <span className="text-lg md:text-xl font-extrabold tracking-wide">
+            🔴 הנכס נמכר
+          </span>
+          <span className="text-xs md:text-sm font-semibold uppercase tracking-[0.2em] opacity-80">
+            Sold
+          </span>
+        </div>
+      )}
 
       {/* ── Agency branded navbar ────────────────────────────────── */}
       {agencyLogoUrl && (
@@ -115,6 +136,22 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
               <div className="absolute inset-0 bg-black/55" />
             </>
           )}
+          {/* Big diagonal "Sold" stamp over the hero */}
+          {sold && (
+            <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center overflow-hidden">
+              <div
+                className="flex flex-col items-center justify-center rounded-3xl border-[6px] border-white/90 bg-red-700/85 px-10 py-6 shadow-2xl"
+                style={{ transform: 'rotate(-12deg)' }}
+              >
+                <span className="text-6xl md:text-8xl font-black leading-none text-white drop-shadow">
+                  נמכר
+                </span>
+                <span className="mt-2 text-lg md:text-2xl font-bold uppercase tracking-[0.35em] text-white/90">
+                  Sold
+                </span>
+              </div>
+            </div>
+          )}
           <div className="relative z-10 text-center px-6 py-16 md:py-24 max-w-4xl mx-auto w-full">
             {address && (
               <p
@@ -151,30 +188,41 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                 {price}
               </div>
             )}
-            <div>
-              <a
-                href="#contact"
-                className="inline-block font-semibold px-10 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-lg"
-                style={{ backgroundColor: accent }}
+            {sold ? (
+              <div
+                className="inline-block font-bold px-10 py-4 rounded-xl text-lg bg-white/15 text-white border border-white/25"
+                style={{ backdropFilter: 'blur(8px)' }}
               >
-                צור קשר עכשיו ↓
-              </a>
-            </div>
+                הנכס נמכר · תודה על ההתעניינות
+              </div>
+            ) : (
+              <div>
+                <a
+                  href="#contact"
+                  className="inline-block font-semibold px-10 py-4 rounded-xl text-lg text-white transition-opacity hover:opacity-90 shadow-lg"
+                  style={{ backgroundColor: accent }}
+                >
+                  צור קשר עכשיו ↓
+                </a>
+              </div>
+            )}
           </div>
           {/* scroll indicator */}
-          <div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-50"
-            style={{ color: heroImage ? '#fff' : theme.heroText }}
-          >
-            <svg className="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          {!sold && (
+            <div
+              className="absolute bottom-8 left-1/2 -translate-x-1/2 opacity-50"
+              style={{ color: heroImage ? '#fff' : theme.heroText }}
+            >
+              <svg className="w-6 h-6 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          )}
         </section>
       )}
 
-      {/* ── Open house banner (when scheduled and not long past) ──── */}
-      {project.openHouseDate && (
+      {/* ── Open house banner (when scheduled and not long past, hidden when sold) ── */}
+      {project.openHouseDate && !sold && (
         <OpenHouseBanner
           dateIso={project.openHouseDate}
           endIso={project.openHouseEnd}
@@ -352,6 +400,18 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
               style={{ background: theme.heroBg }}
             >
               <div className="max-w-xl mx-auto text-center">
+                {sold ? (
+                  <>
+                    <div className="text-5xl mb-4">🔴</div>
+                    <h2 className="text-3xl font-bold mb-2" style={{ color: theme.heroText }}>
+                      הנכס נמכר
+                    </h2>
+                    <p className="text-lg opacity-75" style={{ color: theme.heroText }}>
+                      תודה על ההתעניינות — הנכס כבר אינו זמין
+                    </p>
+                  </>
+                ) : (
+                <>
                 <h2 className="text-3xl font-bold mb-2" style={{ color: theme.heroText }}>
                   מתעניינים בנכס?
                 </h2>
@@ -405,6 +465,8 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                     heroText={theme.heroText}
                   />
                 )}
+                </>
+                )}
               </div>
             </section>
           );
@@ -432,8 +494,8 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
         </Link>
       </footer>
 
-      {/* ── AI Chat widget (public listing pages only) ──────────── */}
-      {listingId && !editHref && (
+      {/* ── AI Chat widget (public listing pages only, hidden when sold) ── */}
+      {listingId && !editHref && !sold && (
         <PropertyChat
           listingId={listingId}
           accent={accent}
@@ -442,8 +504,8 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
         />
       )}
 
-      {/* ── Sticky mobile call/WhatsApp bar (public pages, not share pages) ── */}
-      {listingId && !editHref && !shareCode && (
+      {/* ── Sticky mobile call/WhatsApp bar (public pages, not share pages, hidden when sold) ── */}
+      {listingId && !editHref && !shareCode && !sold && (
         <StickyContactBar
           phone={project.phone}
           whatsappUrl={whatsappUrl}
@@ -452,8 +514,8 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
         />
       )}
 
-      {/* ── Floating share bar (public /preview/[code] only) ─────── */}
-      {shareCode && (
+      {/* ── Floating share bar (public /preview/[code] only, hidden when sold) ─── */}
+      {shareCode && !sold && (
         <ShareBar
           shareCode={shareCode}
           title={title}

@@ -17,9 +17,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const listing = await getListingById(listingId)
   if (!listing) return { title: 'נכס לא נמצא' }
 
-  const title = listing.ai_title || listing.title || 'נכס למכירה'
+  const sold = listing.status === 'sold'
+  const baseTitle = listing.ai_title || listing.title || 'נכס למכירה'
+  const title = sold ? `נמכר · ${baseTitle}` : baseTitle
   const city = listing.city ? ` — ${listing.city}` : ''
-  const desc = listing.ai_tagline || `${listing.rooms ?? ''} חדרים${city}`
+  const desc = sold
+    ? `הנכס נמכר · ${baseTitle}`
+    : listing.ai_tagline || `${listing.rooms ?? ''} חדרים${city}`
   const canonical = `https://${ROOT_DOMAIN}/p/${listingId}`
 
   return {
@@ -47,7 +51,11 @@ export default async function PersonalListingPage({ params }: Props) {
   const { listingId } = await params
 
   const listing = await getListingById(listingId)
-  if (!listing || listing.status === 'paused' || listing.status === 'sold') notFound()
+  // Paused listings are hidden entirely. Sold listings stay live — we still
+  // want the shared links (WhatsApp, Facebook, …) to resolve, but the page
+  // shows a prominent "sold" state with contact & sharing disabled.
+  if (!listing || listing.status === 'paused') notFound()
+  const sold = listing.status === 'sold'
 
   const project = listingToProject(listing)
   const agent = listing.agent_id ? await getAgentById(listing.agent_id) : null
@@ -65,6 +73,7 @@ export default async function PersonalListingPage({ params }: Props) {
         listingId={listing.id}
         agencyId={listing.agency_id ?? undefined}
         calendlyUrl={agent?.calendly_url ?? null}
+        sold={sold}
       />
     </>
   )
