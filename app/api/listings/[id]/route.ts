@@ -7,6 +7,7 @@ import {
   CLIENT_WRITABLE_COLUMNS,
 } from '@/lib/db/queries/listings'
 import { normaliseSpecIcons } from '@/lib/listings/adapt'
+import { ensureSchema } from '@/lib/db/ensure-schema'
 import type { Listing } from '@/lib/db/types'
 import type { Session } from 'next-auth'
 
@@ -94,6 +95,18 @@ export async function PATCH(req: NextRequest, { params }: RouteContext): Promise
   if (Array.isArray(data.image_urls)) {
     // Always reassign — also strips empty strings that isHttpsUrl treats as "fine"
     data.image_urls = (data.image_urls as string[]).filter(url => !!url && isHttpsUrl(url))
+  }
+
+  // Self-migrating: the builder autosaves spec_icons and floor_plan_url on
+  // every keystroke, and this route is the first thing a signed-in user hits
+  // after a deploy if they go straight to the builder. auth() only runs
+  // ensureSchema on initial sign-in, so without this the columns may not exist
+  // yet and every save would 500. Cheap after the first call per instance;
+  // swallowed because a transient DDL failure must not block saves when the
+  // columns are already there — a genuinely missing column still surfaces as a
+  // Postgres error from the UPDATE below.
+  if (data.spec_icons !== undefined || data.floor_plan_url !== undefined) {
+    await ensureSchema().catch(() => {})
   }
 
   const updated = await updateListing(id, data)
