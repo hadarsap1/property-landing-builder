@@ -138,6 +138,50 @@ test.describe('builder persistence', () => {
     await expect(page.getByRole('link', { name: /דף הבית|הנכסים שלי/ }).first()).toBeVisible()
   })
 
+  test('photos, floor plan and spec icons survive a save', async ({ request }) => {
+    // Exercises the real jsonb + text[] binding, which unit tests can only fake.
+    const id = await newListing()
+    const patch = await request.patch(`/api/listings/${id}`, {
+      data: {
+        image_urls: ['https://blob.example.com/a.jpg', 'https://blob.example.com/b.jpg'],
+        hero_image_url: 'https://blob.example.com/b.jpg',
+        floor_plan_url: 'https://blob.example.com/plan.jpg',
+        spec_icons: JSON.stringify({ rooms: '🛏️', parking: '🅿️' }),
+      },
+    })
+    expect(patch.status(), await patch.text()).toBe(200)
+
+    const res = await request.get(`/api/listings/${id}`)
+    const body = (await res.json()) as {
+      listing: {
+        image_urls: string[]
+        hero_image_url: string
+        floor_plan_url: string
+        spec_icons: Record<string, string>
+      }
+    }
+    expect(body.listing.image_urls).toEqual([
+      'https://blob.example.com/a.jpg',
+      'https://blob.example.com/b.jpg',
+    ])
+    expect(body.listing.hero_image_url).toBe('https://blob.example.com/b.jpg')
+    expect(body.listing.floor_plan_url).toBe('https://blob.example.com/plan.jpg')
+    // Comes back parsed, not as a JSON string
+    expect(body.listing.spec_icons).toEqual({ rooms: '🛏️', parking: '🅿️' })
+  })
+
+  test('junk spec icons are rejected rather than stored', async ({ request }) => {
+    const id = await newListing()
+    const patch = await request.patch(`/api/listings/${id}`, {
+      data: { spec_icons: { rooms: '🛏️', evil: '<script>', floor: 'x'.repeat(500) } },
+    })
+    expect(patch.status(), await patch.text()).toBe(200)
+
+    const res = await request.get(`/api/listings/${id}`)
+    const body = (await res.json()) as { listing: { spec_icons: Record<string, string> } }
+    expect(body.listing.spec_icons).toEqual({ rooms: '🛏️' })
+  })
+
   test('the cookie banner never covers the wizard navigation', async ({ page, context }) => {
     const id = await newListing()
     // First-ever visit, so the consent banner is showing.

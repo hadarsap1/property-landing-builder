@@ -12,9 +12,10 @@ export const LISTING_COLUMNS = new Set([
   'parking_spots', 'parking_covered', 'has_storage', 'has_saferoom',
   'has_elevator', 'air_directions', 'build_year', 'renovation_year', 'bathrooms',
   'raw_description', 'ai_title', 'ai_tagline', 'ai_story', 'ai_highlights', 'chat_qa',
-  'hero_image_url', 'image_urls', 'video_url', 'gallery_type', 'carousel_speed',
+  'hero_image_url', 'image_urls', 'floor_plan_url', 'video_url', 'gallery_type', 'carousel_speed',
   'show_map', 'map_query_override', 'template_id', 'accent_color', 'font_style',
-  'section_order', 'hidden_sections', 'seller_name', 'seller_phone', 'seller_whatsapp',
+  'section_order', 'hidden_sections', 'spec_icons',
+  'seller_name', 'seller_phone', 'seller_whatsapp',
   'open_house_date', 'open_house_end',
 ])
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { listingToProject, projectToListingData } from '../adapt'
+import { listingToProject, projectToListingData, normaliseSpecIcons } from '../adapt'
 import type { Listing } from '@/lib/db/types'
 import type { PropertyProject } from '@/types/project'
 
@@ -47,7 +47,7 @@ const PROJECT: PropertyProject = {
   heroImageIndex: 1,
   galleryType: 'auto-5s',
   videoUrl: 'https://blob.example.com/v.mp4',
-  floorPlan: null,
+  floorPlan: { id: 'fp', dataUrl: 'https://blob.example.com/plan.jpg', name: 'plan' },
   showMap: true,
   mapQuery: 'הרצל 5, תל אביב, ישראל',
   template: 'urban-bold',
@@ -55,7 +55,7 @@ const PROJECT: PropertyProject = {
   fontStyle: 'display',
   sectionOrder: ['hero', 'gallery', 'story', 'specs', 'map', 'contact'],
   sectionVisibility: { hero: true, story: true, specs: false, gallery: true, map: true, contact: true },
-  specIcons: {},
+  specIcons: { rooms: '🛏️', parking: '🅿️' },
   sellerName: 'ישראל ישראלי',
   phone: '0501234567',
   whatsapp: '0501234567',
@@ -77,6 +77,8 @@ function roundTrip(project: PropertyProject): PropertyProject {
     created_at: new Date(),
     updated_at: new Date(),
     ...patch,
+    // jsonb goes in as a string and comes back parsed, the way pg does it
+    spec_icons: JSON.parse((patch.spec_icons as string) ?? '{}') as Record<string, string>,
   } as unknown as Listing
   return listingToProject(row)
 }
@@ -136,5 +138,39 @@ describe('builder autosave round trip', () => {
   it('falls back to the first photo when the hero index is out of range', () => {
     const patch = projectToListingData({ ...PROJECT, heroImageIndex: 99 })
     expect(patch.hero_image_url).toBe('https://blob.example.com/a.jpg')
+  })
+
+  it('preserves the floor plan and the chosen spec icons', () => {
+    const out = roundTrip(PROJECT)
+    expect(out.floorPlan?.dataUrl).toBe('https://blob.example.com/plan.jpg')
+    expect(out.specIcons).toEqual({ rooms: '🛏️', parking: '🅿️' })
+  })
+
+  it('drops a floor plan that is still uploading', () => {
+    const patch = projectToListingData({
+      ...PROJECT,
+      floorPlan: { id: 'fp', dataUrl: 'blob:http://localhost/pending', name: 'plan' },
+    })
+    expect(patch.floor_plan_url).toBeNull()
+  })
+})
+
+describe('spec icon normalisation', () => {
+  it('keeps known keys and accepts both objects and JSON strings', () => {
+    expect(normaliseSpecIcons({ rooms: '🛏️' })).toBe('{"rooms":"🛏️"}')
+    expect(normaliseSpecIcons('{"rooms":"🛏️"}')).toBe('{"rooms":"🛏️"}')
+  })
+
+  it('drops unknown keys and oversized values', () => {
+    const out = JSON.parse(
+      normaliseSpecIcons({ rooms: '🛏️', evil: '<script>', floor: 'x'.repeat(50) })
+    ) as Record<string, string>
+    expect(out).toEqual({ rooms: '🛏️' })
+  })
+
+  it('never returns anything but a JSON object for junk input', () => {
+    for (const junk of ['not json', null, 42, ['a'], undefined]) {
+      expect(normaliseSpecIcons(junk)).toBe('{}')
+    }
   })
 })

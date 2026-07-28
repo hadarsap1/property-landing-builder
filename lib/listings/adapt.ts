@@ -28,6 +28,36 @@ function galleryTypeToDb(
 
 const ALL_SECTIONS = ['hero', 'story', 'specs', 'gallery', 'map', 'contact'] as const
 
+/** Spec rows that can carry an icon override — the keys buildSpecs looks up. */
+export const SPEC_ICON_KEYS = [
+  'rooms', 'builtArea', 'gardenArea', 'floor', 'bathrooms', 'parking',
+  'storage', 'saferoom', 'elevator', 'buildYear', 'renovationYear', 'airDirections',
+] as const
+
+/**
+ * Normalise a client-supplied icon map into a JSON string for the jsonb column.
+ * Unknown keys are dropped and values are capped: this arrives over a public
+ * PATCH, and the column should never become a dumping ground.
+ */
+export function normaliseSpecIcons(raw: unknown): string {
+  let parsed: unknown = raw
+  if (typeof raw === 'string') {
+    try { parsed = JSON.parse(raw) } catch { return '{}' }
+  }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return '{}'
+
+  const source = parsed as Record<string, unknown>
+  const clean: Record<string, string> = {}
+  for (const key of SPEC_ICON_KEYS) {
+    const value = source[key]
+    // Emoji are a few code units at most; anything longer isn't an icon.
+    if (typeof value === 'string' && value.length > 0 && value.length <= 8) {
+      clean[key] = value
+    }
+  }
+  return JSON.stringify(clean)
+}
+
 /** Convert a DB Listing row into the PropertyProject shape the wizard/preview expects. */
 export function listingToProject(listing: Listing): PropertyProject {
   const urls = listing.image_urls ?? []
@@ -89,7 +119,9 @@ export function listingToProject(listing: Listing): PropertyProject {
     heroImageIndex: heroIdx,
     galleryType: galleryTypeToProject(listing.gallery_type, listing.carousel_speed),
     videoUrl: listing.video_url ?? '',
-    floorPlan: null,
+    floorPlan: listing.floor_plan_url
+      ? { id: 'floor-plan', dataUrl: listing.floor_plan_url, name: 'floor-plan' }
+      : null,
 
     showMap: listing.show_map,
     mapQuery: listing.map_query_override ?? '',
@@ -101,7 +133,7 @@ export function listingToProject(listing: Listing): PropertyProject {
     sectionOrder: listing.section_order ?? [...ALL_SECTIONS],
     sectionVisibility,
 
-    specIcons: {},
+    specIcons: listing.spec_icons ?? {},
 
     sellerName: listing.seller_name ?? '',
     phone: listing.seller_phone ?? '',
@@ -138,6 +170,10 @@ export function projectToListingData(
   const hero_image_url = isPersistableImageUrl(heroCandidate)
     ? heroCandidate
     : image_urls[0] ?? null
+
+  const floor_plan_url = isPersistableImageUrl(project.floorPlan?.dataUrl)
+    ? project.floorPlan.dataUrl
+    : null
 
   const hidden_sections = ALL_SECTIONS.filter((s) => !project.sectionVisibility[s])
 
@@ -179,6 +215,7 @@ export function projectToListingData(
     chat_qa: project.chatQA || null,
     image_urls,
     hero_image_url,
+    floor_plan_url,
     video_url: project.videoUrl || null,
     gallery_type,
     carousel_speed,
@@ -189,6 +226,8 @@ export function projectToListingData(
     font_style: project.fontStyle,
     section_order: project.sectionOrder,
     hidden_sections,
+    // jsonb column — the driver takes a JSON string and Postgres parses it.
+    spec_icons: JSON.stringify(project.specIcons ?? {}),
     seller_name: project.sellerName || null,
     seller_phone: project.phone || null,
     seller_whatsapp: project.whatsapp || null,
