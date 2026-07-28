@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { PropertyProject } from '@/types/project'
 import { projectToListingData } from '@/lib/listings/adapt'
 import Step1 from '@/components/builder/Step1'
@@ -103,6 +104,31 @@ const DEFAULT_PROJECT: PropertyProject = {
 
 type SaveStatus = 'idle' | 'pending' | 'saving' | 'saved' | 'error'
 
+// Drafts are kept per listing. A single shared key used to leak one property's
+// content into the next one the user opened, so the id is always part of the key;
+// a listing that has no id yet (brand new) parks under ':new'.
+const draftKey = (id: string | null) => `property-builder-draft:${id ?? 'new'}`
+const stepKey = (id: string | null) => `property-builder-step:${id ?? 'new'}`
+
+// Pre-scoping keys — read once on first load so in-flight drafts survive the
+// upgrade, then removed so they can never be restored into a second listing.
+const LEGACY_DRAFT_KEY = 'property-builder-draft'
+const LEGACY_STEP_KEY = 'property-builder-step'
+
+function readDraft(key: string): PropertyProject | null {
+  try {
+    const raw = localStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as PropertyProject) : null
+  } catch {
+    return null
+  }
+}
+
+function readStep(key: string): number | null {
+  const n = Number(localStorage.getItem(key))
+  return Number.isInteger(n) && n >= 1 && n <= TOTAL_STEPS ? n : null
+}
+
 function track(event: string, step?: number) {
   const sessionId = sessionStorage.getItem('sessionId') ?? ''
   void fetch('/api/track', {
@@ -149,30 +175,35 @@ export default function BuilderClient({
   }, [])
 
   useEffect(() => {
-    // If server gave us a listing, start at step 1
+    // Editing an existing listing: the DB row is the source of truth, and the
+    // user always lands back inside the wizard on their own content. Dropping
+    // them on the welcome screen (as an empty title used to) reads as "my
+    // property is gone" and the import option there would overwrite it.
     if (initialProject) {
-      setStep(initialProject.title || initialProject.street ? 1 : 0)
+      setStep(readStep(stepKey(initialListingId)) ?? 1)
       setHydrated(true)
       track('wizard_started')
       return
     }
 
-    // Otherwise load from localStorage (legacy/unauthenticated flow)
-    const saved = localStorage.getItem('property-builder-draft')
-    const savedStep = localStorage.getItem('property-builder-step')
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved) as PropertyProject
-        setProject(parsed)
-        if (savedStep && Number(savedStep) >= 1) {
-          setStep(Number(savedStep))
-        } else if (parsed.title || parsed.street || parsed.city) {
-          setStep(1)
-        }
-        if (!parsed.mapQuery && (parsed.street || parsed.city)) {
-          setProject((p) => ({ ...p, mapQuery: `${parsed.street}, ${parsed.city}, ישראל` }))
-        }
-      } catch { /* ignore */ }
+    // Brand-new listing: restore only this browser's unfinished new-listing
+    // draft. Migrate the old unscoped key once, then drop it.
+    const legacy = readDraft(LEGACY_DRAFT_KEY)
+    const legacyStep = readStep(LEGACY_STEP_KEY)
+    localStorage.removeItem(LEGACY_DRAFT_KEY)
+    localStorage.removeItem(LEGACY_STEP_KEY)
+
+    const parsed = readDraft(draftKey(null)) ?? legacy
+    if (parsed) {
+      setProject({
+        ...parsed,
+        mapQuery: parsed.mapQuery || (parsed.street || parsed.city
+          ? `${parsed.street ?? ''}, ${parsed.city ?? ''}, ישראל`
+          : ''),
+      })
+      const resume = readStep(stepKey(null)) ?? legacyStep
+      if (resume) setStep(resume)
+      else if (parsed.title || parsed.street || parsed.city) setStep(1)
     }
     setHydrated(true)
     track('wizard_started')
@@ -181,10 +212,14 @@ export default function BuilderClient({
 
   // ── Create listing in DB on first use (if no ID yet) ────────────────────
 
+  const creatingRef = useRef(false)
+
   useEffect(() => {
-    if (!hydrated || listingId) return
-    // Create a stub listing for authenticated users (agency or personal)
-    // Anonymous users still get a DB record so the preview URL works
+    // Wait until the user actually enters the wizard — opening /builder and
+    // backing out used to leave an empty listing behind on every visit.
+    if (!hydrated || listingId || step < 1 || creatingRef.current) return
+    creatingRef.current = true
+    // Anonymous users still get a DB record so the preview URL works.
     void (async () => {
       try {
         const res = await fetch('/api/listings', {
@@ -192,24 +227,42 @@ export default function BuilderClient({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title: project.title, street: project.street, city: project.city }),
         })
-        if (!res.ok) return
+        if (!res.ok) { creatingRef.current = false; return }
         const data = (await res.json()) as { listing: { id: string; slug: string } }
+        // Hand the in-progress draft over to the new id so it isn't offered
+        // again the next time the user starts a property from scratch.
+        try {
+          localStorage.removeItem(draftKey(null))
+          localStorage.removeItem(stepKey(null))
+        } catch { /* storage unavailable — non-critical */ }
         setListingId(data.listing.id)
         setListingSlug(data.listing.slug)
         router.replace(`/builder?id=${data.listing.id}`, { scroll: false } as Parameters<typeof router.replace>[1])
-      } catch { /* non-critical — just won't persist to DB */ }
+      } catch {
+        creatingRef.current = false // let a later change retry
+      }
     })()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hydrated])
+  }, [hydrated, step])
 
   // ── localStorage write-through (offline resilience) ────────────────────
 
   useEffect(() => {
     if (!hydrated) return
-    localStorage.setItem('property-builder-draft', JSON.stringify(project))
-  }, [project, hydrated])
+    try {
+      localStorage.setItem(draftKey(listingId), JSON.stringify(project))
+    } catch { /* quota / private mode — the DB copy is the real save */ }
+  }, [project, listingId, hydrated])
 
   // ── DB auto-save (debounced) ────────────────────────────────────────────
+
+  // Whatever is typed but not yet written to the DB. Held in a ref so the
+  // unload/unmount flush can read the newest value without re-subscribing.
+  const unsavedRef = useRef<{ project: PropertyProject; id: string } | null>(null)
+  // Mirrors saveStatus for the unload handler, which must not re-subscribe on
+  // every status change — that would re-run its unmount flush.
+  const saveStatusRef = useRef<SaveStatus>('idle')
+  useEffect(() => { saveStatusRef.current = saveStatus }, [saveStatus])
 
   const saveToDb = useCallback(async (snapshot: PropertyProject, id: string) => {
     setSaveStatus('saving')
@@ -234,6 +287,8 @@ export default function BuilderClient({
       // Update slug if the server returned a new one
       const body = (await res.json()) as { listing?: { slug?: string } }
       if (body.listing?.slug) setListingSlug(body.listing.slug)
+      // This snapshot is on disk — nothing left for the exit flush to resend.
+      if (unsavedRef.current?.project === snapshot) unsavedRef.current = null
       setSaveError(null)
       setSaveStatus('saved')
       setTimeout(() => setSaveStatus('idle'), 2000)
@@ -246,6 +301,7 @@ export default function BuilderClient({
 
   useEffect(() => {
     if (!hydrated || !listingId) return
+    unsavedRef.current = { project, id: listingId }
     setSaveStatus('pending')
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
     saveTimerRef.current = setTimeout(() => {
@@ -256,18 +312,47 @@ export default function BuilderClient({
     }
   }, [project, listingId, hydrated, saveToDb])
 
-  // ── Unsaved-changes guard ──────────────────────────────────────────────
+  // ── Flush unsaved edits when leaving ───────────────────────────────────
+  // The debounce timer is cancelled whenever this component unmounts, so
+  // typing and immediately navigating away (or closing the tab) used to throw
+  // the last edits away silently. Both exits now push the pending snapshot out.
+
+  const flushUnsaved = useCallback((opts: { keepalive?: boolean } = {}) => {
+    const pending = unsavedRef.current
+    if (!pending) return
+    unsavedRef.current = null
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+    try {
+      void fetch(`/api/listings/${pending.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(projectToListingData(pending.project)),
+        // keepalive lets the request outlive a closing tab
+        ...(opts.keepalive ? { keepalive: true } : {}),
+      }).catch(() => {})
+    } catch { /* best effort — the local draft still holds the content */ }
+  }, [])
 
   useEffect(() => {
-    if (step < 1) return
-    function handleBeforeUnload(e: BeforeUnloadEvent) {
-      if (saveStatus === 'saving' || saveStatus === 'pending') {
-        e.preventDefault()
-      }
+    // pagehide covers mobile Safari/Chrome backgrounding, where beforeunload
+    // often never fires — that is where most of these users are.
+    const onPageHide = () => flushUnsaved({ keepalive: true })
+    function onBeforeUnload(e: BeforeUnloadEvent) {
+      flushUnsaved({ keepalive: true })
+      // Only warn when saving is actually broken. Normal in-flight edits are
+      // pushed out by the flush above, and prompting there trained users to
+      // dismiss a scary dialog every single time they left the page.
+      if (saveStatusRef.current === 'error') e.preventDefault()
     }
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [step, saveStatus])
+    window.addEventListener('pagehide', onPageHide)
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return () => {
+      window.removeEventListener('pagehide', onPageHide)
+      window.removeEventListener('beforeunload', onBeforeUnload)
+      // In-app navigation: the page survives, so a normal request is enough.
+      flushUnsaved()
+    }
+  }, [flushUnsaved])
 
   // ── iframe sync (live preview) ─────────────────────────────────────────
 
@@ -301,14 +386,22 @@ export default function BuilderClient({
   function goToStep(target: number) {
     if (target < 1 || target > TOTAL_STEPS) return
     // Flush save immediately on step navigation
-    if (listingId && saveTimerRef.current) {
-      clearTimeout(saveTimerRef.current)
+    if (listingId) {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      unsavedRef.current = null
       void saveToDb(project, listingId)
     }
     setStep(target)
-    localStorage.setItem('property-builder-step', String(target))
+    try {
+      localStorage.setItem(stepKey(listingId), String(target))
+    } catch { /* storage unavailable — non-critical */ }
     track(`wizard_step_${target}`, target)
     window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  /** Manual retry after a failed autosave, so a bad connection isn't a dead end. */
+  function retrySave() {
+    if (listingId) void saveToDb(project, listingId)
   }
 
   function isNextDisabled() {
@@ -327,6 +420,11 @@ export default function BuilderClient({
 
   const progress = (step / TOTAL_STEPS) * 100
   const isWelcomeScreen = step === 0 || step === -1
+
+  // Where "leave the wizard" goes. Everything is already saved by the time the
+  // user gets here, so this is a plain link rather than a confirm dialog.
+  const exitHref = agencyId ? '/dashboard' : personalUserId ? '/personal' : '/'
+  const exitLabel = agencyId || personalUserId ? 'הנכסים שלי' : 'דף הבית'
 
   const listingUrl = agencySlug && listingSlug
     ? `/agency/${agencySlug}/listings/${listingSlug}`
@@ -424,11 +522,13 @@ export default function BuilderClient({
 
   // ── Wizard (steps 1–9) ─────────────────────────────────────────────────
 
+  // On desktop the panels fill the viewport minus the cookie banner, so the
+  // static nav footer stays visible instead of sitting underneath it.
   return (
-    <div dir="rtl" lang="he" style={{ background: '#f7f5f2' }} className="lg:h-screen lg:overflow-hidden lg:grid lg:grid-cols-[500px_1fr]">
+    <div dir="rtl" lang="he" style={{ background: '#f7f5f2' }} className="lg:h-[calc(100vh-var(--consent-h,0px))] lg:overflow-hidden lg:grid lg:grid-cols-[500px_1fr]">
 
       {/* ── Wizard panel ── */}
-      <div className="lg:flex lg:flex-col lg:h-screen lg:overflow-hidden" style={{ borderLeft: '2px solid #111' }}>
+      <div className="lg:flex lg:flex-col lg:h-full lg:overflow-hidden" style={{ borderLeft: '2px solid #111' }}>
 
         {/* Progress header */}
         <div className="fixed top-0 right-0 left-0 z-50 lg:static lg:z-auto flex-shrink-0" style={{ background: '#f7f5f2', borderBottom: '2px solid #111' }}>
@@ -440,7 +540,21 @@ export default function BuilderClient({
               <span className="text-xs flex items-center gap-1.5" style={{ color: '#999' }}>
                 {saveStatus === 'saving' && <><span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse inline-block" />שומר...</>}
                 {saveStatus === 'saved' && <><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />נשמר</>}
-                {saveStatus === 'error' && <span className="font-medium" style={{ color: '#c0392b' }} title={saveError ?? ''}>שגיאה בשמירה</span>}
+                {saveStatus === 'error' && (
+                  <>
+                    <span className="font-medium" style={{ color: '#c0392b' }} title={saveError ?? ''}>
+                      לא נשמר
+                    </span>
+                    <button
+                      type="button"
+                      onClick={retrySave}
+                      className="font-semibold underline underline-offset-2 transition-opacity hover:opacity-70"
+                      style={{ color: '#c0392b' }}
+                    >
+                      נסה שוב
+                    </button>
+                  </>
+                )}
                 {(saveStatus === 'idle' || saveStatus === 'pending') && <span>{Math.round(progress)}%</span>}
               </span>
             </div>
@@ -472,7 +586,7 @@ export default function BuilderClient({
 
         {/* Step content */}
         <div className="min-h-screen lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
-          <div className="px-4 pt-28 pb-32 lg:pt-5 lg:pb-5">
+          <div className="px-4 pt-28 pb-[calc(8rem+var(--consent-h,0px))] lg:pt-5 lg:pb-5">
             <div className="rounded-lg p-5 sm:p-7" style={{ background: '#fff', border: '2px solid #111' }}>
               {step === 1 && <Step1 project={project} onChange={onChange} />}
               {step === 2 && <Step2 project={project} onChange={onChange} />}
@@ -487,21 +601,49 @@ export default function BuilderClient({
           </div>
         </div>
 
-        {/* Nav footer */}
-        <div className="fixed bottom-0 right-0 left-0 lg:static z-40 flex-shrink-0" style={{ background: '#f7f5f2', borderTop: '2px solid #111' }}>
+        {/* Nav footer — offset above the cookie banner while it is showing,
+            otherwise it covers the next/back buttons and the wizard can't be
+            advanced at all on a phone. */}
+        <div
+          className="fixed right-0 left-0 bottom-[var(--consent-h,0px)] lg:static z-40 flex-shrink-0"
+          style={{ background: '#f7f5f2', borderTop: '2px solid #111' }}
+        >
           <div className="px-4 py-3 flex items-center justify-between">
-            <button
-              type="button"
-              onClick={() => step === 1 ? setStep(0) : goToStep(step - 1)}
-              className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-60"
-              style={{ color: '#555' }}
+            {/* On step 1 there is nothing before it: brand-new drafts go back to
+                the start/import choice, a saved listing leaves the wizard. */}
+            {step === 1 && initialProject ? (
+              <Link
+                href={exitHref}
+                className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-60"
+                style={{ color: '#555' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                סיום
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={() => step === 1 ? setStep(0) : goToStep(step - 1)}
+                className="flex items-center gap-2 text-sm font-semibold px-4 py-2 rounded-lg transition-opacity hover:opacity-60"
+                style={{ color: '#555' }}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+                הקודם
+              </button>
+            )}
+            {/* Replaces a duplicate step counter (the header already shows it)
+                with the wizard's only way out. */}
+            <Link
+              href={exitHref}
+              className="text-xs underline underline-offset-2 transition-opacity hover:opacity-70 whitespace-nowrap"
+              style={{ color: '#999' }}
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-              הקודם
-            </button>
-            <span className="text-xs" style={{ color: '#bbb' }}>{step} / {TOTAL_STEPS}</span>
+              {exitLabel} ←
+            </Link>
             {step < TOTAL_STEPS ? (
               <button
                 type="button"
@@ -524,7 +666,7 @@ export default function BuilderClient({
       </div>
 
       {/* ── Live preview iframe ── */}
-      <div className="hidden lg:flex lg:flex-col lg:h-screen" dir="ltr">
+      <div className="hidden lg:flex lg:flex-col lg:h-full" dir="ltr">
         <div dir="rtl" className="flex items-center gap-3 px-4 py-2.5 flex-shrink-0" style={{ background: '#f7f5f2', borderBottom: '2px solid #111' }}>
           <span className="text-sm font-semibold" style={{ color: '#111' }}>תצוגה מקדימה חיה</span>
           <span className="mr-auto flex items-center gap-1.5 text-xs" style={{ color: '#aaa' }}>

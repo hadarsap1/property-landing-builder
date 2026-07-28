@@ -111,11 +111,33 @@ export function listingToProject(listing: Listing): PropertyProject {
   }
 }
 
-/** Convert a PropertyProject into the Listing DB update fields (excludes media — handled by Blob API). */
+/**
+ * Photos live in Blob storage; the project only carries their URLs. While an
+ * upload is still in flight Step4 shows a local `blob:`/`data:` placeholder,
+ * which must never reach the DB — it dies with the tab and would render as a
+ * broken image on the public page.
+ */
+function isPersistableImageUrl(url: string | undefined): url is string {
+  return typeof url === 'string' && url.startsWith('https://')
+}
+
+/** Convert a PropertyProject into the Listing DB update fields. */
 export function projectToListingData(
   project: PropertyProject
 ): Record<string, string | number | boolean | string[] | null> {
   const { gallery_type, carousel_speed } = galleryTypeToDb(project.galleryType)
+
+  // Keep the user's ordering, drop anything not yet uploaded.
+  const image_urls = (project.images ?? [])
+    .map((img) => img.dataUrl)
+    .filter(isPersistableImageUrl)
+
+  // The hero is an index into the *full* list, so resolve it there and fall
+  // back to the first usable photo when that entry is missing or still uploading.
+  const heroCandidate = project.images?.[project.heroImageIndex]?.dataUrl
+  const hero_image_url = isPersistableImageUrl(heroCandidate)
+    ? heroCandidate
+    : image_urls[0] ?? null
 
   const hidden_sections = ALL_SECTIONS.filter((s) => !project.sectionVisibility[s])
 
@@ -155,6 +177,8 @@ export function projectToListingData(
     ai_story: project.aiStory || null,
     ai_highlights: project.aiHighlights,
     chat_qa: project.chatQA || null,
+    image_urls,
+    hero_image_url,
     video_url: project.videoUrl || null,
     gallery_type,
     carousel_speed,

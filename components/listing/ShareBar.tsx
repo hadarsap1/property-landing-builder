@@ -39,8 +39,9 @@ export default function ShareBar({ shareCode, title, openHouseDate, theme }: {
   return (
     <div
       dir="rtl"
-      className="fixed bottom-0 right-0 left-0 z-50 flex flex-wrap items-center justify-center gap-2 px-4 py-3"
-      style={{ background: theme.cardBg, borderTop: `2px solid ${theme.cardBorder}` }}
+      className="fixed right-0 left-0 z-50 flex flex-wrap items-center justify-center gap-2 px-4 py-3"
+      // Offset by the cookie banner while it is showing so sharing stays reachable.
+      style={{ background: theme.cardBg, borderTop: `2px solid ${theme.cardBorder}`, bottom: 'var(--consent-h, 0px)' }}
     >
       <span className="hidden sm:inline text-sm font-semibold me-2" style={{ color: theme.mutedText }}>שתפו:</span>
 

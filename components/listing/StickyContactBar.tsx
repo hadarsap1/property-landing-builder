@@ -22,8 +22,10 @@ export default function StickyContactBar({ phone, whatsappUrl, accent, track }: 
   return (
     <div
       dir="rtl"
-      className={`fixed bottom-0 right-0 left-0 z-50 flex sm:hidden transition-transform duration-300 ${visible ? 'translate-y-0' : 'translate-y-full'}`}
-      style={{ borderTop: '2px solid #111' }}
+      className={`fixed right-0 left-0 z-50 flex sm:hidden transition-transform duration-300 ${visible ? 'translate-y-0' : 'translate-y-full'}`}
+      // Sits above the cookie banner while it is showing, so the call and
+      // WhatsApp buttons are never covered.
+      style={{ borderTop: '2px solid #111', bottom: 'var(--consent-h, 0px)' }}
     >
       {phone && (
         <a

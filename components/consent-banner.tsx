@@ -1,12 +1,22 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 
 const CONSENT_KEY = 'pb-cookie-consent'
 
+/**
+ * Height of this banner, published to the rest of the app as a CSS variable.
+ * Anything anchored to the bottom of the viewport (the builder's next/back
+ * nav, the listing page's call & WhatsApp bar, the share bar) offsets itself
+ * by it — otherwise this banner sits on top of them and swallows the taps,
+ * which on a phone left first-time visitors unable to advance the wizard.
+ */
+const OFFSET_VAR = '--consent-h'
+
 export default function ConsentBanner() {
   const [visible, setVisible] = useState(false)
+  const barRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     try {
@@ -15,6 +25,24 @@ export default function ConsentBanner() {
       // localStorage unavailable (SSR / private mode)
     }
   }, [])
+
+  useEffect(() => {
+    const el = barRef.current
+    const root = document.documentElement
+    if (!visible || !el) {
+      root.style.setProperty(OFFSET_VAR, '0px')
+      return
+    }
+    // Text wraps to two lines on narrow screens, so measure rather than guess.
+    const publish = () => root.style.setProperty(OFFSET_VAR, `${el.offsetHeight}px`)
+    publish()
+    const ro = new ResizeObserver(publish)
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+      root.style.setProperty(OFFSET_VAR, '0px')
+    }
+  }, [visible])
 
   function accept() {
     try { localStorage.setItem(CONSENT_KEY, 'accepted') } catch { /* ignore */ }
@@ -29,6 +57,7 @@ export default function ConsentBanner() {
 
   return (
     <div
+      ref={barRef}
       role="dialog"
       aria-label="הסכמה לשימוש בעוגיות"
       dir="rtl"
