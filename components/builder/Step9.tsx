@@ -331,8 +331,14 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
               <button
                 type="button"
                 onClick={() => {
-                  localStorage.removeItem('property-builder-draft');
-                  window.location.reload();
+                  // Clear only the unfinished new-listing draft, then open a
+                  // fresh builder. Saved properties live in the DB and are
+                  // reachable from the dashboard — this must never touch them.
+                  try {
+                    localStorage.removeItem('property-builder-draft:new');
+                    localStorage.removeItem('property-builder-step:new');
+                  } catch { /* storage unavailable */ }
+                  window.location.href = '/builder';
                 }}
                 className="text-xs font-semibold px-4 py-1.5 rounded-lg transition-opacity hover:opacity-85 text-white"
                 style={{ background: '#c0392b' }}

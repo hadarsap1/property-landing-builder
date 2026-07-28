@@ -105,6 +105,7 @@ export interface Listing {
 
   hero_image_url: string | null
   image_urls: string[] | null
+  floor_plan_url: string | null
   video_url: string | null
   gallery_type: 'grid' | 'carousel-manual' | 'carousel-auto' | null
   carousel_speed: number | null
@@ -117,6 +118,8 @@ export interface Listing {
   font_style: string | null
   section_order: string[] | null
   hidden_sections: string[] | null
+  /** Per-spec emoji overrides, keyed by spec id (rooms, builtArea, …). Read back parsed from jsonb. */
+  spec_icons: Record<string, string> | null
 
   seller_name: string | null
   seller_phone: string | null

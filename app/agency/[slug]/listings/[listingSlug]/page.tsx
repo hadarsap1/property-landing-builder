@@ -18,9 +18,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const listing = await getListingBySlug(agency.id, listingSlug)
   if (!listing) return { title: 'נכס לא נמצא' }
 
-  const title = listing.ai_title || listing.title || 'נכס למכירה'
+  const sold = listing.status === 'sold'
+  const baseTitle = listing.ai_title || listing.title || 'נכס למכירה'
+  const title = sold ? `נמכר · ${baseTitle}` : baseTitle
   const city = listing.city ? ` — ${listing.city}` : ''
-  const desc = listing.ai_tagline || `${listing.rooms ?? ''} חדרים${city}`
+  const desc = sold
+    ? `הנכס נמכר · ${baseTitle}`
+    : listing.ai_tagline || `${listing.rooms ?? ''} חדרים${city}`
   const canonical = listingCanonicalUrl(agency, listingSlug)
 
   return {
@@ -52,7 +56,10 @@ export default async function ListingPage({ params }: Props) {
   if (!agency) notFound()
 
   const listing = await getListingBySlug(agency.id, listingSlug)
-  if (!listing || listing.status === 'paused' || listing.status === 'sold') notFound()
+  // Paused listings are hidden entirely; sold listings stay live so shared
+  // links keep resolving, but render a prominent "sold" state.
+  if (!listing || listing.status === 'paused') notFound()
+  const sold = listing.status === 'sold'
 
   const project = listingToProject(listing)
   const agent = listing.agent_id ? await getAgentById(listing.agent_id) : null
@@ -72,6 +79,7 @@ export default async function ListingPage({ params }: Props) {
         agencyLogoUrl={agency.logo_url}
         agencyName={agency.name}
         calendlyUrl={agent?.calendly_url ?? null}
+        sold={sold}
       />
     </>
   )
