@@ -40,7 +40,7 @@ test.describe('public listing page', () => {
     await page.getByPlaceholder('שם מלא').fill('בודק אוטומטי')
     await page.getByPlaceholder('טלפון').first().fill('0501234567')
     await page.getByRole('button', { name: 'שלח פרטים' }).click()
-    await expect(page.getByText('תודה! נחזור אליך בהקדם')).toBeVisible()
+    await expect(page.getByText('תודה! נחזור אליכם בהקדם')).toBeVisible()
   })
 })
 
