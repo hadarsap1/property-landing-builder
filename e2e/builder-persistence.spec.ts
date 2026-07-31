@@ -213,3 +213,49 @@ test.describe('builder persistence', () => {
     expect(blocked).toEqual([])
   })
 })
+
+/**
+ * The builder falls back to a local preview URL when Blob storage rejects an
+ * upload — which it always does for a signed-out user, and also does when the
+ * blob token is missing, the daily quota is hit, or the file is too big. That
+ * preview cannot be saved, so the wizard must say so instead of showing the
+ * photo, reporting "נשמר", and dropping it.
+ */
+test.describe('image upload failures are visible', () => {
+  const PIXEL = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64'
+  )
+
+  test('an upload that cannot be stored is reported, not silently dropped', async ({ page }) => {
+    const id = await newListing()
+    await openBuilder(page, id)
+    await page.getByRole('button', { name: /4\.\s*תמונות/ }).click()
+
+    await page.setInputFiles('input[type="file"]', {
+      name: 'room.png', mimeType: 'image/png', buffer: PIXEL,
+    })
+
+    // The failure has to reach the user, with a way to act on it.
+    await expect(page.getByRole('alert').filter({ hasText: 'לא נשמרה' })).toBeVisible({ timeout: 15_000 })
+    await expect(page.getByRole('button', { name: 'נסה להעלות שוב' })).toBeVisible()
+  })
+
+  test('a stored photo shows no warning and survives a reload', async ({ page, request }) => {
+    const id = await newListing()
+    // Stand in for a successful Blob upload.
+    const stored = 'https://x.public.blob.vercel-storage.com/room.jpg'
+    const res = await request.patch(`/api/listings/${id}`, {
+      data: { image_urls: [stored], hero_image_url: stored },
+    })
+    expect(res.status()).toBe(200)
+
+    await openBuilder(page, id)
+    await page.getByRole('button', { name: /4\.\s*תמונות/ }).click()
+
+    await expect(page.getByText('לא נשמרה')).toHaveCount(0)
+    await page.reload()
+    await page.getByRole('button', { name: /4\.\s*תמונות/ }).click()
+    await expect(page.locator(`img[src="${stored}"]`).first()).toBeAttached({ timeout: 15_000 })
+  })
+})

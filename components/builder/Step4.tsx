@@ -52,7 +52,33 @@ async function resizeToDataUrl(file: File): Promise<string> {
   })
 }
 
-async function uploadImage(file: File): Promise<string> {
+/**
+ * Only an https URL from Blob storage actually survives a save — the database
+ * and the listings API both reject anything else, since a `blob:`/`data:` URL
+ * dies with the tab and would render as a broken image on the published page.
+ */
+export function isStoredUrl(url: string | undefined): boolean {
+  return typeof url === 'string' && url.startsWith('https://')
+}
+
+type UploadOutcome = { url: string; error?: string }
+
+/** Why an upload failed, in the user's language and specific enough to act on. */
+function uploadErrorFor(status: number): string {
+  if (status === 401) return 'צריך להתחבר כדי לשמור תמונות'
+  if (status === 413) return 'הקובץ גדול מדי (עד 5MB)'
+  if (status === 415) return 'סוג קובץ לא נתמך'
+  if (status === 429) return 'הגעת למגבלת ההעלאות היומית'
+  if (status === 503) return 'שירות התמונות אינו זמין כרגע'
+  return 'ההעלאה נכשלה'
+}
+
+/**
+ * Uploads to Blob storage. On failure the caller still gets a local preview
+ * URL so the wizard keeps working, but `error` is set — the image must then be
+ * reported as unsaved rather than silently dropped at save time.
+ */
+async function uploadImage(file: File): Promise<UploadOutcome> {
   try {
     const blob = await resizeToBlob(file)
     const fd = new FormData()
@@ -60,11 +86,12 @@ async function uploadImage(file: File): Promise<string> {
     const res = await fetch('/api/blob/upload', { method: 'POST', body: fd })
     if (res.ok) {
       const { url } = (await res.json()) as { url: string }
-      return url
+      return { url }
     }
-  } catch { /* fall through */ }
-  // Blob API unavailable — use base64
-  return resizeToDataUrl(file)
+    return { url: await resizeToDataUrl(file), error: uploadErrorFor(res.status) }
+  } catch {
+    return { url: await resizeToDataUrl(file), error: 'ההעלאה נכשלה — בדקו את החיבור' }
+  }
 }
 
 const GALLERY_OPTIONS: { value: PropertyProject['galleryType']; label: string }[] = [
@@ -86,19 +113,24 @@ const PHOTO_TIPS = [
 function FloorPlanUploader({ project, onChange }: StepProps) {
   const [dragOver, setDragOver] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function processFile(file: File) {
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return
     setUploading(true)
+    setUploadError(null)
     try {
-      const dataUrl = await uploadImage(file)
+      const { url, error } = await uploadImage(file)
       const floorPlan: StoredImage = {
         id: `fp-${Date.now()}`,
-        dataUrl,
+        dataUrl: url,
         name: file.name,
       }
       onChange({ floorPlan })
+      // Same rule as the gallery: a local preview is shown, but it will not
+      // survive a save, so say so instead of letting it look stored.
+      if (error) setUploadError(error)
     } finally {
       setUploading(false)
     }
@@ -128,6 +160,15 @@ function FloorPlanUploader({ project, onChange }: StepProps) {
         >
           ✕
         </button>
+        {!isStoredUrl(project.floorPlan.dataUrl) && (
+          <div
+            className="absolute inset-x-0 bottom-0 px-3 py-2 text-xs font-bold text-white"
+            style={{ background: '#c0392b' }}
+            role="alert"
+          >
+            לא נשמרה{uploadError ? ` — ${uploadError}` : ''}. התוכנית לא תופיע בדף הנכס.
+          </div>
+        )}
       </div>
     )
   }
@@ -173,6 +214,11 @@ export default function Step4({ project, onChange }: StepProps) {
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
   const [uploadingIds, setUploadingIds] = useState<Set<string>>(new Set())
   const [enhancing, setEnhancing] = useState<Record<string, boolean>>({})
+  // Images whose upload failed, id -> reason. These render fine in the wizard
+  // but would vanish on save, so they are called out rather than left to look
+  // saved. Originals are kept so the user can retry without re-picking files.
+  const [failedUploads, setFailedUploads] = useState<Record<string, string>>({})
+  const originalFilesRef = useRef<Map<string, File>>(new Map())
   const fileInputRef = useRef<HTMLInputElement>(null)
   // Tracks the latest images array so parallel uploads don't clobber each other.
   // Synced in an effect (not during render) so concurrent renders stay pure.
@@ -245,18 +291,51 @@ export default function Step4({ project, onChange }: StepProps) {
       toProcess.map(async (file, i) => {
         const id = placeholders[i].id
         try {
-          const dataUrl = await uploadImage(file)
+          const { url, error } = await uploadImage(file)
           const updated = latestImagesRef.current.map((img) =>
-            img.id === id ? { ...img, dataUrl } : img
+            img.id === id ? { ...img, dataUrl: url } : img
           )
           latestImagesRef.current = updated
           onChange({ images: updated })
+          if (error) {
+            originalFilesRef.current.set(id, file)
+            setFailedUploads((prev) => ({ ...prev, [id]: error }))
+          }
         } finally {
           setUploadingIds((prev) => { const s = new Set(prev); s.delete(id); return s })
         }
       })
     )
   }
+
+  /** Re-attempt a failed upload with the file the user already picked. */
+  async function retryUpload(id: string) {
+    const file = originalFilesRef.current.get(id)
+    if (!file) return
+    setUploadingIds((prev) => new Set([...prev, id]))
+    try {
+      const { url, error } = await uploadImage(file)
+      const updated = latestImagesRef.current.map((img) =>
+        img.id === id ? { ...img, dataUrl: url } : img
+      )
+      latestImagesRef.current = updated
+      onChange({ images: updated })
+      setFailedUploads((prev) => {
+        const next = { ...prev }
+        if (error) next[id] = error
+        else { delete next[id]; originalFilesRef.current.delete(id) }
+        return next
+      })
+    } finally {
+      setUploadingIds((prev) => { const s = new Set(prev); s.delete(id); return s })
+    }
+  }
+
+  // An image counts as unsaved whenever its URL isn't a stored one — this also
+  // catches uploads that never resolved, not just ones that reported an error.
+  const unsavedImages = project.images.filter(
+    (img) => !uploadingIds.has(img.id) && !isStoredUrl(img.dataUrl)
+  )
 
   function moveImage(fromIdx: number, toIdx: number) {
     if (toIdx < 0 || toIdx >= project.images.length) return;
@@ -356,6 +435,34 @@ export default function Step4({ project, onChange }: StepProps) {
         </div>
       )}
 
+      {/* Unsaved-image warning. Without this the wizard shows the photo, reports
+          "נשמר", and drops it at save time — the user only finds out when the
+          published page comes up empty. */}
+      {unsavedImages.length > 0 && (
+        <div
+          className="rounded-lg p-4 text-sm"
+          style={{ background: '#fef2f2', border: '2px solid #c0392b', color: '#7f1d1d' }}
+          role="alert"
+        >
+          <div className="font-bold mb-1">
+            {unsavedImages.length === 1
+              ? 'תמונה אחת לא נשמרה'
+              : `${unsavedImages.length} תמונות לא נשמרו`}
+          </div>
+          <p className="mb-2">
+            {failedUploads[unsavedImages[0].id] ?? 'ההעלאה נכשלה'} — התמונות מוצגות כאן אך לא יופיעו בדף הנכס.
+          </p>
+          <button
+            type="button"
+            onClick={() => unsavedImages.forEach((img) => void retryUpload(img.id))}
+            className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-opacity hover:opacity-85"
+            style={{ background: '#c0392b' }}
+          >
+            נסה להעלות שוב
+          </button>
+        </div>
+      )}
+
       {/* Image grid */}
       {project.images.length > 0 && (
         <div className="grid grid-cols-3 gap-3">
@@ -375,8 +482,15 @@ export default function Step4({ project, onChange }: StepProps) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={img.enhancedDataUrl ?? img.dataUrl} alt={img.name} className="w-full h-28 object-cover" />
 
+                {/* Unsaved badge — takes precedence over the enhanced badge */}
+                {!isUploading && !isStoredUrl(img.dataUrl) && (
+                  <div className="absolute top-1 left-1 bg-red-600 text-white text-[10px] px-1.5 py-0.5 rounded-full leading-none pointer-events-none">
+                    לא נשמרה
+                  </div>
+                )}
+
                 {/* Enhanced badge */}
-                {img.enhancedDataUrl && !isUploading && (
+                {img.enhancedDataUrl && !isUploading && isStoredUrl(img.dataUrl) && (
                   <div className="absolute top-1 left-1 bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full leading-none pointer-events-none">
                     ✨ שופר
                   </div>
