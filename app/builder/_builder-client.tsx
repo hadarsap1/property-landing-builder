@@ -591,7 +591,7 @@ export default function BuilderClient({
               {step === 1 && <Step1 project={project} onChange={onChange} />}
               {step === 2 && <Step2 project={project} onChange={onChange} />}
               {step === 3 && <Step3 project={project} onChange={onChange} agencyId={agencyId || personalUserId} />}
-              {step === 4 && <Step4 project={project} onChange={onChange} />}
+              {step === 4 && <Step4 project={project} onChange={onChange} listingId={listingId} />}
               {step === 5 && <Step5 project={project} onChange={onChange} />}
               {step === 6 && <Step6 project={project} onChange={onChange} />}
               {step === 7 && <Step7 project={project} onChange={onChange} />}
