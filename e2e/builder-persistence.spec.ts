@@ -1,6 +1,7 @@
 import { test, expect, type Page, type APIRequestContext } from '@playwright/test'
 import { randomUUID } from 'node:crypto'
 import { createListing } from '../lib/db/queries/listings'
+import { FIXTURES } from './fixtures'
 
 /**
  * Regression cover for the three things users reported: work vanishing when
@@ -241,6 +242,27 @@ test.describe('image upload failures are visible', () => {
     await expect(page.getByRole('button', { name: 'נסה להעלות שוב' })).toBeVisible()
   })
 
+
+  test('the wizard falls back to the anonymous endpoint after a 401', async ({ page }) => {
+    // Proves the wiring: a signed-out upload must retry against the listing-
+    // scoped route rather than giving up and keeping a throwaway preview.
+    const id = await newListing()
+    const calls: string[] = []
+    page.on('request', (r) => {
+      if (r.url().includes('/api/blob/')) calls.push(r.url())
+    })
+
+    await openBuilder(page, id)
+    await page.getByRole('button', { name: /4\.\s*תמונות/ }).click()
+    await page.setInputFiles('input[type="file"]', {
+      name: 'room.png', mimeType: 'image/png', buffer: PIXEL,
+    })
+    await expect(page.getByRole('alert').filter({ hasText: 'לא נשמרה' })).toBeVisible({ timeout: 15_000 })
+
+    expect(calls.some((u) => u.endsWith('/api/blob/upload'))).toBe(true)
+    expect(calls.some((u) => u.includes(`/api/blob/upload-anon?listingId=${id}`))).toBe(true)
+  })
+
   test('a stored photo shows no warning and survives a reload', async ({ page, request }) => {
     const id = await newListing()
     // Stand in for a successful Blob upload.
@@ -257,5 +279,58 @@ test.describe('image upload failures are visible', () => {
     await page.reload()
     await page.getByRole('button', { name: /4\.\s*תמונות/ }).click()
     await expect(page.locator(`img[src="${stored}"]`).first()).toBeAttached({ timeout: 15_000 })
+  })
+})
+
+/**
+ * The anonymous upload endpoint is the one unauthenticated write path in the
+ * app, so its guards are what stand between the builder and a spam target.
+ * These pin the guards rather than the happy path, which needs Blob + KV.
+ */
+test.describe('anonymous upload endpoint guards', () => {
+  const PIXEL = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64'
+  )
+  const file = { name: 'room.png', mimeType: 'image/png', buffer: PIXEL }
+
+  test('refuses an upload that names no listing', async ({ request }) => {
+    const res = await request.post('/api/blob/upload-anon', { multipart: { file } })
+    expect(res.status()).toBe(400)
+  })
+
+  test('refuses a listing that does not exist', async ({ request }) => {
+    const res = await request.post(
+      `/api/blob/upload-anon?listingId=${randomUUID()}`,
+      { multipart: { file } }
+    )
+    expect(res.status()).toBe(404)
+  })
+
+  test('refuses a listing that already has an owner', async ({ request }) => {
+    // Owned listings must bill against their account via the authenticated route.
+    const owned = await createListing({
+      agency_id: FIXTURES.agencyId,
+      user_id: null,
+      slug: `e2e-owned-${randomUUID()}`,
+      title: 'בבעלות',
+    })
+    const res = await request.post(
+      `/api/blob/upload-anon?listingId=${owned.id}`,
+      { multipart: { file } }
+    )
+    expect(res.status()).toBe(403)
+  })
+
+  test('does not accept uploads without rate limiting available', async ({ request }) => {
+    // Fail-closed: no KV (or no Blob token) must mean no anonymous upload,
+    // never an uncounted one.
+    const id = await newListing()
+    const res = await request.post(
+      `/api/blob/upload-anon?listingId=${id}`,
+      { multipart: { file } }
+    )
+    expect(res.ok()).toBeFalsy()
+    expect([429, 503]).toContain(res.status())
   })
 })

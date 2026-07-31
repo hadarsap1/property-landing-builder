@@ -6,6 +6,8 @@ import type { PropertyProject, StoredImage } from '@/types/project'
 interface StepProps {
   project: PropertyProject
   onChange: (partial: Partial<PropertyProject>) => void
+  /** Lets an anonymous builder upload photos against its own listing. */
+  listingId?: string | null
 }
 
 // Resize and return a JPEG Blob ready for upload
@@ -68,7 +70,7 @@ function uploadErrorFor(status: number): string {
   if (status === 401) return 'צריך להתחבר כדי לשמור תמונות'
   if (status === 413) return 'הקובץ גדול מדי (עד 5MB)'
   if (status === 415) return 'סוג קובץ לא נתמך'
-  if (status === 429) return 'הגעת למגבלת ההעלאות היומית'
+  if (status === 429) return 'הגעת למגבלה היומית להעלאת תמונות'
   if (status === 503) return 'שירות התמונות אינו זמין כרגע'
   return 'ההעלאה נכשלה'
 }
@@ -77,13 +79,27 @@ function uploadErrorFor(status: number): string {
  * Uploads to Blob storage. On failure the caller still gets a local preview
  * URL so the wizard keeps working, but `error` is set — the image must then be
  * reported as unsaved rather than silently dropped at save time.
+ *
+ * Signed-in users go through /api/blob/upload so the upload counts against
+ * their own quota. That route 401s for anonymous builders, who fall back to
+ * the listing-scoped anonymous route so they can add photos before
+ * registering.
  */
-async function uploadImage(file: File): Promise<UploadOutcome> {
+async function uploadImage(file: File, listingId?: string | null): Promise<UploadOutcome> {
   try {
     const blob = await resizeToBlob(file)
-    const fd = new FormData()
-    fd.append('file', new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }))
-    const res = await fetch('/api/blob/upload', { method: 'POST', body: fd })
+    const named = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })
+
+    const post = async (url: string) => {
+      const fd = new FormData()
+      fd.append('file', named)
+      return fetch(url, { method: 'POST', body: fd })
+    }
+
+    let res = await post('/api/blob/upload')
+    if (res.status === 401 && listingId) {
+      res = await post(`/api/blob/upload-anon?listingId=${encodeURIComponent(listingId)}`)
+    }
     if (res.ok) {
       const { url } = (await res.json()) as { url: string }
       return { url }
@@ -110,7 +126,7 @@ const PHOTO_TIPS = [
   { icon: '⭐', tip: 'בחר כתמונה ראשית את הנוף/חדר הכי מרשים — היא תמשוך קוראים' },
 ]
 
-function FloorPlanUploader({ project, onChange }: StepProps) {
+function FloorPlanUploader({ project, onChange, listingId }: StepProps) {
   const [dragOver, setDragOver] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState<string | null>(null)
@@ -121,7 +137,7 @@ function FloorPlanUploader({ project, onChange }: StepProps) {
     setUploading(true)
     setUploadError(null)
     try {
-      const { url, error } = await uploadImage(file)
+      const { url, error } = await uploadImage(file, listingId)
       const floorPlan: StoredImage = {
         id: `fp-${Date.now()}`,
         dataUrl: url,
@@ -208,7 +224,7 @@ function FloorPlanUploader({ project, onChange }: StepProps) {
   )
 }
 
-export default function Step4({ project, onChange }: StepProps) {
+export default function Step4({ project, onChange, listingId }: StepProps) {
   const [tipsOpen, setTipsOpen] = useState(false)
   const [dragOver, setDragOver] = useState(false)
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
@@ -291,7 +307,7 @@ export default function Step4({ project, onChange }: StepProps) {
       toProcess.map(async (file, i) => {
         const id = placeholders[i].id
         try {
-          const { url, error } = await uploadImage(file)
+          const { url, error } = await uploadImage(file, listingId)
           const updated = latestImagesRef.current.map((img) =>
             img.id === id ? { ...img, dataUrl: url } : img
           )
@@ -314,7 +330,7 @@ export default function Step4({ project, onChange }: StepProps) {
     if (!file) return
     setUploadingIds((prev) => new Set([...prev, id]))
     try {
-      const { url, error } = await uploadImage(file)
+      const { url, error } = await uploadImage(file, listingId)
       const updated = latestImagesRef.current.map((img) =>
         img.id === id ? { ...img, dataUrl: url } : img
       )
@@ -634,7 +650,7 @@ export default function Step4({ project, onChange }: StepProps) {
         <label className="block text-sm font-medium mb-2" style={{ color: '#111' }}>
           תוכנית דירה <span className="font-normal" style={{ color: '#888' }}>(אופציונלי)</span>
         </label>
-        <FloorPlanUploader project={project} onChange={onChange} />
+        <FloorPlanUploader project={project} onChange={onChange} listingId={listingId} />
       </div>
 
       {/* Video URL */}
