@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { deleteListing, updateListing, getListingById } from '@/lib/db/queries/listings'
 import type { Session } from 'next-auth'
+import { withMediaCleanup } from '@/lib/listings/media-cleanup'
 
 function isAdmin(session: Session | null): boolean {
   return !!process.env.SUPER_ADMIN_EMAIL && session?.user?.email === process.env.SUPER_ADMIN_EMAIL
@@ -34,6 +35,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext): Promi
   const existing = await getListingById(id)
   if (!existing) return NextResponse.json({ error: 'Not found' }, { status: 404 })
 
-  await deleteListing(id)
+  // Purge the listing photos alongside the row.
+  await withMediaCleanup([id], () => deleteListing(id))
   return new NextResponse(null, { status: 204 })
 }
