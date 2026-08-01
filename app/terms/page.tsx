@@ -129,8 +129,41 @@ export default function TermsPage() {
               </p>
             </section>
 
+            {/* Ongoing transactions carry disclosure duties under the Consumer
+                Protection Law: that the plan renews by itself, what it costs
+                including VAT, how to stop it, and what happens to money already
+                paid. Stripe renews the subscription automatically, so this has
+                to be stated rather than left to the checkout screen. */}
             <section>
-              <h2 className="text-lg font-semibold mb-2" style={{ color: '#111' }}>10. דין חל</h2>
+              <h2 className="text-lg font-semibold mb-2" style={{ color: '#111' }}>10. מנוי, חידוש אוטומטי וביטול</h2>
+              <ul className="list-disc pr-6 space-y-2">
+                <li>
+                  <strong>מחירים.</strong> כל המחירים המוצגים באתר נקובים בשקלים חדשים
+                  ו<strong>כוללים מע״מ</strong> כדין.
+                </li>
+                <li>
+                  <strong>חידוש אוטומטי.</strong> המנוי הוא עסקה מתמשכת והוא
+                  מתחדש אוטומטית בתום כל תקופת חיוב — חודשית או שנתית, בהתאם
+                  לתכנית שנבחרה — עד לביטולו.
+                </li>
+                <li>
+                  <strong>ביטול.</strong> ניתן לבטל את המנוי בכל עת, ללא קנס וללא
+                  דמי ביטול, דרך אזור החיוב בחשבונך או בפנייה אלינו.
+                </li>
+                <li>
+                  <strong>מה קורה לאחר ביטול.</strong> הביטול נכנס לתוקף בתום תקופת
+                  החיוב ששולמה — השירות ממשיך לפעול עד אותו מועד ולא מבוצע החזר
+                  יחסי בגין החלק שטרם נוצל.
+                </li>
+                <li>
+                  <strong>שינוי מחיר.</strong> נודיע מראש על כל שינוי במחיר המנוי,
+                  ותוכלו לבטל לפני שהשינוי ייכנס לתוקף.
+                </li>
+              </ul>
+            </section>
+
+            <section>
+              <h2 className="text-lg font-semibold mb-2" style={{ color: '#111' }}>11. דין חל</h2>
               <p>
                 תנאים אלה כפופים לדין הישראלי.
                 כל מחלוקת תידון בבית המשפט המוסמך במחוז תל אביב.

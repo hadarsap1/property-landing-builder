@@ -63,6 +63,9 @@ export default function PricingPage() {
                 ₪{monthly.priceIls.toLocaleString('he-IL')}
               </span>
               <span className="mb-2 text-lg" style={{ color: '#6a6a6a' }}>/ חודש</span>
+              {/* Consumer protection: the displayed figure has to be the price
+                  actually paid, and say so. */}
+              <span className="mb-2.5 text-sm" style={{ color: '#6a6a6a' }}>כולל מע״מ</span>
             </div>
             <div className="h-16 flex flex-col justify-end mb-6">
               <p className="text-sm" style={{ color: '#6a6a6a' }}>מתחדש אוטומטית · ביטול בכל עת</p>
@@ -93,6 +96,7 @@ export default function PricingPage() {
             <div className="flex items-end gap-1 mb-1">
               <span className="text-5xl font-extrabold" style={{ color: '#f7f5f2' }}>₪{yearly.priceIls.toLocaleString('he-IL')}</span>
               <span className="mb-2 text-lg" style={{ color: '#9a9a9a' }}>/ שנה</span>
+              <span className="mb-2.5 text-sm" style={{ color: '#9a9a9a' }}>כולל מע״מ</span>
             </div>
             <div className="h-16 flex flex-col justify-end mb-6">
               <p className="text-sm font-medium" style={{ color: '#f7f5f2' }}>שווה ל-₪{monthlyFromYearly} לחודש</p>
