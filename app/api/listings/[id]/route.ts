@@ -10,6 +10,7 @@ import { normaliseSpecIcons } from '@/lib/listings/adapt'
 import { ensureSchema } from '@/lib/db/ensure-schema'
 import type { Listing } from '@/lib/db/types'
 import type { Session } from 'next-auth'
+import { withMediaCleanup } from '@/lib/listings/media-cleanup'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -123,6 +124,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteContext): Promi
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  await deleteListing(id)
+  // Purge the listing photos alongside the row.
+  await withMediaCleanup([id], () => deleteListing(id))
   return new NextResponse(null, { status: 204 })
 }
