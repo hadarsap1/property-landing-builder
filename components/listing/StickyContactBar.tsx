@@ -43,7 +43,7 @@ export default function StickyContactBar({ phone, whatsappUrl, accent, track }: 
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => track('whatsapp_click')}
-          className="flex-1 flex items-center justify-center gap-2 font-bold py-4 text-sm text-white"
+          className="flex-1 flex items-center justify-center gap-2 font-bold py-4 text-sm text-[#111]"
           style={{ background: '#25D366', borderRight: phone ? '2px solid #111' : undefined }}
         >
           WhatsApp

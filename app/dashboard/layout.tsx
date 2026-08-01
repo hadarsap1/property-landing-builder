@@ -78,7 +78,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
 
         <div className="mr-auto flex items-center gap-4">
-          <span className="text-sm hidden sm:block truncate max-w-[200px]" style={{ color: '#888' }}>
+          <span className="text-sm hidden sm:block truncate max-w-[200px]" style={{ color: '#6a6a6a' }}>
             {session.user?.email}
           </span>
           <form action={async () => { 'use server'; await signOut({ redirectTo: '/auth/login' }) }}>

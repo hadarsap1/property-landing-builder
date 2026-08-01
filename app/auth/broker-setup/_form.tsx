@@ -39,7 +39,7 @@ export default function BrokerSetupForm({ name, email }: { name: string; email: 
         <div className="text-center mb-8">
           <div className="text-4xl mb-3">🏢</div>
           <h1 className="text-2xl font-bold" style={{ color: '#111' }}>הגדרת חשבון סוכנות</h1>
-          <p className="text-sm mt-2" style={{ color: '#888' }}>מחובר כ-{name} ({email})</p>
+          <p className="text-sm mt-2" style={{ color: '#6a6a6a' }}>מחובר כ-{name} ({email})</p>
         </div>
 
         <div className="rounded-2xl p-8 space-y-5" style={{ background: '#fff', border: '2px solid #111' }}>
@@ -66,13 +66,13 @@ export default function BrokerSetupForm({ name, email }: { name: string; email: 
               type="submit"
               disabled={loading}
               className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm"
-              style={{ background: loading ? '#888' : '#c0392b', color: '#fff' }}
+              style={{ background: loading ? '#6a6a6a' : '#c0392b', color: '#fff' }}
             >
               {loading ? 'יוצר חשבון...' : 'צור חשבון סוכנות'}
             </button>
           </form>
 
-          <p className="text-center text-xs" style={{ color: '#888' }}>ניסיון חינם ל-14 ימים · ללא כרטיס אשראי</p>
+          <p className="text-center text-xs" style={{ color: '#6a6a6a' }}>ניסיון חינם ל-14 ימים · ללא כרטיס אשראי</p>
         </div>
       </div>
     </main>

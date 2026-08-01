@@ -68,7 +68,7 @@ export default function LeadCaptureForm({
       <button type="submit" disabled={saving} className="w-full font-bold py-3 rounded-lg text-white transition-opacity hover:opacity-90 disabled:opacity-50" style={{ backgroundColor: accent }}>
         {saving ? 'שולח...' : 'שלח פרטים'}
       </button>
-      <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.4)', lineHeight: 1.5 }}>
+      <p className="text-xs text-center" style={{ color: 'rgba(255,255,255,0.75)', lineHeight: 1.5 }}>
         בשליחה אתה מסכים ל<a href="/privacy" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'underline' }}>מדיניות הפרטיות</a>.
       </p>
     </form>

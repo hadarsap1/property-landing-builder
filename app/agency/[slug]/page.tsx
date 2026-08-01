@@ -86,7 +86,7 @@ export default async function AgencyPage({ params }: Props) {
                 href={`https://wa.me/972${agency.contact_phone.replace(/\D/g, '').replace(/^0/, '')}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-green-500 hover:bg-green-600 text-white text-sm font-semibold px-5 py-2 rounded-full transition-colors"
+                className="bg-green-700 hover:bg-green-800 text-white text-sm font-semibold px-5 py-2 rounded-full transition-colors"
               >
                 💬 WhatsApp
               </a>

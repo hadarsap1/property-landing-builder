@@ -98,7 +98,7 @@ export default function TeamPage() {
           ))}
         </div>
       ) : agents.length === 0 ? (
-        <p className="text-sm text-center py-10" style={{ color: '#aaa' }}>אין נציגים עדיין</p>
+        <p className="text-sm text-center py-10" style={{ color: '#6a6a6a' }}>אין נציגים עדיין</p>
       ) : (
         <div className="overflow-hidden" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
           {agents.map((agent) => (
@@ -147,7 +147,7 @@ function AgentRow({
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="font-medium text-sm" style={{ color: '#111' }}>{agent.name}</span>
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#f7f5f2', color: '#888', border: '1px solid #e5e5e5' }}>
+          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#f7f5f2', color: '#6a6a6a', border: '1px solid #e5e5e5' }}>
             {ROLE_LABELS[agent.role]}
           </span>
           {isPending && (
@@ -156,7 +156,7 @@ function AgentRow({
             </span>
           )}
         </div>
-        <p className="text-xs truncate" style={{ color: '#888' }}>{agent.email}</p>
+        <p className="text-xs truncate" style={{ color: '#6a6a6a' }}>{agent.email}</p>
       </div>
       <button
         onClick={() => onDelete(agent.id, agent.name, agent.listing_count ?? 0, agent.lead_count ?? 0)}
@@ -209,7 +209,7 @@ function InviteForm({
     <div className="p-5 space-y-4" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
       <div className="flex items-center justify-between">
         <h2 className="font-semibold" style={{ color: '#111' }}>הזמן נציג חדש</h2>
-        <button onClick={onClose} className="text-xl leading-none" style={{ color: '#888' }}>✕</button>
+        <button onClick={onClose} className="text-xl leading-none" style={{ color: '#6a6a6a' }}>✕</button>
       </div>
 
       {error && (
@@ -249,7 +249,7 @@ function InviteForm({
           </div>
           <div className="col-span-2">
             <label className="block text-xs font-medium mb-1" style={{ color: '#111' }}>
-              תפקיד — <span className="font-normal" style={{ color: '#aaa' }}>{ROLE_DESC[form.role as keyof typeof ROLE_DESC]}</span>
+              תפקיד — <span className="font-normal" style={{ color: '#6a6a6a' }}>{ROLE_DESC[form.role as keyof typeof ROLE_DESC]}</span>
             </label>
           </div>
           <div className="col-span-2">

@@ -135,7 +135,7 @@ export default function Step3({ project, onChange }: StepProps) {
                   <svg
                     className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                     fill="none" stroke="currentColor" viewBox="0 0 24 24"
-                    style={{ color: '#aaa' }}
+                    style={{ color: '#6a6a6a' }}
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -182,7 +182,7 @@ export default function Step3({ project, onChange }: StepProps) {
           )}
         </button>
         {!project.rawStory.trim() && (
-          <span className="text-sm" style={{ color: '#aaa' }}>יש לכתוב משהו קודם</span>
+          <span className="text-sm" style={{ color: '#6a6a6a' }}>יש לכתוב משהו קודם</span>
         )}
       </div>
 
@@ -199,7 +199,7 @@ export default function Step3({ project, onChange }: StepProps) {
             <label className="block text-sm font-semibold" style={{ color: '#111' }}>
               מידע נוסף ל-AI Chat
             </label>
-            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: '#888' }}>
+            <p className="text-xs mt-0.5 leading-relaxed" style={{ color: '#6a6a6a' }}>
               הוסף כאן עובדות שמבקרים בדף שואלים — ארנונה, ועד בית, תחבורה ציבורית, בתי ספר באזור, מצב הבניין, ועוד.
               ה-AI ישתמש במידע הזה כדי לענות במדויק על שאלות בצ&#39;אט הצף.
             </p>
@@ -213,7 +213,7 @@ export default function Step3({ project, onChange }: StepProps) {
           className="w-full px-3 py-2 rounded-lg resize-y focus:outline-none text-sm whitespace-pre-line"
           style={inputStyle}
         />
-        <p className="text-xs mt-1.5" style={{ color: '#aaa' }}>
+        <p className="text-xs mt-1.5" style={{ color: '#6a6a6a' }}>
           טיפ: כתוב כל עובדה בשורה נפרדת. ככל שתוסיף יותר פרטים, ה-AI יוכל לענות לקונים בצורה מדויקת ובלי שתצטרך לחזור על אותן שאלות.
         </p>
       </div>
@@ -279,7 +279,7 @@ export default function Step3({ project, onChange }: StepProps) {
                       onChange({ aiHighlights: updated });
                     }}
                     className="transition-opacity hover:opacity-60"
-                    style={{ color: '#888' }}
+                    style={{ color: '#6a6a6a' }}
                   >
                     ✕
                   </button>

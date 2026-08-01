@@ -60,6 +60,48 @@ body {
 h1, h2, h3, h4, h5, h6 { text-wrap: balance; }
 p { text-wrap: pretty; }
 
+/* ── Keyboard focus (WCAG 2.4.7 / ת"י 5568) ──────────────────
+   Dozens of controls carry Tailwind's `focus:outline-none` without adding a
+   replacement, which left keyboard users with no way to see where they were.
+   Restoring it here fixes every one of them at once, and `:focus-visible`
+   keeps the ring off pointer interactions so the visual design is unchanged
+   for mouse users. `!important` is needed to beat the utility class. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid #1d4ed8 !important;
+  outline-offset: 2px !important;
+  border-radius: 2px;
+}
+/* On dark surfaces a blue ring can disappear — pair it with a light halo. */
+[data-theme="dark"] :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline-color: #93c5fd !important;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, 0.55);
+}
+
+/* Skip link: only visible once focused. */
+.pb-skip-link {
+  position: absolute;
+  inset-inline-start: 1rem;
+  top: -100px;
+  z-index: 200;
+  background: #111;
+  color: #fff;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0 0 0.5rem 0.5rem;
+  font-weight: 700;
+  transition: top 0.15s ease-in-out;
+}
+.pb-skip-link:focus { top: 0; }
+
+/* Users who ask for less motion get none of the decorative animation. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 .font-display { font-family: var(--font-frank, 'Frank Ruhl Libre', Georgia, serif); }
 .font-body    { font-family: var(--font-assistant, 'Assistant', 'Segoe UI', sans-serif); }
 

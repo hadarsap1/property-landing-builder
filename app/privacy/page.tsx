@@ -12,7 +12,7 @@ export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-white py-12 px-4" dir="rtl">
       <div className="max-w-3xl mx-auto prose prose-gray">
-        <Link href="/" className="text-blue-600 hover:underline text-sm">← חזרה לדף הבית</Link>
+        <Link href="/" className="text-blue-700 underline text-sm">← חזרה לדף הבית</Link>
 
         <h1 className="text-3xl font-bold mt-6 mb-2">מדיניות פרטיות</h1>
         <p className="text-gray-500 text-sm mb-8">עדכון אחרון: {updated}</p>
@@ -104,7 +104,7 @@ export default function PrivacyPage() {
             </ul>
             <p className="mt-2">
               לממש את זכויותיך, פנה אלינו בכתב לכתובת:{' '}
-              <a href="mailto:privacy@propbuilder.co.il" className="text-blue-600 hover:underline">
+              <a href="mailto:privacy@propbuilder.co.il" className="text-blue-700 underline">
                 privacy@propbuilder.co.il
               </a>
             </p>
@@ -115,7 +115,7 @@ export default function PrivacyPage() {
             <p>
               PropBuilder<br />
               לשאלות ובקשות הקשורות לפרטיות:{' '}
-              <a href="mailto:privacy@propbuilder.co.il" className="text-blue-600 hover:underline">
+              <a href="mailto:privacy@propbuilder.co.il" className="text-blue-700 underline">
                 privacy@propbuilder.co.il
               </a>
             </p>

@@ -128,7 +128,7 @@ export default function Step7({ project, onChange }: StepProps) {
           <label className="cursor-pointer">
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-lg hover:opacity-70 transition-opacity"
-              style={{ border: '2px dashed #aaa', color: '#888' }}
+              style={{ border: '2px dashed #6a6a6a', color: '#6a6a6a' }}
               title="צבע מותאם אישית"
             >
               +
@@ -140,7 +140,7 @@ export default function Step7({ project, onChange }: StepProps) {
               className="sr-only"
             />
           </label>
-          <span className="text-sm font-mono" style={{ color: '#888' }}>{project.accentColor}</span>
+          <span className="text-sm font-mono" style={{ color: '#6a6a6a' }}>{project.accentColor}</span>
         </div>
       </div>
 
@@ -167,7 +167,7 @@ export default function Step7({ project, onChange }: StepProps) {
                 >
                   {opt.sample}
                 </p>
-                <p className="text-xs" style={{ color: '#888' }}>{opt.label}</p>
+                <p className="text-xs" style={{ color: '#6a6a6a' }}>{opt.label}</p>
               </button>
             );
           })}
@@ -179,7 +179,7 @@ export default function Step7({ project, onChange }: StepProps) {
         <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
           אייקונים של פרטי הנכס
         </label>
-        <p className="text-xs mb-3" style={{ color: '#aaa' }}>לחץ על אייקון כדי להחליף אותו</p>
+        <p className="text-xs mb-3" style={{ color: '#6a6a6a' }}>לחץ על אייקון כדי להחליף אותו</p>
         <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
           {SPEC_KEY_LABEL.map(({ key, label }) => {
             const current = project.specIcons?.[key] ?? SPEC_ICON_OPTIONS[key]?.[0] ?? '•';
@@ -196,7 +196,7 @@ export default function Step7({ project, onChange }: StepProps) {
                   }}
                 >
                   <span className="text-2xl leading-none">{current}</span>
-                  <span className="text-xs truncate w-full text-center" style={{ color: '#888' }}>{label}</span>
+                  <span className="text-xs truncate w-full text-center" style={{ color: '#6a6a6a' }}>{label}</span>
                 </button>
 
                 {isOpen && (
@@ -224,7 +224,7 @@ export default function Step7({ project, onChange }: StepProps) {
       <div>
         <label className="block text-sm font-medium mb-3" style={{ color: '#111' }}>
           סדר ונראות מקטעים
-          <span className="font-normal mr-2 text-xs" style={{ color: '#aaa' }}>גרור לסידור מחדש</span>
+          <span className="font-normal mr-2 text-xs" style={{ color: '#6a6a6a' }}>גרור לסידור מחדש</span>
         </label>
         <div className="space-y-2">
           {project.sectionOrder.map((sectionId, idx) => (

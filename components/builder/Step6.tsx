@@ -58,7 +58,7 @@ export default function Step6({ project, onChange }: StepProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold" style={{ color: '#111' }}>בחר תבנית עיצוב</h2>
-        <p className="text-sm mt-1" style={{ color: '#888' }}>ניתן לשנות בכל עת — השינוי מופיע בתצוגה המקדימה מיד</p>
+        <p className="text-sm mt-1" style={{ color: '#6a6a6a' }}>ניתן לשנות בכל עת — השינוי מופיע בתצוגה המקדימה מיד</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
@@ -85,7 +85,7 @@ export default function Step6({ project, onChange }: StepProps) {
                 ))}
               </div>
               <p className="text-sm font-semibold" style={{ color: '#111' }}>{t.nameHe}</p>
-              <p className="text-xs mt-0.5" style={{ color: '#888' }}>{t.desc}</p>
+              <p className="text-xs mt-0.5" style={{ color: '#6a6a6a' }}>{t.desc}</p>
               {selected && (
                 <p className="text-xs mt-1 font-medium" style={{ color: '#c0392b' }}>✓ נבחר</p>
               )}
@@ -94,7 +94,7 @@ export default function Step6({ project, onChange }: StepProps) {
         })}
       </div>
 
-      <p className="text-xs text-center" style={{ color: '#aaa' }}>
+      <p className="text-xs text-center" style={{ color: '#6a6a6a' }}>
         צבע הדגש וסוג הגופן ניתנים להתאמה בשלב הבא
       </p>
     </div>

@@ -16,6 +16,8 @@ export const metadata: Metadata = {
 const INK = '#111'
 const CREAM = '#f7f5f2'
 const ACCENT = '#c0392b'
+// Brand red only reaches 3.47:1 on the ink background; this tint clears 4.5:1.
+const ACCENT_ON_DARK = '#e05a4a'
 
 export default function HomePage() {
   return (
@@ -77,7 +79,7 @@ export default function HomePage() {
             >
               התחילו — חינם ←
             </Link>
-            <p className="text-xs text-center" style={{ color: '#999' }}>ללא הרשמה · ללא קוד</p>
+            <p className="text-xs text-center" style={{ color: '#666666' }}>ללא הרשמה · ללא קוד</p>
           </div>
         </div>
       </section>
@@ -92,7 +94,7 @@ export default function HomePage() {
           ].map(s => (
             <div key={s.label}>
               <p className="font-display font-black text-2xl sm:text-3xl tabular-nums" style={{ color: CREAM, letterSpacing: '-0.02em' }}>{s.val}</p>
-              <p className="text-xs mt-1" style={{ color: 'rgba(247,245,242,0.4)' }}>{s.label}</p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(247,245,242,0.75)' }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -102,7 +104,7 @@ export default function HomePage() {
       <section className="max-w-6xl mx-auto px-6 py-20">
         <div className="grid lg:grid-cols-2 gap-px" style={{ border: `2px solid ${INK}`, borderRadius: '12px', overflow: 'hidden' }}>
           <div className="p-10" style={{ background: '#eceae6' }}>
-            <p className="text-xs font-bold uppercase tracking-widest mb-8" style={{ color: '#999' }}>
+            <p className="text-xs font-bold uppercase tracking-widest mb-8" style={{ color: '#666666' }}>
               מה כולם עושים
             </p>
             <ul className="space-y-5">
@@ -112,7 +114,7 @@ export default function HomePage() {
                 'כותבים "דירה יפה במיקום מצוין"',
                 'מקווים שמישהו יתקשר',
               ].map(item => (
-                <li key={item} className="flex items-start gap-3 text-sm" style={{ color: '#888' }}>
+                <li key={item} className="flex items-start gap-3 text-sm" style={{ color: '#6a6a6a' }}>
                   <span className="mt-0.5 font-bold" style={{ color: '#ccc' }}>—</span>
                   <span style={{ textDecoration: 'line-through', textDecorationColor: '#ccc' }}>{item}</span>
                 </li>
@@ -147,7 +149,7 @@ export default function HomePage() {
             <h2 className="font-display font-black text-3xl sm:text-4xl" style={{ letterSpacing: '-0.02em' }}>
               ארבעה שלבים
             </h2>
-            <p className="text-sm" style={{ color: '#999' }}>לא ארבעים</p>
+            <p className="text-sm" style={{ color: '#666666' }}>לא ארבעים</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-px" style={{ border: `2px solid ${INK}`, borderRadius: '8px', overflow: 'hidden' }}>
             {[
@@ -166,14 +168,14 @@ export default function HomePage() {
               >
                 <p
                   className="font-display font-black mb-4"
-                  style={{ fontSize: '3rem', lineHeight: 1, color: i === 0 ? ACCENT : 'rgba(0,0,0,0.1)' }}
+                  style={{ fontSize: '3rem', lineHeight: 1, color: i === 0 ? ACCENT : 'rgba(0,0,0,0.5)' }}
                 >
                   {s.n}
                 </p>
                 <h3 className="font-display font-bold text-lg mb-2" style={{ color: i === 0 ? CREAM : INK }}>
                   {s.title}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: i === 0 ? 'rgba(247,245,242,0.5)' : '#666' }}>
+                <p className="text-sm leading-relaxed" style={{ color: i === 0 ? 'rgba(247,245,242,0.75)' : '#666' }}>
                   {s.desc}
                 </p>
               </div>
@@ -185,7 +187,7 @@ export default function HomePage() {
       {/* ── TWO TRACKS ───────────────────────────────────── */}
       <section style={{ borderTop: `2px solid ${INK}` }}>
         <div className="max-w-6xl mx-auto px-6 py-16">
-          <p className="text-xs font-bold uppercase tracking-widest mb-10" style={{ color: '#999' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-10" style={{ color: '#666666' }}>
             בשביל מה אתם כאן?
           </p>
           <div className="grid sm:grid-cols-2 gap-5">
@@ -222,14 +224,14 @@ export default function HomePage() {
       <section style={{ borderTop: `2px solid ${INK}`, background: INK }}>
         <div className="max-w-6xl mx-auto px-6 py-14 flex flex-col sm:flex-row items-start sm:items-center gap-8">
           <div className="flex-1">
-            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: ACCENT }}>לסוכנויות נדל״ן</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: ACCENT_ON_DARK }}>לסוכנויות נדל״ן</p>
             <h2
               className="font-display font-black mb-3"
               style={{ fontSize: 'clamp(1.6rem, 3vw, 2.4rem)', letterSpacing: '-0.02em', color: CREAM }}
             >
               כל הנכסים שלכם. מותג אחד.
             </h2>
-            <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(247,245,242,0.5)' }}>
+            <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(247,245,242,0.75)' }}>
               מיתוג הסוכנות על כל דף · ניהול צוות · מעקב לידים · יומן ביקורים · 14 ימי ניסיון חינם.
             </p>
             <div className="flex gap-3">
@@ -243,7 +245,7 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap gap-2 text-xs">
             {['מיתוג מלא', 'ניהול צוות', 'מעקב לידים', 'יומן ביקורים', 'תובנות'].map(f => (
-              <span key={f} className="px-3 py-1.5 rounded-full" style={{ background: 'rgba(247,245,242,0.07)', color: 'rgba(247,245,242,0.5)', border: '1px solid rgba(247,245,242,0.1)' }}>
+              <span key={f} className="px-3 py-1.5 rounded-full" style={{ background: 'rgba(247,245,242,0.07)', color: 'rgba(247,245,242,0.75)', border: '1px solid rgba(247,245,242,0.1)' }}>
                 {f}
               </span>
             ))}
@@ -255,7 +257,7 @@ export default function HomePage() {
       <section style={{ borderTop: `2px solid ${INK}` }}>
         <div className="max-w-6xl mx-auto px-6 py-24 flex flex-col sm:flex-row items-start sm:items-end justify-between gap-10">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#aaa' }}>מוכנים?</p>
+            <p className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#6a6a6a' }}>מוכנים?</p>
             <h2
               className="font-display font-black"
               style={{ fontSize: 'clamp(2.5rem, 6vw, 5.5rem)', letterSpacing: '-0.03em', lineHeight: 0.95 }}
@@ -273,14 +275,14 @@ export default function HomePage() {
             >
               התחילו עכשיו — חינם ←
             </Link>
-            <p className="text-xs" style={{ color: '#aaa' }}>ללא הרשמה · ללא קוד · בעברית מלאה</p>
+            <p className="text-xs" style={{ color: '#6a6a6a' }}>ללא הרשמה · ללא קוד · בעברית מלאה</p>
           </div>
         </div>
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────── */}
       <footer style={{ borderTop: `2px solid ${INK}` }}>
-        <div className="max-w-6xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4 text-xs" style={{ color: '#aaa' }}>
+        <div className="max-w-6xl mx-auto px-6 py-5 flex flex-wrap items-center justify-between gap-4 text-xs" style={{ color: '#6a6a6a' }}>
           <span className="font-display font-black" style={{ color: INK, letterSpacing: '-0.02em' }}>
             Prop<span style={{ color: ACCENT }}>Builder</span>
           </span>
@@ -288,6 +290,7 @@ export default function HomePage() {
             <span>© {new Date().getFullYear()}</span>
             <Link href="/pricing" className="hover:text-black transition-colors">מחירים</Link>
             <Link href="/terms" className="hover:text-black transition-colors">תנאי שימוש</Link>
+            <Link href="/accessibility" className="hover:text-black transition-colors">הצהרת נגישות</Link>
             <a href="https://hadarsap.online" target="_blank" rel="noopener" className="hover:text-black transition-colors" dir="ltr">hadarsap.online</a>
           </div>
         </div>

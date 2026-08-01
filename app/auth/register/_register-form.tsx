@@ -89,7 +89,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                   <span className="text-2xl mt-0.5 shrink-0">{icon}</span>
                   <div>
                     <p className="font-semibold text-sm" style={{ color: '#f7f5f2' }}>{title}</p>
-                    <p className="text-sm" style={{ color: 'rgba(247,245,242,0.55)' }}>{desc}</p>
+                    <p className="text-sm" style={{ color: 'rgba(247,245,242,0.75)' }}>{desc}</p>
                   </div>
                 </li>
               ))}
@@ -121,7 +121,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                 </div>
                 <div>
                   <p className="text-xs font-semibold" style={{ color: '#f7f5f2' }}>מיכל לוי</p>
-                  <p className="text-xs" style={{ color: 'rgba(247,245,242,0.4)' }}>סוכנת נדל&quot;ן, חיפה</p>
+                  <p className="text-xs" style={{ color: 'rgba(247,245,242,0.75)' }}>סוכנת נדל&quot;ן, חיפה</p>
                 </div>
               </div>
             </div>
@@ -136,10 +136,10 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
 
           <div className="w-full max-w-sm">
             <div className="text-center mb-6 hidden md:block">
-              <p className="text-sm" style={{ color: '#888' }}>הרשמה לחשבון מקצועי</p>
+              <p className="text-sm" style={{ color: '#6a6a6a' }}>הרשמה לחשבון מקצועי</p>
             </div>
             <div className="text-center mb-6 md:hidden">
-              <p className="text-sm" style={{ color: '#888' }}>הרשמה לחשבון מקצועי</p>
+              <p className="text-sm" style={{ color: '#6a6a6a' }}>הרשמה לחשבון מקצועי</p>
             </div>
 
             <div className="rounded-2xl p-8 space-y-5" style={{ background: '#fff', border: '2px solid #111' }}>
@@ -153,7 +153,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px" style={{ background: '#e5e5e5' }} />
-                <span className="text-xs" style={{ color: '#aaa' }}>או עם מייל וסיסמה</span>
+                <span className="text-xs" style={{ color: '#6a6a6a' }}>או עם מייל וסיסמה</span>
                 <div className="flex-1 h-px" style={{ background: '#e5e5e5' }} />
               </div>
 
@@ -189,7 +189,7 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                     onChange={e => setAgreedToTerms(e.target.checked)}
                     className="mt-0.5 shrink-0"
                   />
-                  <span className="text-xs leading-relaxed" style={{ color: '#888' }}>
+                  <span className="text-xs leading-relaxed" style={{ color: '#6a6a6a' }}>
                     קראתי ואני מסכים/ה ל
                     <a href="/terms" target="_blank" rel="noopener noreferrer" className="hover:underline mx-1" style={{ color: '#c0392b' }}>תנאי השימוש</a>
                     ול
@@ -201,23 +201,23 @@ export default function RegisterForm({ trialDays }: { trialDays: number }) {
                   type="submit"
                   disabled={loading || !agreedToTerms}
                   className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm"
-                  style={{ background: loading || !agreedToTerms ? '#888' : '#c0392b', color: '#fff' }}
+                  style={{ background: loading || !agreedToTerms ? '#6a6a6a' : '#c0392b', color: '#fff' }}
                 >
                   {loading ? 'יוצר חשבון...' : 'צור חשבון'}
                 </button>
               </form>
 
-              <p className="text-center text-xs" style={{ color: '#888' }}>
+              <p className="text-center text-xs" style={{ color: '#6a6a6a' }}>
                 ניסיון חינם ל-{trialDays} ימים · ללא כרטיס אשראי
               </p>
-              <p className="text-center text-xs" style={{ color: '#aaa' }}>
+              <p className="text-center text-xs" style={{ color: '#6a6a6a' }}>
                 כבר יש לך חשבון?{' '}
                 <Link href="/auth/login?mode=commercial" className="hover:underline" style={{ color: '#c0392b' }}>כניסה</Link>
               </p>
             </div>
           </div>
 
-          <p className="mt-8 text-xs text-center" style={{ color: '#aaa' }}>
+          <p className="mt-8 text-xs text-center" style={{ color: '#6a6a6a' }}>
             © {new Date().getFullYear()} PropBuilder · כל הזכויות שמורות
           </p>
         </div>

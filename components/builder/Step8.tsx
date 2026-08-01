@@ -93,7 +93,7 @@ export default function Step8({ project, onChange }: StepProps) {
         {!project.phone.trim() ? (
           <p className="text-xs mt-1" style={{ color: '#c0392b' }}>יש להזין טלפון כדי להמשיך</p>
         ) : (
-          <p className="text-xs mt-1" style={{ color: '#888' }}>כפתור ה-WhatsApp בדף ישתמש באותו מספר</p>
+          <p className="text-xs mt-1" style={{ color: '#6a6a6a' }}>כפתור ה-WhatsApp בדף ישתמש באותו מספר</p>
         )}
       </div>
 
@@ -123,7 +123,7 @@ export default function Step8({ project, onChange }: StepProps) {
               className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
               style={inputStyle}
             />
-            <p className="text-xs mt-1" style={{ color: '#888' }}>
+            <p className="text-xs mt-1" style={{ color: '#6a6a6a' }}>
               ללא קידומת מדינה, לדוגמה: 0501234567
             </p>
           </div>
@@ -158,7 +158,7 @@ export default function Step8({ project, onChange }: StepProps) {
             </div>
             <div>
               <label htmlFor="open-house-end" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
-                שעת סיום <span className="font-normal" style={{ color: '#888' }}>(אופציונלי)</span>
+                שעת סיום <span className="font-normal" style={{ color: '#6a6a6a' }}>(אופציונלי)</span>
               </label>
               <input
                 id="open-house-end"
@@ -169,7 +169,7 @@ export default function Step8({ project, onChange }: StepProps) {
                 style={inputStyle}
               />
             </div>
-            <p className="text-xs sm:col-span-2" style={{ color: '#888' }}>
+            <p className="text-xs sm:col-span-2" style={{ color: '#6a6a6a' }}>
               בדף הנכס יוצג באנר עם התאריך, ספירה לאחור וטופס הרשמה למבקרים — כל נרשם נכנס ללידים שלך.
             </p>
           </div>

@@ -50,7 +50,7 @@ export default function Step5({ project, onChange }: StepProps) {
               className="w-full px-3 py-2 rounded-lg text-sm focus:outline-none"
               style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
             />
-            <p className="text-xs mt-1" style={{ color: '#888' }}>
+            <p className="text-xs mt-1" style={{ color: '#6a6a6a' }}>
               מלא אוטומטית מהכתובת שהזנת בשלב 1
             </p>
           </div>
@@ -68,11 +68,11 @@ export default function Step5({ project, onChange }: StepProps) {
                 title="מפה"
               />
             ) : (
-              <div className="h-full flex items-center justify-center text-sm text-center p-4" style={{ background: '#f7f5f2', color: '#888' }}>
+              <div className="h-full flex items-center justify-center text-sm text-center p-4" style={{ background: '#f7f5f2', color: '#6a6a6a' }}>
                 <div>
                   <div className="text-3xl mb-2">🗺️</div>
                   <p className="font-medium">הזן כתובת להצגת המפה</p>
-                  <p className="text-xs mt-1" style={{ color: '#aaa' }}>תמלא אוטומטית מהכתובת בשלב 1</p>
+                  <p className="text-xs mt-1" style={{ color: '#6a6a6a' }}>תמלא אוטומטית מהכתובת בשלב 1</p>
                 </div>
               </div>
             )}

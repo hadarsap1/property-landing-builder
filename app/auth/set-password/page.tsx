@@ -23,7 +23,7 @@ export default async function SetPasswordPage({
         <div className="text-center max-w-sm">
           <div className="text-4xl mb-4">⏰</div>
           <h1 className="text-xl font-bold mb-2" style={{ color: '#111' }}>קישור לא תקף</h1>
-          <p style={{ color: '#888' }}>קישור ההזמנה פג תוקף או כבר נוצל. בקש מהמנהל לשלוח הזמנה חדשה.</p>
+          <p style={{ color: '#6a6a6a' }}>קישור ההזמנה פג תוקף או כבר נוצל. בקש מהמנהל לשלוח הזמנה חדשה.</p>
         </div>
       </main>
     )
@@ -35,7 +35,7 @@ export default async function SetPasswordPage({
         <div className="text-center mb-8">
           <div className="text-3xl mb-3">👋</div>
           <h1 className="text-2xl font-bold" style={{ color: '#111' }}>ברוך הבא, {agent.name}</h1>
-          <p className="text-sm mt-1" style={{ color: '#888' }}>הגדר סיסמה להמשיך</p>
+          <p className="text-sm mt-1" style={{ color: '#6a6a6a' }}>הגדר סיסמה להמשיך</p>
         </div>
 
         <div className="rounded-2xl p-8" style={{ background: '#fff', border: '2px solid #111' }}>
@@ -48,7 +48,7 @@ export default async function SetPasswordPage({
           <form action={setPasswordAction} className="space-y-5">
             <input type="hidden" name="token" value={token} />
 
-            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#f7f5f2', color: '#888' }}>
+            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#f7f5f2', color: '#6a6a6a' }}>
               כניסה בתור: <span className="font-medium" style={{ color: '#111' }}>{agent.email}</span>
             </div>
 
