@@ -210,7 +210,7 @@ export default function BrokerHelpPage() {
         <h1 className="text-xl font-bold" style={{ color: '#111' }}>מרכז עזרה — סוכנים</h1>
         <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>עברית</span>
       </div>
-      <div className="text-sm flex items-center gap-1 flex-wrap" style={{ color: '#888' }}>
+      <div className="text-sm flex items-center gap-1 flex-wrap" style={{ color: '#6a6a6a' }}>
         <span>מצאת בעיה? לא מצאת תשובה?</span>
         <ContactForm source="broker-help" />
       </div>
@@ -249,11 +249,11 @@ export default function BrokerHelpPage() {
                   className="w-full text-right flex items-center justify-between px-5 py-4 transition-colors gap-3 hover:bg-gray-50"
                 >
                   <span className="text-sm font-medium" style={{ color: '#111' }}>{item.q}</span>
-                  <span className={`shrink-0 text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#aaa' }}>▼</span>
+                  <span className={`shrink-0 text-xs transition-transform ${isOpen ? 'rotate-180' : ''}`} style={{ color: '#6a6a6a' }}>▼</span>
                 </button>
                 {isOpen && (
                   <div className="px-5 pb-4">
-                    <p className="text-sm leading-relaxed rounded-xl px-4 py-3" style={{ color: '#888', background: '#f7f5f2' }}>
+                    <p className="text-sm leading-relaxed rounded-xl px-4 py-3" style={{ color: '#6a6a6a', background: '#f7f5f2' }}>
                       {item.a}
                     </p>
                   </div>
@@ -269,7 +269,7 @@ export default function BrokerHelpPage() {
         <div className="text-4xl shrink-0">🎬</div>
         <div>
           <h3 className="font-semibold text-sm" style={{ color: '#111' }}>סרטוני הדרכה</h3>
-          <p className="text-sm mt-0.5" style={{ color: '#888' }}>
+          <p className="text-sm mt-0.5" style={{ color: '#6a6a6a' }}>
             סרטוני וידאו קצרים להדרכה יתווספו בקרוב. בינתיים צור איתנו קשר לעזרה אישית.
           </p>
           <div className="mt-2">
@@ -297,7 +297,7 @@ export default function BrokerHelpPage() {
               className="flex items-center gap-2 hover:underline"
               style={{ color: '#c0392b' }}
             >
-              <span style={{ color: '#aaa' }}>←</span>
+              <span style={{ color: '#6a6a6a' }}>←</span>
               {link.label}
             </Link>
           ))}

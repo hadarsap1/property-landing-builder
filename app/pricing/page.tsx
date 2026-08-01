@@ -35,7 +35,7 @@ export default function PricingPage() {
         <Link
           href="/auth/login?mode=commercial"
           className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-          style={{ color: '#888' }}
+          style={{ color: '#6a6a6a' }}
         >
           כניסה
         </Link>
@@ -49,7 +49,7 @@ export default function PricingPage() {
           ניסיון חינם ל-{PLAN_TRIAL_DAYS} ימים · ללא כרטיס אשראי
         </div>
         <h1 className="text-4xl font-extrabold mb-4" style={{ color: '#111' }}>מחירים פשוטים ושקופים</h1>
-        <p className="text-lg" style={{ color: '#888' }}>תכנית אחת לסוכנויות. כל הפיצ&apos;רים. ביטול בכל עת.</p>
+        <p className="text-lg" style={{ color: '#6a6a6a' }}>תכנית אחת לסוכנויות. כל הפיצ&apos;רים. ביטול בכל עת.</p>
       </section>
 
       <section className="max-w-3xl mx-auto px-6 pb-20">
@@ -57,15 +57,15 @@ export default function PricingPage() {
 
           {/* Monthly */}
           <div className="rounded-3xl p-8 flex flex-col" style={{ background: '#fff', border: '2px solid #111' }}>
-            <div className="text-sm font-semibold mb-3" style={{ color: '#888' }}>חיוב חודשי</div>
+            <div className="text-sm font-semibold mb-3" style={{ color: '#6a6a6a' }}>חיוב חודשי</div>
             <div className="flex items-end gap-1 mb-1">
               <span className="text-5xl font-extrabold" style={{ color: '#111' }}>
                 ₪{monthly.priceIls.toLocaleString('he-IL')}
               </span>
-              <span className="mb-2 text-lg" style={{ color: '#aaa' }}>/ חודש</span>
+              <span className="mb-2 text-lg" style={{ color: '#6a6a6a' }}>/ חודש</span>
             </div>
             <div className="h-16 flex flex-col justify-end mb-6">
-              <p className="text-sm" style={{ color: '#aaa' }}>מתחדש אוטומטית · ביטול בכל עת</p>
+              <p className="text-sm" style={{ color: '#6a6a6a' }}>מתחדש אוטומטית · ביטול בכל עת</p>
             </div>
             <Link
               href="/auth/register"
@@ -76,7 +76,7 @@ export default function PricingPage() {
             </Link>
             <ul className="space-y-3 flex-1">
               {FEATURES.map(f => (
-                <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: '#888' }}>
+                <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: '#6a6a6a' }}>
                   <span className="font-bold mt-0.5 shrink-0" style={{ color: '#c0392b' }}>✓</span>
                   {f}
                 </li>
@@ -89,14 +89,14 @@ export default function PricingPage() {
             <div className="absolute -top-3.5 right-6 text-xs font-bold px-3 py-1.5 rounded-full" style={{ background: '#c0392b', color: '#fff' }}>
               חסכון של {yearly.savingPct}%
             </div>
-            <div className="text-sm font-semibold mb-3" style={{ color: '#aaa' }}>חיוב שנתי</div>
+            <div className="text-sm font-semibold mb-3" style={{ color: '#9a9a9a' }}>חיוב שנתי</div>
             <div className="flex items-end gap-1 mb-1">
               <span className="text-5xl font-extrabold" style={{ color: '#f7f5f2' }}>₪{yearly.priceIls.toLocaleString('he-IL')}</span>
-              <span className="mb-2 text-lg" style={{ color: '#aaa' }}>/ שנה</span>
+              <span className="mb-2 text-lg" style={{ color: '#9a9a9a' }}>/ שנה</span>
             </div>
             <div className="h-16 flex flex-col justify-end mb-6">
               <p className="text-sm font-medium" style={{ color: '#f7f5f2' }}>שווה ל-₪{monthlyFromYearly} לחודש</p>
-              <p className="text-sm" style={{ color: '#aaa' }}>תשלום אחד לשנה שלמה</p>
+              <p className="text-sm" style={{ color: '#9a9a9a' }}>תשלום אחד לשנה שלמה</p>
             </div>
             <Link
               href="/auth/register"
@@ -107,8 +107,8 @@ export default function PricingPage() {
             </Link>
             <ul className="space-y-3 flex-1">
               {FEATURES.map(f => (
-                <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: '#aaa' }}>
-                  <span className="font-bold mt-0.5 shrink-0" style={{ color: '#c0392b' }}>✓</span>
+                <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: '#9a9a9a' }}>
+                  <span className="font-bold mt-0.5 shrink-0" style={{ color: '#e05a4a' }}>✓</span>
                   {f}
                 </li>
               ))}
@@ -117,13 +117,13 @@ export default function PricingPage() {
         </div>
 
         <div className="mt-10 text-center space-y-2">
-          <p className="text-sm font-medium" style={{ color: '#888' }}>ביטול והחזרות</p>
-          <p className="text-sm max-w-xl mx-auto leading-relaxed" style={{ color: '#aaa' }}>
+          <p className="text-sm font-medium" style={{ color: '#6a6a6a' }}>ביטול והחזרות</p>
+          <p className="text-sm max-w-xl mx-auto leading-relaxed" style={{ color: '#6a6a6a' }}>
             ניתן לבטל את המנוי בכל עת מדף ההגדרות. הגישה נשמרת עד סוף תקופת החיוב הנוכחית.
             אין החזר כספי על תקופות חיוב שכבר החלו, אלא אם נקבע אחרת על פי חוק.
             לניסיון חינם — לא יחויב כרטיס אשראי עד תום הניסיון.
           </p>
-          <p className="text-sm" style={{ color: '#aaa' }}>
+          <p className="text-sm" style={{ color: '#6a6a6a' }}>
             שאלות?{' '}
             <a
               href="mailto:support@propbuilder.co.il"
@@ -133,7 +133,7 @@ export default function PricingPage() {
               support@propbuilder.co.il
             </a>
           </p>
-          <p className="text-xs mt-4" style={{ color: '#ccc' }}>
+          <p className="text-xs mt-4" style={{ color: '#6a6a6a' }}>
             PropBuilder · מדיניות פרטיות:{' '}
             <a href="/privacy" className="hover:underline">propbuilder.co.il/privacy</a>
             {' · '}

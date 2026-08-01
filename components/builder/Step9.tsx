@@ -66,7 +66,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
         <div className="rounded-lg p-6 space-y-4" style={{ background: '#f7f5f2', border: '2px solid #111' }}>
           <div>
             <h3 className="text-lg font-semibold" style={{ color: '#111' }}>דף הנחיתה שלך מוכן</h3>
-            <p className="text-sm mt-0.5" style={{ color: '#888' }}>הנכס נשמר בענן ומתעדכן אוטומטית בכל שינוי</p>
+            <p className="text-sm mt-0.5" style={{ color: '#6a6a6a' }}>הנכס נשמר בענן ומתעדכן אוטומטית בכל שינוי</p>
           </div>
 
           <div className="flex items-center gap-3 rounded-lg px-4 py-3" style={{ background: '#fff', border: '1px solid #ccc' }}>
@@ -103,7 +103,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
               href={`https://wa.me/?text=${encodeURIComponent(`🏠 ${project.aiTitle || project.title || 'נכס למכירה'}\nלצפייה בדף הנחיתה: ${fullUrl}`)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-lg transition-opacity hover:opacity-85 text-white"
+              className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-lg transition-opacity hover:opacity-85 text-[#111]"
               style={{ background: '#25D366' }}
             >
               WhatsApp
@@ -115,7 +115,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div>
               <h3 className="font-semibold" style={{ color: '#111' }}>תצוגה מקדימה מקומית</h3>
-              <p className="text-sm mt-0.5" style={{ color: '#888' }}>בדוק את הדף לפני פרסום</p>
+              <p className="text-sm mt-0.5" style={{ color: '#6a6a6a' }}>בדוק את הדף לפני פרסום</p>
             </div>
             <Link
               href="/preview/local"
@@ -142,7 +142,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
 
       <div className="text-center py-4">
         <h2 className="text-2xl font-bold mb-1" style={{ color: '#111' }}>הדף שלך מוכן!</h2>
-        <p className="text-sm" style={{ color: '#888' }}>
+        <p className="text-sm" style={{ color: '#6a6a6a' }}>
           {project.aiTitle || project.title || 'הנכס שלך'} נראה מדהים
         </p>
       </div>
@@ -161,7 +161,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
               <span className="flex-shrink-0 w-6 h-6 rounded-full text-white text-xs font-bold flex items-center justify-center mt-0.5" style={{ background: '#111' }}>{n}</span>
               <div>
                 <p className="font-medium text-sm" style={{ color: '#111' }}>{title}</p>
-                <p className="text-xs" style={{ color: '#888' }}>{desc}</p>
+                <p className="text-xs" style={{ color: '#6a6a6a' }}>{desc}</p>
               </div>
             </li>
           ))}
@@ -171,7 +171,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
       <div className="rounded-lg p-4 flex items-center justify-between gap-3" style={{ border: '2px solid #111' }}>
         <div>
           <p className="font-medium text-sm" style={{ color: '#111' }}>תצוגה מקדימה מקומית</p>
-          <p className="text-xs mt-0.5" style={{ color: '#888' }}>ראה את הדף לפני השמירה</p>
+          <p className="text-xs mt-0.5" style={{ color: '#6a6a6a' }}>ראה את הדף לפני השמירה</p>
         </div>
         <Link
           href="/preview/local"
@@ -203,7 +203,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
             </Link>
 
             <div className="flex items-center gap-2 rounded-lg px-4 py-3" style={{ background: '#fff', border: '1px solid #ccc' }}>
-              <p className="flex-1 text-sm truncate font-mono" style={{ color: '#888' }}>{fullKvUrl}</p>
+              <p className="flex-1 text-sm truncate font-mono" style={{ color: '#6a6a6a' }}>{fullKvUrl}</p>
               <button
                 type="button"
                 onClick={() => void copyText(fullKvUrl)}
@@ -217,7 +217,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
             <div className="rounded-lg px-4 py-3 space-y-2" style={{ background: '#fff', border: '1px solid #ccc' }}>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5">
-                  <div className="text-xs" style={{ color: '#888' }}>קוד גישה</div>
+                  <div className="text-xs" style={{ color: '#6a6a6a' }}>קוד גישה</div>
                   <div className="group relative inline-block">
                     <button
                       type="button"
@@ -238,7 +238,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
                     </div>
                   </div>
                 </div>
-                <div className="text-xs" style={{ color: '#888' }}>תוקף: 90 יום</div>
+                <div className="text-xs" style={{ color: '#6a6a6a' }}>תוקף: 90 יום</div>
               </div>
               <div className="text-2xl font-bold tracking-widest" style={{ color: '#c0392b' }}>{kvCode}</div>
             </div>
@@ -248,7 +248,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
                 href={`https://wa.me/?text=${encodeURIComponent(`🏠 ${project.aiTitle || project.title || 'נכס למכירה'}\nלצפייה בדף הנחיתה: ${fullKvUrl}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-lg transition-opacity hover:opacity-85 text-white"
+                className="flex-1 flex items-center justify-center gap-1.5 text-sm font-semibold py-2.5 rounded-lg transition-opacity hover:opacity-85 text-[#111]"
                 style={{ background: '#25D366' }}
               >
                 WhatsApp
@@ -265,7 +265,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
         ) : (
           <div>
             <h3 className="text-base font-semibold mb-1" style={{ color: '#111' }}>שמור ושתף</h3>
-            <p className="text-sm mb-4" style={{ color: '#888' }}>
+            <p className="text-sm mb-4" style={{ color: '#6a6a6a' }}>
               שמירה תיצור קישור ייחודי שתוכל לשלוח לכל אחד. תוקף: 90 יום.
             </p>
             {error && (
@@ -297,18 +297,18 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
       <details className="group rounded-lg" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
         <summary className="px-4 py-3 text-sm font-semibold cursor-pointer list-none flex items-center justify-between" style={{ color: '#555' }}>
           סיכום הנכס
-          <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#aaa' }}>
+          <svg className="w-4 h-4 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: '#6a6a6a' }}>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </summary>
         <div className="px-4 pb-4">
           <dl className="grid grid-cols-2 gap-2 text-sm pt-2" style={{ borderTop: '1px solid #ddd' }}>
-            {project.title && (<><dt style={{ color: '#888' }}>כותרת</dt><dd className="font-medium" style={{ color: '#111' }}>{project.aiTitle || project.title}</dd></>)}
-            {project.city && (<><dt style={{ color: '#888' }}>מיקום</dt><dd style={{ color: '#111' }}>{[project.street, project.city].filter(Boolean).join(', ')}</dd></>)}
-            {project.rooms && (<><dt style={{ color: '#888' }}>חדרים</dt><dd style={{ color: '#111' }}>{project.rooms}</dd></>)}
-            {project.builtArea && (<><dt style={{ color: '#888' }}>שטח</dt><dd style={{ color: '#111' }}>{project.builtArea} מ״ר</dd></>)}
-            {project.images.length > 0 && (<><dt style={{ color: '#888' }}>תמונות</dt><dd style={{ color: '#111' }}>{project.images.length}</dd></>)}
-            <dt style={{ color: '#888' }}>תבנית</dt>
+            {project.title && (<><dt style={{ color: '#6a6a6a' }}>כותרת</dt><dd className="font-medium" style={{ color: '#111' }}>{project.aiTitle || project.title}</dd></>)}
+            {project.city && (<><dt style={{ color: '#6a6a6a' }}>מיקום</dt><dd style={{ color: '#111' }}>{[project.street, project.city].filter(Boolean).join(', ')}</dd></>)}
+            {project.rooms && (<><dt style={{ color: '#6a6a6a' }}>חדרים</dt><dd style={{ color: '#111' }}>{project.rooms}</dd></>)}
+            {project.builtArea && (<><dt style={{ color: '#6a6a6a' }}>שטח</dt><dd style={{ color: '#111' }}>{project.builtArea} מ״ר</dd></>)}
+            {project.images.length > 0 && (<><dt style={{ color: '#6a6a6a' }}>תמונות</dt><dd style={{ color: '#111' }}>{project.images.length}</dd></>)}
+            <dt style={{ color: '#6a6a6a' }}>תבנית</dt>
             <dd style={{ color: '#111' }}>{project.template}</dd>
           </dl>
         </div>
@@ -320,7 +320,7 @@ export default function Step9({ project, listingUrl, isLoggedIn = false }: StepP
             type="button"
             onClick={() => setConfirmNew(true)}
             className="text-sm underline underline-offset-2 transition-opacity hover:opacity-60"
-            style={{ color: '#aaa' }}
+            style={{ color: '#6a6a6a' }}
           >
             + התחל נכס חדש
           </button>
@@ -382,7 +382,7 @@ function LoginPrompt() {
         <span className="text-2xl shrink-0">🔐</span>
         <div>
           <h3 className="font-semibold mb-1" style={{ color: '#111' }}>שמור את הנכס לתמיד</h3>
-          <p className="text-sm mb-4" style={{ color: '#888' }}>
+          <p className="text-sm mb-4" style={{ color: '#6a6a6a' }}>
             הרשמה חינמית מאפשרת לערוך את הנכס בכל עת, לקבל סטטיסטיקות על צפיות וליצור דפים נוספים.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -412,12 +412,12 @@ function Summary({ project }: { project: PropertyProject }) {
     <div className="rounded-lg p-4" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
       <h4 className="text-sm font-semibold mb-3" style={{ color: '#555' }}>סיכום הנכס</h4>
       <dl className="grid grid-cols-2 gap-2 text-sm">
-        {project.title && (<><dt style={{ color: '#888' }}>כותרת</dt><dd className="font-medium" style={{ color: '#111' }}>{project.aiTitle || project.title}</dd></>)}
-        {project.city && (<><dt style={{ color: '#888' }}>מיקום</dt><dd style={{ color: '#111' }}>{[project.street, project.city].filter(Boolean).join(', ')}</dd></>)}
-        {project.rooms && (<><dt style={{ color: '#888' }}>חדרים</dt><dd style={{ color: '#111' }}>{project.rooms}</dd></>)}
-        {project.builtArea && (<><dt style={{ color: '#888' }}>שטח</dt><dd style={{ color: '#111' }}>{project.builtArea} מ״ר</dd></>)}
-        {project.images.length > 0 && (<><dt style={{ color: '#888' }}>תמונות</dt><dd style={{ color: '#111' }}>{project.images.length}</dd></>)}
-        <dt style={{ color: '#888' }}>תבנית</dt>
+        {project.title && (<><dt style={{ color: '#6a6a6a' }}>כותרת</dt><dd className="font-medium" style={{ color: '#111' }}>{project.aiTitle || project.title}</dd></>)}
+        {project.city && (<><dt style={{ color: '#6a6a6a' }}>מיקום</dt><dd style={{ color: '#111' }}>{[project.street, project.city].filter(Boolean).join(', ')}</dd></>)}
+        {project.rooms && (<><dt style={{ color: '#6a6a6a' }}>חדרים</dt><dd style={{ color: '#111' }}>{project.rooms}</dd></>)}
+        {project.builtArea && (<><dt style={{ color: '#6a6a6a' }}>שטח</dt><dd style={{ color: '#111' }}>{project.builtArea} מ״ר</dd></>)}
+        {project.images.length > 0 && (<><dt style={{ color: '#6a6a6a' }}>תמונות</dt><dd style={{ color: '#111' }}>{project.images.length}</dd></>)}
+        <dt style={{ color: '#6a6a6a' }}>תבנית</dt>
         <dd style={{ color: '#111' }}>{TEMPLATE_NAMES[project.template] ?? project.template}</dd>
       </dl>
     </div>

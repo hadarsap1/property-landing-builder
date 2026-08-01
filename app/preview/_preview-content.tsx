@@ -440,7 +440,7 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={() => track('whatsapp_click')}
-                      className="flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
+                      className="flex items-center justify-center gap-2 bg-green-700 hover:bg-green-800 text-white font-semibold px-8 py-4 rounded-xl text-lg transition-colors shadow-md"
                     >
                       💬 WhatsApp
                     </a>
@@ -491,6 +491,10 @@ export default function PreviewContent({ project, editHref, listingId, agencyId,
         {' · '}
         <Link href="/privacy" className="hover:underline" style={{ color: theme.mutedText }}>
           פרטיות
+        </Link>
+        {' · '}
+        <Link href="/accessibility" className="hover:underline" style={{ color: theme.mutedText }}>
+          נגישות
         </Link>
       </footer>
 

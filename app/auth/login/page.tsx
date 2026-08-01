@@ -41,10 +41,10 @@ export default function LoginPage({ searchParams }: { searchParams: Promise<SP> 
                   { n: '03', title: 'ניהול לידים חכם', desc: 'מעקב, תזכורות ודוח ביצועים שבועי.' },
                 ].map(({ n, title, desc }) => (
                   <li key={n} className="flex items-start gap-5">
-                    <span className="font-display font-black text-2xl leading-none flex-shrink-0 mt-0.5" style={{ color: 'rgba(0,0,0,0.12)' }}>{n}</span>
+                    <span className="font-display font-black text-2xl leading-none flex-shrink-0 mt-0.5" style={{ color: 'rgba(0,0,0,0.55)' }}>{n}</span>
                     <div>
                       <p className="font-semibold text-sm" style={{ color: INK }}>{title}</p>
-                      <p className="text-sm mt-0.5" style={{ color: '#777' }}>{desc}</p>
+                      <p className="text-sm mt-0.5" style={{ color: '#707070' }}>{desc}</p>
                     </div>
                   </li>
                 ))}
@@ -68,7 +68,7 @@ export default function LoginPage({ searchParams }: { searchParams: Promise<SP> 
               </div>
               <div>
                 <p className="text-xs font-semibold" style={{ color: INK }}>דני כהן</p>
-                <p className="text-xs" style={{ color: '#888' }}>מנהל סוכנות, תל אביב</p>
+                <p className="text-xs" style={{ color: '#6a6a6a' }}>מנהל סוכנות, תל אביב</p>
               </div>
             </div>
           </div>
@@ -90,7 +90,7 @@ export default function LoginPage({ searchParams }: { searchParams: Promise<SP> 
             <LoginContent searchParams={searchParams} />
           </div>
 
-          <p className="mt-8 text-xs text-center" style={{ color: '#aaa' }}>
+          <p className="mt-8 text-xs text-center" style={{ color: '#6a6a6a' }}>
             © {new Date().getFullYear()} PropBuilder · כל הזכויות שמורות
           </p>
         </div>
@@ -135,7 +135,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
         <Link
           href={`/auth/login${callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ''}`}
           className="flex-1 py-2.5 text-center transition-colors"
-          style={{ background: !isCommercial ? INK : 'transparent', color: !isCommercial ? CREAM : '#888' }}
+          style={{ background: !isCommercial ? INK : 'transparent', color: !isCommercial ? CREAM : '#6a6a6a' }}
         >
           מוכר פרטי
         </Link>
@@ -144,7 +144,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
           className="flex-1 py-2.5 text-center transition-colors"
           style={{
             background: isCommercial ? INK : 'transparent',
-            color: isCommercial ? CREAM : '#888',
+            color: isCommercial ? CREAM : '#6a6a6a',
             borderRight: `2px solid ${INK}`,
           }}
         >
@@ -158,7 +158,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
             התחבר עם Google כדי לשמור ולנהל את הנכסים שלך
           </p>
           <GoogleSignInButton callbackUrl={callbackUrl ?? '/personal'} />
-          <p className="text-center text-xs" style={{ color: '#aaa' }}>
+          <p className="text-center text-xs" style={{ color: '#6a6a6a' }}>
             עדיין אין לך חשבון? הכניסה יוצרת אחד אוטומטית
           </p>
         </div>
@@ -168,7 +168,7 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
 
           <div className="flex items-center gap-3">
             <div className="flex-1 h-px" style={{ background: '#e5e5e5' }} />
-            <span className="text-xs" style={{ color: '#aaa' }}>או עם מייל וסיסמה</span>
+            <span className="text-xs" style={{ color: '#6a6a6a' }}>או עם מייל וסיסמה</span>
             <div className="flex-1 h-px" style={{ background: '#e5e5e5' }} />
           </div>
 
@@ -202,11 +202,11 @@ async function LoginContent({ searchParams }: { searchParams: Promise<SP> }) {
               כניסה
             </button>
 
-            <p className="text-center text-xs" style={{ color: '#aaa' }}>
+            <p className="text-center text-xs" style={{ color: '#6a6a6a' }}>
               שכחת סיסמה?{' '}
               <Link href="/auth/forgot-password" className="underline" style={{ color: ACCENT }}>איפוס סיסמה</Link>
             </p>
-            <p className="text-center text-xs" style={{ color: '#aaa' }}>
+            <p className="text-center text-xs" style={{ color: '#6a6a6a' }}>
               אין לך חשבון?{' '}
               <Link href="/auth/register" className="underline" style={{ color: ACCENT }}>הרשמה חינם</Link>
             </p>

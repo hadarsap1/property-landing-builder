@@ -47,7 +47,7 @@ export default function Step2({ project, onChange }: StepProps) {
             className="w-24 px-3 py-2 rounded-lg text-sm focus:outline-none"
             style={inputStyle}
           />
-          <span style={{ color: '#888' }}>מתוך</span>
+          <span style={{ color: '#6a6a6a' }}>מתוך</span>
           <input
             type="number"
             value={project.totalFloors ?? ''}
@@ -149,7 +149,7 @@ export default function Step2({ project, onChange }: StepProps) {
         <div>
           <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
             שנת שיפוץ{' '}
-            <span className="font-normal" style={{ color: '#888' }}>(אופציונלי)</span>
+            <span className="font-normal" style={{ color: '#6a6a6a' }}>(אופציונלי)</span>
           </label>
           <input
             type="number"

@@ -142,10 +142,10 @@ export default function LeadsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-xl font-bold" style={{ color: '#111' }}>לידים וקונים</h1>
-          <p className="text-xs mt-0.5" style={{ color: '#aaa' }}>לידים מנכסים + קונים פוטנציאליים</p>
+          <p className="text-xs mt-0.5" style={{ color: '#6a6a6a' }}>לידים מנכסים + קונים פוטנציאליים</p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm" style={{ color: '#888' }}>{leads.length} סה&quot;כ</span>
+          <span className="text-sm" style={{ color: '#6a6a6a' }}>{leads.length} סה&quot;כ</span>
           <button
             onClick={() => {
               const p = new URLSearchParams()
@@ -236,7 +236,7 @@ export default function LeadsPage() {
           </button>
         </div>
       ) : leads.length === 0 ? (
-        <div className="text-center py-20" style={{ color: '#aaa' }}>
+        <div className="text-center py-20" style={{ color: '#6a6a6a' }}>
           <div className="text-4xl mb-3">📬</div>
           <p className="text-sm">אין לידים עדיין. הם יופיעו כשמישהו ישאיר פרטים בעמוד הנכס,</p>
           <p className="text-sm">או לחץ &quot;+ קונה חדש&quot; להוסיף קונה שהתקשר אליך ישירות.</p>
@@ -245,7 +245,7 @@ export default function LeadsPage() {
         <div className="space-y-6">
           {activeLeads.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#888' }}>
+              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#6a6a6a' }}>
                 פייפליין ({activeLeads.length})
               </h2>
               <div className="overflow-hidden" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
@@ -255,7 +255,7 @@ export default function LeadsPage() {
           )}
           {otherLeads.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#888' }}>
+              <h2 className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#6a6a6a' }}>
                 ארכיון ({otherLeads.length})
               </h2>
               <div className="overflow-hidden opacity-75" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
@@ -275,9 +275,9 @@ export default function LeadsPage() {
           <div className="w-full max-w-md p-6 space-y-5 overflow-y-auto max-h-[calc(100vh-2rem)]" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }} dir="rtl">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-bold" style={{ color: '#111' }}>קונה פוטנציאלי חדש</h2>
-              <button onClick={() => setShowModal(false)} className="text-xl leading-none" style={{ color: '#888' }}>×</button>
+              <button onClick={() => setShowModal(false)} className="text-xl leading-none" style={{ color: '#6a6a6a' }}>×</button>
             </div>
-            <p className="text-xs" style={{ color: '#888' }}>מישהו שהתקשר לשאול על נכסים — לא בהכרח נכס ספציפי</p>
+            <p className="text-xs" style={{ color: '#6a6a6a' }}>מישהו שהתקשר לשאול על נכסים — לא בהכרח נכס ספציפי</p>
 
             {formError && (
               <div className="text-sm rounded-xl px-4 py-3" style={{ background: '#fef2f2', color: '#991b1b', border: '1px solid #fecaca' }}>
@@ -325,7 +325,7 @@ export default function LeadsPage() {
               </div>
 
               <div className="pt-4 space-y-3" style={{ borderTop: '1px solid #e5e5e5' }}>
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#888' }}>מה הקונה מחפש</p>
+                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#6a6a6a' }}>מה הקונה מחפש</p>
                 <div className="space-y-1">
                   <label className="text-xs font-medium" style={{ color: '#111' }}>תקציב (₪)</label>
                   <input
@@ -453,10 +453,10 @@ function LeadRow({ lead }: { lead: LeadWithListing }) {
                 קונה
               </span>
             ) : (
-              <span className="text-xs" style={{ color: '#aaa' }}>{SOURCE_LABELS[lead.source]}</span>
+              <span className="text-xs" style={{ color: '#6a6a6a' }}>{SOURCE_LABELS[lead.source]}</span>
             )}
           </div>
-          <p className="text-xs truncate" style={{ color: '#888' }}>
+          <p className="text-xs truncate" style={{ color: '#6a6a6a' }}>
             {[lead.phone, lead.email].filter(Boolean).join(' · ') || '—'}
             {isCandidate && lead.desired_areas && ` · ${lead.desired_areas}`}
           </p>
@@ -473,7 +473,7 @@ function LeadRow({ lead }: { lead: LeadWithListing }) {
           <span className="truncate">{lead.listing_title}</span>
         </Link>
       )}
-      <span className="text-xs shrink-0" style={{ color: '#aaa' }}>{since}</span>
+      <span className="text-xs shrink-0" style={{ color: '#6a6a6a' }}>{since}</span>
     </div>
   )
 }

@@ -16,7 +16,7 @@ export default function TermsPage() {
           <span className="text-xl">🏠</span>
           <span className="font-semibold">Property Landing Builder</span>
         </Link>
-        <Link href="/" className="text-sm transition-colors" style={{ color: '#888' }}>
+        <Link href="/" className="text-sm transition-colors" style={{ color: '#6a6a6a' }}>
           ← חזרה לדף הראשי
         </Link>
       </nav>
@@ -25,9 +25,9 @@ export default function TermsPage() {
         <div className="rounded-2xl p-8 sm:p-10" style={{ background: '#fff', border: '2px solid #111' }}>
 
           <h1 className="text-3xl font-bold mb-2" style={{ color: '#111' }}>תנאי שימוש</h1>
-          <p className="text-sm mb-8" style={{ color: '#aaa' }}>עודכן לאחרונה: {LAST_UPDATED}</p>
+          <p className="text-sm mb-8" style={{ color: '#6a6a6a' }}>עודכן לאחרונה: {LAST_UPDATED}</p>
 
-          <div className="space-y-8 leading-relaxed" style={{ color: '#888' }}>
+          <div className="space-y-8 leading-relaxed" style={{ color: '#6a6a6a' }}>
 
             <section>
               <h2 className="text-lg font-semibold mb-2" style={{ color: '#111' }}>1. כללי</h2>
@@ -141,8 +141,8 @@ export default function TermsPage() {
         </div>
       </main>
 
-      <footer className="text-center text-sm py-6" style={{ color: '#aaa' }}>
-        <Link href="/" className="transition-colors hover:underline" style={{ color: '#888' }}>
+      <footer className="text-center text-sm py-6" style={{ color: '#6a6a6a' }}>
+        <Link href="/" className="transition-colors hover:underline" style={{ color: '#6a6a6a' }}>
           Property Landing Builder
         </Link>
       </footer>

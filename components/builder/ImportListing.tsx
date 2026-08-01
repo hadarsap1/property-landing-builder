@@ -15,7 +15,7 @@ const AIR_LABEL: Record<string, string> = { N: 'צפון', S: 'דרום', E: 'מ
 function FieldBadge({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
-      <span className="text-xs font-medium" style={{ color: '#888' }}>{label}</span>
+      <span className="text-xs font-medium" style={{ color: '#6a6a6a' }}>{label}</span>
       <span className="text-sm font-semibold" style={{ color: '#111' }}>{value}</span>
     </div>
   );
@@ -127,7 +127,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
     <div className="space-y-6">
       <div>
         <h2 className="text-xl font-bold mb-1" style={{ color: '#111' }}>טען ממודעה קיימת</h2>
-        <p className="text-sm" style={{ color: '#888' }}>
+        <p className="text-sm" style={{ color: '#6a6a6a' }}>
           העתק את טקסט המודעה מיד2, מדלן, או כל אתר אחר, והדבק כאן.
         </p>
       </div>
@@ -145,7 +145,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
           className="w-full px-4 py-3 text-sm resize-none focus:outline-none leading-relaxed rounded-lg disabled:opacity-50"
           style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         />
-        <p className="text-xs" style={{ color: '#aaa' }}>
+        <p className="text-xs" style={{ color: '#6a6a6a' }}>
           ככל שתדביק יותר טקסט, כך יזוהו יותר שדות אוטומטית
         </p>
       </div>
@@ -189,7 +189,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
 
           {result.title && (
             <div className="rounded-lg px-4 py-3" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
-              <span className="text-xs block mb-0.5" style={{ color: '#888' }}>כותרת</span>
+              <span className="text-xs block mb-0.5" style={{ color: '#6a6a6a' }}>כותרת</span>
               <span className="font-semibold" style={{ color: '#111' }}>{result.title}</span>
             </div>
           )}
@@ -202,12 +202,12 @@ export default function ImportListing({ onImport, onSkip }: Props) {
 
           {result.rawStory && (
             <div className="rounded-lg px-4 py-3" style={{ background: '#f7f5f2', border: '1px solid #ccc' }}>
-              <span className="text-xs block mb-1" style={{ color: '#888' }}>תיאור שיועבר לשלב &quot;הסיפור&quot;</span>
+              <span className="text-xs block mb-1" style={{ color: '#6a6a6a' }}>תיאור שיועבר לשלב &quot;הסיפור&quot;</span>
               <p className="text-sm line-clamp-3 leading-relaxed" style={{ color: '#555' }}>{result.rawStory}</p>
             </div>
           )}
 
-          <p className="text-xs" style={{ color: '#aaa' }}>
+          <p className="text-xs" style={{ color: '#6a6a6a' }}>
             כל השדות ניתנים לעריכה בשלבים הבאים
           </p>
 
@@ -237,7 +237,7 @@ export default function ImportListing({ onImport, onSkip }: Props) {
           type="button"
           onClick={onSkip}
           className="text-sm underline underline-offset-2 transition-opacity hover:opacity-60"
-          style={{ color: '#aaa' }}
+          style={{ color: '#6a6a6a' }}
         >
           התחל מאפס בלי לייבא מודעה
         </button>

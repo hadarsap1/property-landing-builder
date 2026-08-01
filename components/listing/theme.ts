@@ -20,7 +20,7 @@ export const THEMES: Record<TemplateId, TemplateTheme> = {
     pageText: '#1e293b',
     cardBg: '#ffffff',
     cardBorder: '#e2e8f0',
-    mutedText: '#64748b',
+    mutedText: '#55637a',
   },
   'dark-luxury': {
     heroBg: 'linear-gradient(135deg,#0a0e1a 0%,#1a1f35 100%)',

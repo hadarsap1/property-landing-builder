@@ -49,7 +49,7 @@ export default function ShareBar({ shareCode, title, openHouseDate, theme }: {
         href={`https://wa.me/?text=${encodeURIComponent(waText)}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-lg text-white transition-opacity hover:opacity-85"
+        className="flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-lg text-[#111] transition-opacity hover:opacity-85"
         style={{ background: '#25D366' }}
       >
         <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current flex-shrink-0" aria-hidden="true">

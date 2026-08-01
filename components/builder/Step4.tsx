@@ -196,10 +196,10 @@ function FloorPlanUploader({ project, onChange, listingId }: StepProps) {
       onDrop={handleDrop}
       onClick={() => !uploading && fileInputRef.current?.click()}
       className="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors"
-      style={{ borderColor: dragOver ? '#111' : '#aaa', background: dragOver ? '#f0eeeb' : '#f7f5f2' }}
+      style={{ borderColor: dragOver ? '#111' : '#6a6a6a', background: dragOver ? '#f0eeeb' : '#f7f5f2' }}
     >
       {uploading ? (
-        <div className="flex items-center justify-center gap-2 text-sm" style={{ color: '#888' }}>
+        <div className="flex items-center justify-center gap-2 text-sm" style={{ color: '#6a6a6a' }}>
           <svg className="animate-spin h-5 w-5" style={{ color: '#c0392b' }} viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
@@ -210,7 +210,7 @@ function FloorPlanUploader({ project, onChange, listingId }: StepProps) {
         <>
           <div className="text-3xl mb-1">📐</div>
           <p className="text-sm font-medium" style={{ color: '#111' }}>גרור תוכנית דירה או לחץ לבחירה</p>
-          <p className="text-xs mt-0.5" style={{ color: '#888' }}>JPG, PNG, WebP — תמונה אחת</p>
+          <p className="text-xs mt-0.5" style={{ color: '#6a6a6a' }}>JPG, PNG, WebP — תמונה אחת</p>
         </>
       )}
       <input
@@ -404,7 +404,7 @@ export default function Step4({ project, onChange, listingId }: StepProps) {
           style={{ background: '#f7f5f2', color: '#111' }}
         >
           <span>💡 טיפים לצילום נכס מקצועי</span>
-          <span className={`transition-transform ${tipsOpen ? 'rotate-180' : ''}`} style={{ color: '#888' }}>▼</span>
+          <span className={`transition-transform ${tipsOpen ? 'rotate-180' : ''}`} style={{ color: '#6a6a6a' }}>▼</span>
         </button>
         {tipsOpen && (
           <ul className="px-4 pb-4 space-y-2.5" style={{ background: '#fff' }}>
@@ -422,8 +422,8 @@ export default function Step4({ project, onChange, listingId }: StepProps) {
       {project.images.length >= 10 ? (
         <div className="border-2 border-dashed rounded-lg p-8 text-center opacity-50 cursor-not-allowed select-none" style={{ borderColor: '#ddd', background: '#f7f5f2' }}>
           <div className="text-4xl mb-2">🖼️</div>
-          <p className="font-medium" style={{ color: '#888' }}>הגעת למקסימום — 10/10 תמונות</p>
-          <p className="text-sm mt-1" style={{ color: '#aaa' }}>הסר תמונה כדי להוסיף חדשה</p>
+          <p className="font-medium" style={{ color: '#6a6a6a' }}>הגעת למקסימום — 10/10 תמונות</p>
+          <p className="text-sm mt-1" style={{ color: '#6a6a6a' }}>הסר תמונה כדי להוסיף חדשה</p>
         </div>
       ) : (
         <div
@@ -432,11 +432,11 @@ export default function Step4({ project, onChange, listingId }: StepProps) {
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
           className="border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors"
-          style={{ borderColor: dragOver ? '#111' : '#aaa', background: dragOver ? '#f0eeeb' : '#f7f5f2' }}
+          style={{ borderColor: dragOver ? '#111' : '#6a6a6a', background: dragOver ? '#f0eeeb' : '#f7f5f2' }}
         >
           <div className="text-4xl mb-2">🖼️</div>
           <p className="font-medium" style={{ color: '#111' }}>גרור תמונות לכאן או לחץ לבחירה</p>
-          <p className="text-sm mt-1" style={{ color: '#888' }}>
+          <p className="text-sm mt-1" style={{ color: '#6a6a6a' }}>
             JPG, PNG, WebP | עד 10 תמונות
             {project.images.length > 0 && ` (${project.images.length}/10 נבחרו)`}
           </p>
@@ -648,7 +648,7 @@ export default function Step4({ project, onChange, listingId }: StepProps) {
       {/* Floor Plan */}
       <div>
         <label className="block text-sm font-medium mb-2" style={{ color: '#111' }}>
-          תוכנית דירה <span className="font-normal" style={{ color: '#888' }}>(אופציונלי)</span>
+          תוכנית דירה <span className="font-normal" style={{ color: '#6a6a6a' }}>(אופציונלי)</span>
         </label>
         <FloorPlanUploader project={project} onChange={onChange} listingId={listingId} />
       </div>
@@ -657,7 +657,7 @@ export default function Step4({ project, onChange, listingId }: StepProps) {
       <div>
         <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
           קישור לסרטון{' '}
-          <span className="font-normal" style={{ color: '#888' }}>(YouTube / Vimeo — אופציונלי)</span>
+          <span className="font-normal" style={{ color: '#6a6a6a' }}>(YouTube / Vimeo — אופציונלי)</span>
         </label>
         <input
           type="url"

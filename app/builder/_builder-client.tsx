@@ -437,7 +437,7 @@ export default function BuilderClient({
   if (!hydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: '#f7f5f2' }}>
-        <span className="text-sm font-medium" style={{ color: '#999' }}>טוען...</span>
+        <span className="text-sm font-medium" style={{ color: '#707070' }}>טוען...</span>
       </div>
     )
   }
@@ -455,7 +455,7 @@ export default function BuilderClient({
             <h1 className="font-display font-black text-3xl mt-4 mb-2" style={{ letterSpacing: '-0.02em', lineHeight: 1.1 }}>
               בנו את הדף שלכם
             </h1>
-            <p className="text-sm" style={{ color: '#777' }}>דף נחיתה מקצועי לנכס — תוך דקות</p>
+            <p className="text-sm" style={{ color: '#707070' }}>דף נחיתה מקצועי לנכס — תוך דקות</p>
           </div>
 
           {step === 0 && (
@@ -468,7 +468,7 @@ export default function BuilderClient({
               >
                 <div>
                   <div className="font-bold text-base">טענו ממודעה קיימת</div>
-                  <div className="text-sm mt-0.5" style={{ color: 'rgba(247,245,242,0.55)' }}>העתיקו מיד2, מדלן, או כל מודעה — הפרטים ימולאו אוטומטית</div>
+                  <div className="text-sm mt-0.5" style={{ color: 'rgba(247,245,242,0.75)' }}>העתיקו מיד2, מדלן, או כל מודעה — הפרטים ימולאו אוטומטית</div>
                 </div>
               </button>
               <button
@@ -479,7 +479,7 @@ export default function BuilderClient({
               >
                 <div>
                   <div className="font-bold text-base">התחילו מאפס</div>
-                  <div className="text-sm mt-0.5" style={{ color: '#888' }}>מלאו את הפרטים שלב אחרי שלב</div>
+                  <div className="text-sm mt-0.5" style={{ color: '#6a6a6a' }}>מלאו את הפרטים שלב אחרי שלב</div>
                 </div>
               </button>
 
@@ -487,7 +487,7 @@ export default function BuilderClient({
                 <a
                   href={agencyId ? '/dashboard' : personalUserId ? '/personal' : '/'}
                   className="text-sm transition-opacity hover:opacity-70"
-                  style={{ color: '#888' }}
+                  style={{ color: '#6a6a6a' }}
                 >
                   → {agencyId || personalUserId ? 'חזרה לנכסים שלי' : 'חזרה לדף הבית'}
                 </a>
@@ -501,7 +501,7 @@ export default function BuilderClient({
                 type="button"
                 onClick={() => setStep(0)}
                 className="flex items-center gap-1.5 text-sm mb-4 transition-opacity hover:opacity-70"
-                style={{ color: '#888' }}
+                style={{ color: '#6a6a6a' }}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -537,7 +537,7 @@ export default function BuilderClient({
               <span className="text-sm font-bold" style={{ color: '#111' }}>
                 {step} / {TOTAL_STEPS} — {STEP_NAMES[step]}
               </span>
-              <span className="text-xs flex items-center gap-1.5" style={{ color: '#999' }}>
+              <span className="text-xs flex items-center gap-1.5" style={{ color: '#707070' }}>
                 {saveStatus === 'saving' && <><span className="w-1.5 h-1.5 rounded-full bg-yellow-400 animate-pulse inline-block" />שומר...</>}
                 {saveStatus === 'saved' && <><span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />נשמר</>}
                 {saveStatus === 'error' && (
@@ -573,7 +573,7 @@ export default function BuilderClient({
                   className="flex-shrink-0 flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-md transition-all whitespace-nowrap focus:outline-none"
                   style={{
                     background: s === step ? '#111' : s < step ? 'rgba(0,0,0,0.08)' : 'transparent',
-                    color: s === step ? '#f7f5f2' : s < step ? '#555' : '#bbb',
+                    color: s === step ? '#f7f5f2' : s < step ? '#555' : '#6a6a6a',
                     border: s === step ? '1px solid #111' : '1px solid transparent',
                   }}
                 >
@@ -640,7 +640,7 @@ export default function BuilderClient({
             <Link
               href={exitHref}
               className="text-xs underline underline-offset-2 transition-opacity hover:opacity-70 whitespace-nowrap"
-              style={{ color: '#999' }}
+              style={{ color: '#707070' }}
             >
               {exitLabel} ←
             </Link>
@@ -669,7 +669,7 @@ export default function BuilderClient({
       <div className="hidden lg:flex lg:flex-col lg:h-full" dir="ltr">
         <div dir="rtl" className="flex items-center gap-3 px-4 py-2.5 flex-shrink-0" style={{ background: '#f7f5f2', borderBottom: '2px solid #111' }}>
           <span className="text-sm font-semibold" style={{ color: '#111' }}>תצוגה מקדימה חיה</span>
-          <span className="mr-auto flex items-center gap-1.5 text-xs" style={{ color: '#aaa' }}>
+          <span className="mr-auto flex items-center gap-1.5 text-xs" style={{ color: '#6a6a6a' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block animate-pulse" />
             בזמן אמת
           </span>

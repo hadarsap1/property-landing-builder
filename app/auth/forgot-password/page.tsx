@@ -32,7 +32,7 @@ export default function ForgotPasswordPage() {
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <Link href="/" className="text-2xl font-bold" style={{ color: '#111' }}>PropBuilder</Link>
-          <p className="text-sm mt-2" style={{ color: '#888' }}>איפוס סיסמה</p>
+          <p className="text-sm mt-2" style={{ color: '#6a6a6a' }}>איפוס סיסמה</p>
         </div>
 
         <div className="rounded-2xl p-8 space-y-5" style={{ background: '#fff', border: '2px solid #111' }}>
@@ -40,14 +40,14 @@ export default function ForgotPasswordPage() {
             <div className="text-center space-y-3">
               <div className="text-4xl">📧</div>
               <p className="font-semibold" style={{ color: '#111' }}>אם המייל קיים במערכת, שלחנו קישור לאיפוס</p>
-              <p className="text-sm" style={{ color: '#888' }}>בדוק את תיבת הדואר שלך (כולל ספאם). הקישור תקף לשעה אחת.</p>
+              <p className="text-sm" style={{ color: '#6a6a6a' }}>בדוק את תיבת הדואר שלך (כולל ספאם). הקישור תקף לשעה אחת.</p>
               <Link href="/auth/login?mode=commercial" className="block text-sm hover:underline mt-4" style={{ color: '#c0392b' }}>
                 חזרה לכניסה
               </Link>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
-              <p className="text-sm" style={{ color: '#888' }}>
+              <p className="text-sm" style={{ color: '#6a6a6a' }}>
                 הזן את כתובת המייל שלך ונשלח לך קישור לאיפוס הסיסמה.
               </p>
 
@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
                 type="submit"
                 disabled={loading}
                 className="w-full font-semibold py-2.5 rounded-xl transition-colors text-sm"
-                style={{ background: loading ? '#888' : '#c0392b', color: '#fff' }}
+                style={{ background: loading ? '#6a6a6a' : '#c0392b', color: '#fff' }}
               >
                 {loading ? 'שולח...' : 'שלח קישור לאיפוס'}
               </button>

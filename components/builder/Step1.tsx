@@ -126,7 +126,7 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
         style={inputStyle}
       />
       {loading && (
-        <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#aaa' }} aria-hidden="true">
+        <span className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: '#6a6a6a' }} aria-hidden="true">
           <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
@@ -158,7 +158,7 @@ function Combobox({ value, onChange, options, placeholder, disabled, loading, in
       {isOpen && !loading && filtered.length === 0 && (
         <div
           className="absolute z-50 right-0 left-0 top-full mt-1 p-3 text-sm text-right"
-          style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px', color: '#aaa' }}
+          style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px', color: '#6a6a6a' }}
           dir="rtl"
         >
           לא נמצאו תוצאות
@@ -209,7 +209,7 @@ export default function Step1({ project, onChange }: StepProps) {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold" style={{ color: '#111' }}>פרטי הנכס</h2>
-        <p className="text-xs mt-1" style={{ color: '#aaa' }}>שדות המסומנים ב-* הם חובה</p>
+        <p className="text-xs mt-1" style={{ color: '#6a6a6a' }}>שדות המסומנים ב-* הם חובה</p>
       </div>
 
       {/* Listing type */}
@@ -294,7 +294,7 @@ export default function Step1({ project, onChange }: StepProps) {
           inputStyle={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
         />
         {project.city && (
-          <p className="text-xs mt-1" style={{ color: '#aaa' }}>הקלד לפחות 2 אותיות לחיפוש רחוב</p>
+          <p className="text-xs mt-1" style={{ color: '#6a6a6a' }}>הקלד לפחות 2 אותיות לחיפוש רחוב</p>
         )}
       </div>
 
@@ -343,7 +343,7 @@ export default function Step1({ project, onChange }: StepProps) {
               style={{ border: '2px solid #111', background: '#f7f5f2', color: '#111' }}
             />
             {isRent && (
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#888' }}>לחודש</span>
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6a6a6a' }}>לחודש</span>
             )}
           </div>
         )}
@@ -387,7 +387,7 @@ export default function Step1({ project, onChange }: StepProps) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="built-area" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
-            שטח בנוי <span className="font-normal" style={{ color: '#888' }}>מ״ר</span>
+            שטח בנוי <span className="font-normal" style={{ color: '#6a6a6a' }}>מ״ר</span>
           </label>
           <input
             id="built-area"
@@ -403,7 +403,7 @@ export default function Step1({ project, onChange }: StepProps) {
         <div>
           <label htmlFor="garden-area" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
             גינה/מרפסת{' '}
-            <span className="font-normal" style={{ color: '#888' }}>מ״ר</span>
+            <span className="font-normal" style={{ color: '#6a6a6a' }}>מ״ר</span>
           </label>
           <input
             id="garden-area"

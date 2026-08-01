@@ -19,7 +19,7 @@ function DbErrorBanner({ message }: { message: string }) {
       <p className="text-base font-semibold" style={{ color: '#111' }}>
         {isDbError ? 'מסד הנתונים אינו מחובר' : 'שגיאה בטעינת הנתונים'}
       </p>
-      <p className="text-sm max-w-sm mx-auto" style={{ color: '#888' }}>
+      <p className="text-sm max-w-sm mx-auto" style={{ color: '#6a6a6a' }}>
         {isDbError
           ? 'יש להגדיר את משתנה הסביבה POSTGRES_URL בהגדרות Vercel ולהריץ setup-db.'
           : message}
@@ -72,7 +72,7 @@ export default async function DashboardPage() {
           <h1 className="text-xl font-bold" style={{ color: '#111' }}>
             {agency?.name ?? 'הנכסים שלי'}
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: '#888' }}>{listings.length} נכסים</p>
+          <p className="text-sm mt-0.5" style={{ color: '#6a6a6a' }}>{listings.length} נכסים</p>
         </div>
         <Link
           href="/builder"
@@ -88,7 +88,7 @@ export default async function DashboardPage() {
         <Link href="/dashboard/leads" className="rounded-2xl p-4 space-y-1 transition-colors" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
           <div className="text-xl">📬</div>
           <div className="text-2xl font-bold" style={{ color: '#111' }}>{leads.length}</div>
-          <div className="text-xs" style={{ color: '#888' }}>לידים</div>
+          <div className="text-xs" style={{ color: '#6a6a6a' }}>לידים</div>
           {newLeads > 0 && (
             <div className="text-xs font-semibold" style={{ color: '#c0392b' }}>{newLeads} חדשים</div>
           )}
@@ -97,7 +97,7 @@ export default async function DashboardPage() {
         <div className="rounded-2xl p-4 space-y-1" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
           <div className="text-xl">🏠</div>
           <div className="text-2xl font-bold" style={{ color: '#111' }}>{activeListings}</div>
-          <div className="text-xs" style={{ color: '#888' }}>נכסים פעילים</div>
+          <div className="text-xs" style={{ color: '#6a6a6a' }}>נכסים פעילים</div>
         </div>
 
         <Link href="/dashboard/analytics" className="rounded-2xl p-4 space-y-1 transition-colors" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
@@ -105,7 +105,7 @@ export default async function DashboardPage() {
           <div className="text-2xl font-bold" style={{ color: '#111' }}>
             {(stats?.total_views ?? 0).toLocaleString('he-IL')}
           </div>
-          <div className="text-xs" style={{ color: '#888' }}>צפיות (30י׳)</div>
+          <div className="text-xs" style={{ color: '#6a6a6a' }}>צפיות (30י׳)</div>
         </Link>
 
         <Link href="/dashboard/analytics" className="rounded-2xl p-4 space-y-1 transition-colors" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
@@ -113,16 +113,16 @@ export default async function DashboardPage() {
           <div className="text-2xl font-bold" style={{ color: '#111' }}>
             {((stats?.whatsapp_clicks ?? 0) + (stats?.phone_clicks ?? 0)).toLocaleString('he-IL')}
           </div>
-          <div className="text-xs" style={{ color: '#888' }}>פניות (30י׳)</div>
+          <div className="text-xs" style={{ color: '#6a6a6a' }}>פניות (30י׳)</div>
         </Link>
       </div>
 
       {listings.length === 0 ? (
-        <div className="text-center py-20 space-y-4" style={{ color: '#aaa' }}>
+        <div className="text-center py-20 space-y-4" style={{ color: '#6a6a6a' }}>
           <div className="text-5xl">🏠</div>
           <div>
             <p className="text-base font-semibold" style={{ color: '#111' }}>אין נכסים עדיין</p>
-            <p className="text-sm mt-1" style={{ color: '#888' }}>צור את דף הנחיתה הראשון שלך תוך כמה דקות</p>
+            <p className="text-sm mt-1" style={{ color: '#6a6a6a' }}>צור את דף הנחיתה הראשון שלך תוך כמה דקות</p>
           </div>
           <Link
             href="/builder"

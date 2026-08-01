@@ -102,13 +102,13 @@ export default function BillingPage() {
           )}
 
           {status === 'canceled' && (
-            <p className="text-sm rounded-xl px-4 py-3" style={{ color: '#888', background: '#f7f5f2', border: '1px solid #e5e5e5' }}>
+            <p className="text-sm rounded-xl px-4 py-3" style={{ color: '#6a6a6a', background: '#f7f5f2', border: '1px solid #e5e5e5' }}>
               המנוי בוטל. רכוש מנוי חדש כדי לחדש גישה.
             </p>
           )}
 
           {sub?.plan && (
-            <div className="text-sm flex gap-4" style={{ color: '#888' }}>
+            <div className="text-sm flex gap-4" style={{ color: '#6a6a6a' }}>
               <span>תוכנית: <strong style={{ color: '#111' }}>{sub.plan === 'monthly' ? 'חודשי' : 'שנתי'}</strong></span>
               {sub.current_period_end && (
                 <span>
@@ -156,7 +156,7 @@ export default function BillingPage() {
                 <div className="font-semibold" style={{ color: '#111' }}>{plan.label}</div>
                 <div className="text-xl font-bold mt-1" style={{ color: '#111' }}>
                   ₪{plan.priceIls.toLocaleString('he-IL')}
-                  <span className="text-sm font-normal" style={{ color: '#888' }}> {plan.period}</span>
+                  <span className="text-sm font-normal" style={{ color: '#6a6a6a' }}> {plan.period}</span>
                 </div>
                 {plan.savingPct > 0 && (
                   <div className="text-xs font-semibold mt-1 inline-block px-2 py-0.5 rounded-full" style={{ background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0' }}>
@@ -193,7 +193,7 @@ export default function BillingPage() {
             {loading ? 'מעבד...' : `עבור לתשלום — ${PLANS[selectedPlan].label}`}
           </button>
 
-          <p className="text-xs text-center" style={{ color: '#aaa' }}>
+          <p className="text-xs text-center" style={{ color: '#6a6a6a' }}>
             תשלום מאובטח דרך Stripe · ביטול בכל עת
           </p>
         </div>
@@ -202,7 +202,7 @@ export default function BillingPage() {
       {/* Feature list */}
       <div className="p-5" style={{ background: '#f7f5f2', border: '2px solid #111', borderRadius: '8px' }}>
         <h3 className="font-semibold mb-3 text-sm" style={{ color: '#111' }}>המנוי כולל:</h3>
-        <ul className="space-y-2 text-sm" style={{ color: '#888' }}>
+        <ul className="space-y-2 text-sm" style={{ color: '#6a6a6a' }}>
           {[
             'נכסים ללא הגבלה',
             'מיתוג הסוכנות על כל דפי הנחיתה',

@@ -98,7 +98,7 @@ export default function SettingsPage() {
             {form.logo_url ? (
               <img src={form.logo_url} alt="לוגו" className="h-14 w-auto object-contain rounded-lg p-1" style={{ border: '2px solid #111', background: '#fff' }} />
             ) : (
-              <div className="h-14 w-14 rounded-lg flex items-center justify-center text-xl" style={{ border: '2px dashed #111', color: '#aaa' }}>🏢</div>
+              <div className="h-14 w-14 rounded-lg flex items-center justify-center text-xl" style={{ border: '2px dashed #111', color: '#6a6a6a' }}>🏢</div>
             )}
             <div>
               <button
@@ -135,14 +135,14 @@ export default function SettingsPage() {
         {/* Slug (read-only) */}
         <div>
           <label className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
-            סאב-דומיין <span className="font-normal" style={{ color: '#aaa' }}>(קבוע)</span>
+            סאב-דומיין <span className="font-normal" style={{ color: '#6a6a6a' }}>(קבוע)</span>
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-sm flex-1 font-mono px-4 py-2.5" style={{ background: '#f7f5f2', border: '2px solid #111', borderRadius: '8px', color: '#888' }} dir="ltr">
+            <span className="text-sm flex-1 font-mono px-4 py-2.5" style={{ background: '#f7f5f2', border: '2px solid #111', borderRadius: '8px', color: '#6a6a6a' }} dir="ltr">
               {agency.slug}
             </span>
           </div>
-          <p className="text-xs mt-1" style={{ color: '#aaa' }}>
+          <p className="text-xs mt-1" style={{ color: '#6a6a6a' }}>
             הסאב-דומיין משמש לניתוב: {agency.slug}.yourdomain.com
           </p>
         </div>
@@ -150,7 +150,7 @@ export default function SettingsPage() {
         {/* Custom domain */}
         <div>
           <label htmlFor="custom-domain" className="block text-sm font-medium mb-1" style={{ color: '#111' }}>
-            דומיין מותאם אישית <span className="font-normal" style={{ color: '#aaa' }}>(אופציונלי)</span>
+            דומיין מותאם אישית <span className="font-normal" style={{ color: '#6a6a6a' }}>(אופציונלי)</span>
           </label>
           <input
             id="custom-domain"
@@ -162,7 +162,7 @@ export default function SettingsPage() {
             className="w-full px-4 py-2.5 text-sm font-mono focus:outline-none"
             style={inputStyle}
           />
-          <div className="text-xs mt-1.5 space-y-1" style={{ color: '#aaa' }}>
+          <div className="text-xs mt-1.5 space-y-1" style={{ color: '#6a6a6a' }}>
             <p>כדי לחבר דומיין משלכם:</p>
             <p>1. הוסיפו רשומת CNAME אצל ספק הדומיין שמצביעה אל <code className="px-1 rounded" style={{ background: '#f3f4f6' }} dir="ltr">cname.vercel-dns.com</code></p>
             <p>2. הזינו את הדומיין כאן ושמרו — דפי הנכסים שלכם יוגשו ממנו אוטומטית</p>
@@ -177,7 +177,7 @@ export default function SettingsPage() {
               <input type="color" value={form.primary_color}
                 onChange={e => setForm(f => ({ ...f, primary_color: e.target.value }))}
                 className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-              <span className="text-sm font-mono" style={{ color: '#888' }}>{form.primary_color}</span>
+              <span className="text-sm font-mono" style={{ color: '#6a6a6a' }}>{form.primary_color}</span>
             </div>
           </div>
           <div>
@@ -186,7 +186,7 @@ export default function SettingsPage() {
               <input type="color" value={form.secondary_color}
                 onChange={e => setForm(f => ({ ...f, secondary_color: e.target.value }))}
                 className="w-8 h-8 rounded cursor-pointer border-0 bg-transparent" />
-              <span className="text-sm font-mono" style={{ color: '#888' }}>{form.secondary_color}</span>
+              <span className="text-sm font-mono" style={{ color: '#6a6a6a' }}>{form.secondary_color}</span>
             </div>
           </div>
         </div>

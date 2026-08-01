@@ -37,7 +37,7 @@ export default function AnalyticsPage() {
               className="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
               style={days === d
                 ? { background: '#fff', color: '#111', border: '1px solid #e5e5e5' }
-                : { color: '#888' }}
+                : { color: '#6a6a6a' }}
             >
               {d}י׳
             </button>
@@ -100,7 +100,7 @@ function StatCards({ stats }: { stats: AgencyStats }) {
         <div key={c.label} className="p-4 space-y-1" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px' }}>
           <div className="text-xl">{c.icon}</div>
           <div className="text-2xl font-bold" style={{ color: '#111' }}>{c.value.toLocaleString('he-IL')}</div>
-          <div className="text-xs" style={{ color: '#888' }}>{c.label}</div>
+          <div className="text-xs" style={{ color: '#6a6a6a' }}>{c.label}</div>
         </div>
       ))}
     </div>
@@ -137,7 +137,7 @@ function Funnel({ funnel }: { funnel: FunnelStats }) {
       <div className="space-y-2">
         {stages.map((s, i) => (
           <div key={s.label} className="flex items-center gap-3">
-            <div className="w-28 shrink-0 text-xs" style={{ color: '#888' }}>{s.label}</div>
+            <div className="w-28 shrink-0 text-xs" style={{ color: '#6a6a6a' }}>{s.label}</div>
             <div className="flex-1 h-7 rounded-lg overflow-hidden" style={{ background: '#f7f5f2' }}>
               <div
                 className="h-full rounded-lg flex items-center px-2 transition-all"
@@ -149,13 +149,13 @@ function Funnel({ funnel }: { funnel: FunnelStats }) {
                 <span className="text-xs font-bold text-white">{s.value.toLocaleString('he-IL')}</span>
               </div>
             </div>
-            <div className="w-12 shrink-0 text-xs text-left" style={{ color: '#aaa' }} title={i === 0 ? '' : `המרה מ${stages[i - 1].label}`}>
+            <div className="w-12 shrink-0 text-xs text-left" style={{ color: '#6a6a6a' }} title={i === 0 ? '' : `המרה מ${stages[i - 1].label}`}>
               {i === 0 ? '' : pct(stages[i - 1].value, s.value)}
             </div>
           </div>
         ))}
       </div>
-      <p className="text-xs" style={{ color: '#aaa' }}>
+      <p className="text-xs" style={{ color: '#6a6a6a' }}>
         {funnel.views > 0 && funnel.leads > 0
           ? `סה״כ: ${pct(funnel.views, funnel.leads)} מהצפיות הפכו ללידים`
           : 'אחוזי ההמרה מחושבים בין שלב לשלב'}
@@ -174,7 +174,7 @@ function TimeSeriesChart({ series }: { series: DayBucket[] }) {
   const totalViews = series.reduce((s, d) => s + d.views, 0)
   if (totalViews === 0) {
     return (
-      <div className="p-6 text-center text-sm" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px', color: '#aaa' }}>
+      <div className="p-6 text-center text-sm" style={{ background: '#fff', border: '2px solid #111', borderRadius: '8px', color: '#6a6a6a' }}>
         אין נתוני צפיות עדיין
       </div>
     )
@@ -208,7 +208,7 @@ function TimeSeriesChart({ series }: { series: DayBucket[] }) {
           )
         })}
       </div>
-      <div className="flex items-center gap-4 text-xs" style={{ color: '#888' }}>
+      <div className="flex items-center gap-4 text-xs" style={{ color: '#6a6a6a' }}>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded-sm" style={{ background: '#c0392b' }} />
           צפיות
@@ -242,7 +242,7 @@ function ListingsTable({
           <div key={r.listing_id} className="px-5 py-3 space-y-1.5" style={{ borderBottom: '1px solid #e5e5e5' }}>
             <div className="flex items-center justify-between gap-3">
               <span className="text-sm font-medium truncate" style={{ color: '#111' }}>{r.title}</span>
-              <div className="flex items-center gap-4 shrink-0 text-xs" style={{ color: '#888' }}>
+              <div className="flex items-center gap-4 shrink-0 text-xs" style={{ color: '#6a6a6a' }}>
                 <span title="צפיות">👁 {r.views}</span>
                 <span title="מבקרים ייחודיים">👤 {r.unique_sessions}</span>
                 <span title="לחיצות">📲 {r.clicks}</span>
